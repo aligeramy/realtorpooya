@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { MapPin, Bed, Bath, Square } from "lucide-react"
+import { MapPin, Bed, Bath, Scaling } from "lucide-react"
 import type { Property } from "@/types/property"
 
 interface PropertyCardProps {
@@ -15,7 +15,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
   const router = useRouter()
 
   // Format price with commas
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined) => {
+    if (!price) return "Price upon request"
     return price.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
@@ -35,8 +36,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
   }
 
   return (
-    <div onClick={handleClick} className="group cursor-pointer">
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div onClick={handleClick} className="group cursor-pointer h-full">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col">
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
           <Image
             src={property.hero_image || "/placeholder.svg?height=400&width=600&query=luxury home"}
@@ -46,7 +47,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           />
         </div>
 
-        <div className="p-5">
+        <div className="p-5 flex-grow flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-tenor-sans text-xl text-gray-900">{propertyAddress}</h3>
             <span className="font-manrope font-semibold text-xl text-gray-900">{formatPrice(property.price)}</span>
@@ -59,7 +60,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             </span>
           </div>
 
-          <div className="flex justify-between items-center pt-4">
+          <div className="flex justify-between items-center pt-4 mt-auto">
             {property.bedrooms && (
               <div className="flex items-center text-gray-600 border border-gray-200 rounded-md px-3 py-1.5">
                 <Bed className="h-4 w-4 mr-1.5" />
@@ -76,7 +77,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
             {property.square_feet && (
               <div className="flex items-center text-gray-600 border border-gray-200 rounded-md px-3 py-1.5">
-                <Square className="h-4 w-4 mr-1.5" />
+                <Scaling className="h-4 w-4 mr-1.5" />
                 <span className="text-sm">{property.square_feet.toLocaleString()} sqft</span>
               </div>
             )}

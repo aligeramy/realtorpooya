@@ -59,8 +59,8 @@ export default function FeaturedListings() {
   // Custom Coming Soon Card Component
   const ComingSoonCard = () => {
     return (
-      <div className="group">
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+      <div className="group h-full">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm h-full flex flex-col">
           <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
             <div className="absolute inset-0 backdrop-blur-md z-10"></div>
             <Image
@@ -77,7 +77,7 @@ export default function FeaturedListings() {
             </div>
           </div>
 
-          <div className="p-5">
+          <div className="p-5 flex-grow flex flex-col">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-tenor-sans text-xl text-gray-900">{comingSoonProperty.address}</h3>
             </div>
@@ -89,9 +89,9 @@ export default function FeaturedListings() {
               </span>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 mt-auto">
               <p className="text-gray-600 font-light">
-                A new luxury property will be available soon. Contact us for more information.
+                A new luxury property will be available soon.
               </p>
             </div>
           </div>
@@ -112,7 +112,9 @@ export default function FeaturedListings() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
+            <div key={property.id} className="h-full">
+              <PropertyCard property={property} />
+            </div>
           ))}
           <ComingSoonCard />
         </div>
