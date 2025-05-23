@@ -187,7 +187,7 @@ function TestimonialCard({ testimonial, progress, index, total }: TestimonialCar
           </svg>
         </div>
 
-        <p className="font-playfair text-xl md:text-2xl text-gray-800 leading-relaxed mb-8">
+        <p className=" text-xl md:text-2xl text-gray-800 leading-relaxed mb-8">
           {formatQuote(testimonial.quote, testimonial.highlight)}
         </p>
 

@@ -16,9 +16,9 @@ export default function AboutAgent() {
             viewport={{ once: true }}
             className="order-2 lg:order-1"
           >
-            <h3 className="text-[#aa9578] font-manrope text-lg mb-4 uppercase tracking-wider">Meet Your Agent</h3>
+            <h3 className="text-[#aa9578] font-manrope text-md mb-4 uppercase tracking-widest">Meet Your Agent</h3>
             <h2 className="font-tenor-sans text-4xl md:text-5xl text-gray-900 mb-6">
-              Working with a <span className="text-[#4AAEBB]">Trusted</span> Partner
+              Working with a <span className="text-[#473729]">Trusted</span> Partner
             </h2>
 
             <p className="text-gray-700 font-manrope text-lg leading-relaxed mb-8">
@@ -29,16 +29,16 @@ export default function AboutAgent() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8">
-              <div className="flex flex-col">
-                <span className="font-tenor-sans text-4xl text-[#4AAEBB]">150+</span>
+              <div className="flex flex-col p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-4xl text-[#473729]  rounded-full">150+</span>
                 <span className="text-gray-600">Properties Sold</span>
               </div>
-              <div className="flex flex-col">
-                <span className="font-tenor-sans text-4xl text-[#4AAEBB]">$500M+</span>
+              <div className="flex flex-col p-5 bg-[#473729]/5 border border-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-4xl text-[#473729]">$500M+</span>
                 <span className="text-gray-600">In Sales Volume</span>
               </div>
-              <div className="flex flex-col">
-                <span className="font-tenor-sans text-4xl text-[#4AAEBB]">12+</span>
+              <div className="flex flex-col p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-4xl text-[#473729]">12+</span>
                 <span className="text-gray-600">Years Experience</span>
               </div>
             </div>
@@ -64,11 +64,11 @@ export default function AboutAgent() {
               />
 
               {/* Info Card */}
-              <div className="absolute bottom-8 right-8 left-8 md:left-auto md:right-8 md:bottom-8 md:w-[320px] bg-white/90 backdrop-blur-md p-6 rounded-xl shadow-lg">
-                <h4 className="text-[#4AAEBB] font-manrope text-sm uppercase tracking-wider mb-1">
+              <div className="absolute bottom-8 right-8 left-8  bg-white/70 backdrop-blur-md p-6 rounded-xl shadow-lg">
+                <h4 className="text-[#473729] font-manrope text-xs uppercase tracking-widest mb-1">
                   Luxury Real Estate Specialist
                 </h4>
-                <h3 className="font-tenor-sans text-3xl text-gray-900 mb-2">Pooya Pirayesh</h3>
+                <h3 className="font-tenor-sans text-3xl tracking-tighter text-gray-900 mb-2">Pooya Pirayesh</h3>
                 <p className="text-gray-700 mb-4">
                   From our first conversation to the final handshake, I provide the insight and support you need to
                   achieve your property goals.

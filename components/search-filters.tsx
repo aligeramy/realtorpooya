@@ -235,7 +235,7 @@ export default function SearchFilters({ onApplyFilter, activeFilters }: FilterPr
                 }
               }}
             />
-            <Button className="rounded-r-full h-12 px-6 bg-[#4AAEBB] hover:bg-[#3a9aa7]" onClick={addKeyword}>
+            <Button className="rounded-r-full h-12 px-6 bg-[#473729] hover:bg-[#3a9aa7]" onClick={addKeyword}>
               Add
             </Button>
           </div>
@@ -257,7 +257,7 @@ export default function SearchFilters({ onApplyFilter, activeFilters }: FilterPr
         </div>
 
         <div className="pt-4">
-          <Button className="w-full rounded-full h-12 bg-[#4AAEBB] hover:bg-[#3a9aa7]">Apply Filters</Button>
+          <Button className="w-full rounded-full h-12 bg-[#473729] hover:bg-[#3a9aa7]">Apply Filters</Button>
         </div>
       </div>
     </div>

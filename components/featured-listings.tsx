@@ -20,7 +20,7 @@ const mockProperties: Property[] = [
     bedrooms: 4,
     bathrooms: 3,
     square_feet: 3200,
-    hero_image: "/images/property-1.jpg",
+    hero_image: "/properties/1/hero.jpg",
     status: "for_sale",
     listing_date: new Date().toISOString(),
     description: "Modern architectural masterpiece with floor-to-ceiling windows and open concept living",
@@ -36,7 +36,7 @@ const mockProperties: Property[] = [
     bedrooms: 5,
     bathrooms: 4,
     square_feet: 3500,
-    hero_image: "/images/property-2.jpg",
+    hero_image: "/properties/2/hero.jpg",
     status: "for_sale",
     listing_date: new Date().toISOString(),
     description: "Contemporary waterfront villa with infinity pool and stunning night lighting",
@@ -60,40 +60,40 @@ export default function FeaturedListings() {
   const ComingSoonCard = () => {
     return (
       <div className="group h-full">
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm h-full flex flex-col">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
-            <div className="absolute inset-0 backdrop-blur-md z-10"></div>
+        <div className="bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative">
+          {/* Image Container with blur effect */}
+          <div className="relative aspect-[4/3] overflow-hidden">
             <Image
               src={comingSoonProperty.hero_image || "/placeholder.svg?height=400&width=600&query=luxury home"}
               alt="Coming Soon"
               fill
-              className="object-cover"
+              className="object-cover blur-sm"
             />
-            <div className="absolute inset-0 bg-black/30 z-20"></div>
-            <div className="absolute inset-0 flex items-center justify-center z-30">
-              <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full">
-                <span className="font-tenor-sans text-xl text-gray-900">Coming Soon</span>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/95 backdrop-blur-sm px-8 py-3 rounded-full">
+                <span className="font-manrope font-semibold text-lg text-gray-900">Coming Soon</span>
               </div>
             </div>
           </div>
 
-          <div className="p-5 flex-grow flex flex-col">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="font-tenor-sans text-xl text-gray-900">{comingSoonProperty.address}</h3>
-            </div>
+          {/* Content */}
+          <div className="font-tenor-sans p-4 flex-grow flex flex-col">
+            {/* Title */}
+            <h3 className="font-manrope font-semibold text-lg text-gray-900 mb-2">{comingSoonProperty.address}</h3>
 
-            <div className="flex items-center text-[#aa9578] mb-5">
-              <MapPin className="h-4 w-4 mr-1" />
-              <span className="text-sm">
+            {/* Location */}
+            <div className="flex items-center text-gray-500 text-sm mb-4">
+              <MapPin className="h-3.5 w-3.5 mr-1" />
+              <span>
                 {comingSoonProperty.city}, {comingSoonProperty.province}
               </span>
             </div>
 
-            <div className="pt-4 mt-auto">
-              <p className="text-gray-600 font-light">
-                A new luxury property will be available soon.
-              </p>
-            </div>
+            {/* Description */}
+            <p className="text-gray-600 text-sm mt-auto">
+              A new luxury property will be available soon.
+            </p>
           </div>
         </div>
       </div>

@@ -135,7 +135,7 @@ export default function RealEstateJourney() {
                           <div className="bg-gradient-to-r from-[#f3ecdf] to-[#f9f6f1] p-6 rounded-xl cursor-pointer hover:shadow-md transition-shadow duration-300">
                             <div className="flex items-start">
                               <div className="bg-white rounded-full p-3 mr-4">
-                                <MessageCircle className="h-6 w-6 text-[#4AAEBB]" />
+                                <MessageCircle className="h-6 w-6 text-[#473729]" />
                               </div>
                               <div>
                                 <h4 className="font-tenor-sans text-xl text-gray-900 mb-2">
@@ -149,14 +149,14 @@ export default function RealEstateJourney() {
                         <DialogContent className="sm:max-w-md">
                           <div className="p-4 text-center">
                             <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mx-auto mb-4">
-                              <MessageCircle className="h-8 w-8 text-[#4AAEBB]" />
+                              <MessageCircle className="h-8 w-8 text-[#473729]" />
                             </div>
                             <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">We're Here to Help</h3>
                             <p className="text-gray-700 mb-6">
                               We support your goals every step of the way — reach out to explore how we can help.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                              <Button className="bg-[#4AAEBB] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
+                              <Button className="bg-[#473729] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
                               <Button variant="outline" className="rounded-full">
                                 Learn More
                               </Button>
@@ -208,7 +208,7 @@ export default function RealEstateJourney() {
                   >
                     <div
                       className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-500 ${
-                        activeStep === index ? "bg-[#4AAEBB] text-white" : "bg-gray-100 text-gray-400"
+                        activeStep === index ? "bg-[#473729] text-white" : "bg-gray-100 text-gray-400"
                       }`}
                     >
                       {step.icon}

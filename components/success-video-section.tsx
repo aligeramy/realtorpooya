@@ -34,7 +34,7 @@ export default function SuccessVideoSection() {
   return (
     <section className="py-16 md:py-24 px-4">
       <div className="container mx-auto">
-        <div className="relative w-full h-[90vh] rounded-3xl overflow-hidden">
+        <div className="relative w-full h-[80vh] rounded-3xl overflow-hidden">
           {/* Video Background */}
           <div className="absolute inset-0 w-full h-full bg-black/20 z-10"></div>
           <video
@@ -68,7 +68,7 @@ export default function SuccessVideoSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="font-tenor-sans text-5xl md:text-6xl lg:text-7xl text-white mb-8 leading-tight"
+              className="font-tenor-sans text-5xl text-white mb-8 leading-tight"
             >
               Your Success is Our Success
             </motion.h2>

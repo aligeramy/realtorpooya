@@ -53,7 +53,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             <span className="font-manrope font-semibold text-xl text-gray-900">{formatPrice(property.price)}</span>
           </div>
 
-          <div className="flex items-center text-[#aa9578] mb-5">
+          <div className="flex items-center text-[#aa9578] -mt-1 mb-2">
             <MapPin className="h-4 w-4 mr-1" />
             <span className="text-sm">
               {property.city}, {property.province}

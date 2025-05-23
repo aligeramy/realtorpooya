@@ -72,11 +72,11 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
 
         <div className="flex-1 flex flex-col justify-center">
           <nav className="space-y-6 md:space-y-8">
-            {["Home", "Listings", "Why Us", "Resources", "Contact"].map((item, i) => (
+            {["Home", "Search", "Listings", "Why Us", "Resources", "Contact"].map((item, i) => (
               <motion.div key={item} custom={i} initial="hidden" animate="visible" variants={menuItemVariants}>
                 <Link
                   href={item === "Home" ? "/" : `/${item.toLowerCase().replace(" ", "-")}`}
-                  className="block font-tenor-sans text-3xl md:text-4xl text-white hover:text-[#4AAEBB] transition-colors"
+                  className="block font-tenor-sans text-3xl md:text-4xl text-white hover:text-[#473729] transition-colors"
                   onClick={onClose}
                 >
                   {item}

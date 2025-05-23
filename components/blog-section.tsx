@@ -23,7 +23,7 @@ const blogPosts: BlogPost[] = [
     title: "Toronto Real Estate Market Update: Trends and Forecasts for 2025",
     excerpt:
       "Discover the latest trends in Toronto's luxury real estate market, from emerging neighborhoods to investment opportunities and price forecasts for the coming year.",
-    image: "/images/blog-1.png",
+    image: "/blog/1/hero.jpg",
     category: "Market Analysis",
     date: "May 20, 2025",
     author: "Pooya Pirayesh",
@@ -34,7 +34,7 @@ const blogPosts: BlogPost[] = [
     title: "5 Interior Design Trends That Increase Your Property's Value",
     excerpt:
       "Learn which interior design choices can significantly boost your property's market value and appeal to luxury buyers in Toronto's competitive real estate market.",
-    image: "/images/blog-2.png",
+    image: "/blog/2/hero.jpg",
     category: "Design & Architecture",
     date: "May 15, 2025",
     author: "Sarah Williams",
@@ -45,7 +45,7 @@ const blogPosts: BlogPost[] = [
     title: "The Ultimate Guide to Toronto's Most Exclusive Neighborhoods",
     excerpt:
       "Explore Toronto's most prestigious neighborhoods, from Rosedale to Yorkville, and discover what makes each area unique for luxury homebuyers and investors.",
-    image: "/images/blog-3.png",
+    image: "/blog/3/hero.jpg",
     category: "Neighborhoods",
     date: "May 10, 2025",
     author: "Michael Chen",
@@ -71,7 +71,7 @@ export default function BlogSection() {
           </div>
           <Link
             href="/blog"
-            className="mt-6 md:mt-0 inline-flex items-center text-[#4AAEBB] hover:text-[#3a9aa7] font-medium transition-colors"
+            className="mt-6 md:mt-0 inline-flex items-center text-[#473729] hover:text-[#3a9aa7] font-medium transition-colors"
           >
             <span className="mr-2">View all articles</span>
             <ArrowRight className="h-4 w-4" />
@@ -120,11 +120,11 @@ export default function BlogSection() {
                     </div>
                   </div>
 
-                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-3 group-hover:text-[#4AAEBB] transition-colors">
+                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-3 group-hover:text-[#473729] transition-colors">
                     {post.title}
                   </h3>
                   <p className="text-gray-700 font-light mb-4">{post.excerpt}</p>
-                  <div className="inline-flex items-center text-[#4AAEBB] font-medium">
+                  <div className="inline-flex items-center text-[#473729] font-medium">
                     <span className="mr-2">Read more</span>
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </div>

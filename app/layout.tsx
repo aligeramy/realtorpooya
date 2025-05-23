@@ -31,7 +31,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Pooya Pirayesh Luxury Real Estate",
   description: "Find your dream home in Toronto and the GTA",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -40,14 +40,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap" />
       </head>
       <body
         className={`${montserrat.variable} ${manrope.variable} ${playfairDisplay.variable} ${inter.className} font-manrope tracking-tight`}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="light" 
+          enableSystem={false} 
+          disableTransitionOnChange
+        >
           {children}
         </ThemeProvider>
       </body>

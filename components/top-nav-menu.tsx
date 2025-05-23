@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Menu } from "lucide-react"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import FullScreenMenu from "./full-screen-menu"
 import { AnimatePresence, motion } from "framer-motion"
 import BookShowingButton from "./book-showing-button"
@@ -27,6 +27,7 @@ export default function TopNavMenu() {
             className="max-w-full w-full max-h-full h-full p-0 border-none"
             onInteractOutside={(e) => e.preventDefault()}
           >
+            <DialogTitle className="sr-only">Site Navigation Menu</DialogTitle>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

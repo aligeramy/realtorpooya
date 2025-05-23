@@ -52,7 +52,7 @@ const testimonials: Testimonial[] = [
     quote:
       "Pooya's market analysis helped us build a portfolio of properties that have appreciated 43% in just three years. Truly exceptional.",
     author: "James & Victoria Harrington",
-    position: "London, UK",
+    position: "London, ON",
     highlight: "market analysis",
   },
 ]
@@ -75,7 +75,7 @@ export default function TestimonialSection() {
     const parts = quote.split(new RegExp(`(${highlight})`, "gi"))
     return parts.map((part, i) =>
       part.toLowerCase() === highlight?.toLowerCase() ? (
-        <span key={i} className="text-[#4AAEBB] font-semibold">
+        <span key={i} className="text-[#473729] font-semibold">
           {part}
         </span>
       ) : (
@@ -260,12 +260,12 @@ export default function TestimonialSection() {
                   <Quote className="h-6 w-6 text-[#aa9578] opacity-30" />
                 </div>
 
-                <p className="font-playfair text-lg md:text-xl text-gray-800 leading-relaxed mb-6 font-light">
+                <p className="text-lg  text-gray-800 leading-relaxed mb-6 font-light">
                   {formatQuote(testimonial.quote, testimonial.highlight)}
                 </p>
 
                 <div className="mt-auto">
-                  <h4 className="font-manrope font-medium text-gray-900">{testimonial.author}</h4>
+                  <h4 className="font-manrope  text-gray-500">{testimonial.author}</h4>
                   {testimonial.position && <p className="text-[#aa9578] text-sm">{testimonial.position}</p>}
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function TestimonialSection() {
             <button
               key={testimonial.id}
               className={`h-[1px] w-[20px] focus:outline-none transition-colors duration-300 ${
-                activeIndex === index ? "bg-[#4AAEBB]" : "bg-[#e9e0cc]"
+                activeIndex === index ? "bg-[#473729]" : "bg-[#e9e0cc]"
               }`}
               onClick={() => {
                 scrollToTestimonial(index)

@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, Play, Maximize2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface PropertyImageGalleryProps {
@@ -103,6 +103,7 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl w-full p-0">
+                <DialogTitle className="sr-only">Property Video Tour</DialogTitle>
                 <div className="aspect-video w-full">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoUrl.split("v=")[1]}`}
@@ -163,7 +164,7 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={`relative h-20 w-32 flex-shrink-0 overflow-hidden transition-all ${
-                    currentIndex === index ? "ring-4 ring-[#4AAEBB] ring-offset-2 rounded-lg" : "rounded-lg"
+                    currentIndex === index ? "ring-4 ring-[#473729] ring-offset-2 rounded-lg" : "rounded-lg"
                   }`}
                   onClick={() => goToImage(index)}
                 >
@@ -182,25 +183,31 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
 
       {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
-        <DialogContent className="max-w-7xl w-full p-0">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
-            {validImages.map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
-                onClick={() => openFullScreen(image)}
-              >
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`Property image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-            ))}
+        <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
+          <DialogTitle className="sr-only">Property Image Gallery</DialogTitle>
+          <div className="h-full overflow-y-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
+              {validImages.map((image, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
+                  className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#473729] transition-all"
+                  onClick={() => openFullScreen(image)}
+                >
+                  <Image
+                    src={image || "/placeholder.svg"}
+                    alt={`Property image ${index + 1}`}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
+                    <span className="text-white text-sm font-medium">{index + 1}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
