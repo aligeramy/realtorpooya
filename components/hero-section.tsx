@@ -11,14 +11,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useIsMobile } from "@/hooks/use-mobile"
 import SearchFilters from "./search-filters"
 import TopNavMenu from "./top-nav-menu"
-import { useRouter } from "next/navigation"
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const router = useRouter()
   const [activeFilters, setActiveFilters] = useState<{
     propertyType?: string
     priceRange?: [number, number]
@@ -74,35 +72,6 @@ export default function HeroSection() {
 
   const getActiveFilterCount = () => {
     return Object.keys(activeFilters).length
-  }
-
-  const handleSearch = () => {
-    // Build search params from query and filters
-    const params = new URLSearchParams()
-    
-    if (searchQuery) {
-      params.set('q', searchQuery)
-    }
-    
-    if (activeFilters.propertyType) {
-      params.set('property_type', activeFilters.propertyType)
-    }
-    
-    if (activeFilters.priceRange) {
-      params.set('min_price', activeFilters.priceRange[0].toString())
-      params.set('max_price', activeFilters.priceRange[1].toString())
-    }
-    
-    if (activeFilters.beds) {
-      params.set('min_bedrooms', activeFilters.beds.toString())
-    }
-    
-    if (activeFilters.baths) {
-      params.set('min_bathrooms', activeFilters.baths.toString())
-    }
-    
-    // Navigate to search page with all filters
-    router.push(`/search?${params.toString()}`)
   }
 
   return (
@@ -204,7 +173,7 @@ export default function HeroSection() {
               {getActiveFilterCount() > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {activeFilters.propertyType && (
-                    <Badge className="bg-white/90 text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
+                    <Badge className="bg-white/70 backdrop-blur-md text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
                       <Building className="h-3 w-3" />
                       {activeFilters.propertyType}
                       <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("propertyType")} />
@@ -275,17 +244,9 @@ export default function HeroSection() {
                   className="w-full h-14 md:h-16 pl-16 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch()
-                    }
-                  }}
                 />
 
-                <Button 
-                  onClick={handleSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
-                >
+                <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2">
                   <Search className="h-4 w-4" />
                   <span>Search</span>
                 </Button>

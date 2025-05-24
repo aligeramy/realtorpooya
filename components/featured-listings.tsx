@@ -60,7 +60,7 @@ export default function FeaturedListings() {
   const ComingSoonCard = () => {
     return (
       <div className="group h-full">
-        <div className="bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col relative">
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full flex flex-col relative">
           {/* Image Container with blur effect */}
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image
@@ -78,7 +78,7 @@ export default function FeaturedListings() {
           </div>
 
           {/* Content */}
-          <div className="font-tenor-sans p-4 flex-grow flex flex-col">
+          <div className="p-4 flex-grow flex flex-col">
             {/* Title */}
             <h3 className="font-manrope font-semibold text-lg text-gray-900 mb-2">{comingSoonProperty.address}</h3>
 

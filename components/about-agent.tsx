@@ -17,7 +17,7 @@ export default function AboutAgent() {
             className="order-2 lg:order-1"
           >
             <h3 className="text-[#aa9578] font-manrope text-md mb-4 uppercase tracking-widest">Meet Your Agent</h3>
-            <h2 className="font-tenor-sans text-4xl md:text-5xl text-gray-900 mb-6">
+            <h2 className="font-tenor-sans text-3xl md:text-4xl text-gray-900 mb-6 tracking-tighter">
               Working with a <span className="text-[#473729]">Trusted</span> Partner
             </h2>
 

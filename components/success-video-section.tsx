@@ -99,7 +99,6 @@ export default function SuccessVideoSection() {
                 <span className="sr-only">Why us</span>
                 <ArrowRight className="h-6 w-6 text-gray-900 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <span className="ml-4 text-white font-tenor-sans">Why us</span>
             </motion.div>
 
             {/* Logo in bottom right */}
