@@ -416,13 +416,15 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 <div className="p-6">
                   <BookShowingButton fullWidth size="xl" className="mb-4" />
 
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#aa9578] text-[#aa9578] hover:bg-[#f3ecdf] rounded-full py-6 font-manrope text-lg flex items-center justify-center"
-                  >
-                    <Phone className="h-5 w-5 mr-2" />
-                    Contact Agent
-                  </Button>
+                  <Link href="/contact">
+                    <Button
+                      variant="outline"
+                      className="w-full border-[#aa9578] text-[#aa9578] hover:bg-[#f3ecdf] rounded-full py-6 font-manrope text-lg flex items-center justify-center"
+                    >
+                      <Phone className="h-5 w-5 mr-2" />
+                      Contact Agent
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="p-6 bg-[#f3ecdf]">

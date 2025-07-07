@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { Home, Building, TrendingUp, MessageCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
@@ -101,7 +102,7 @@ export default function RealEstateJourney() {
           {/* Left Column - Steps Content */}
           <div className="space-y-32 pb-32">
             {steps.map((step, index) => (
-              <div key={step.id} ref={(el) => (stepsRef.current[index] = el)} className="min-h-[40vh]">
+              <div key={step.id} ref={(el) => { stepsRef.current[index] = el }} className="min-h-[40vh]">
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -156,7 +157,9 @@ export default function RealEstateJourney() {
                               We support your goals every step of the way — reach out to explore how we can help.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                              <Button className="bg-[#473729] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
+                              <Link href="/contact">
+                  <Button className="bg-[#473729] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
+                </Link>
                               <Button variant="outline" className="rounded-full">
                                 Learn More
                               </Button>

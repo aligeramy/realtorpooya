@@ -1,20 +1,22 @@
 "use client"
 
+import * as React from "react"
 import { useState } from "react"
 import { Button, type ButtonProps } from "@/components/ui/button"
-import { Calendar, Phone, Mail, User, Clock, Sparkles, Send } from "lucide-react"
+import { Calendar, Phone, Mail, User, Clock, Send, X, CheckCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
   variant?: "primary" | "secondary" | "outline" | "text"
   size?: "default" | "sm" | "lg" | "icon" | "xl"
   showIcon?: boolean
   fullWidth?: boolean
+  className?: string
 }
 
 export default function BookShowingButton({
@@ -27,6 +29,7 @@ export default function BookShowingButton({
 }: BookShowingButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,7 +41,7 @@ export default function BookShowingButton({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev: typeof formData) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,18 +51,26 @@ export default function BookShowingButton({
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false)
-      setIsOpen(false)
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        preferredDate: "",
-        preferredTime: "",
-        message: "",
-      })
-      alert("Thank you! We'll contact you shortly to confirm your showing.")
-    }, 2000)
+      setIsSubmitted(true)
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false)
+        setIsOpen(false)
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          preferredDate: "",
+          preferredTime: "",
+          message: "",
+        })
+      }, 3000)
+    }, 1500)
+  }
+
+  const closeDialog = () => {
+    setIsOpen(false)
+    setIsSubmitted(false)
   }
 
   // Define variant styles
@@ -95,189 +106,188 @@ export default function BookShowingButton({
         {props.children || "Book a Showing"}
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-2xl w-full p-0 overflow-hidden bg-white rounded-3xl">
+      <Dialog open={isOpen} onOpenChange={closeDialog}>
+        <DialogContent className="max-w-md w-full mx-4 p-0 rounded-2xl bg-white overflow-hidden">
           <DialogTitle className="sr-only">Book a Property Showing</DialogTitle>
           
-          {/* Header */}
-          <div className="bg-gradient-to-br from-[#f3ecdf] to-[#e9e0cc] p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"></div>
-            <div className="relative z-10 text-center">
-              <div className="flex items-center justify-center mb-4">
-                <Sparkles className="h-6 w-6 text-[#473729] mr-2" />
-                <span className="text-[#8a7a63] font-montserrat text-sm uppercase tracking-[0.3em]">
-                  Exclusive Viewing
-                </span>
-                <Sparkles className="h-6 w-6 text-[#473729] ml-2" />
-              </div>
-              <h3 className="font-tenor-sans text-4xl text-[#473729] mb-2">Book Your Private Showing</h3>
-              <p className="text-[#8a7a63] font-light">Experience luxury properties with personalized attention</p>
-            </div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* Name */}
-              <div className="space-y-3">
-                <Label htmlFor="name" className="text-gray-700 font-medium">Your Name</Label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="John Smith"
-                    className="pl-12 h-14 rounded-xl border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] bg-gray-50 hover:bg-white transition-colors"
-                    required
-                  />
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#aa9578]" />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="john@example.com"
-                    className="pl-12 h-14 rounded-xl border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] bg-gray-50 hover:bg-white transition-colors"
-                    required
-                  />
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#aa9578]" />
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-3">
-                <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number</Label>
-                <div className="relative">
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="(416) 555-1234"
-                    className="pl-12 h-14 rounded-xl border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] bg-gray-50 hover:bg-white transition-colors"
-                    required
-                  />
-                  <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#aa9578]" />
-                </div>
-              </div>
-
-              {/* Preferred Date */}
-              <div className="space-y-3">
-                <Label htmlFor="preferredDate" className="text-gray-700 font-medium">Preferred Date</Label>
-                <div className="relative">
-                  <Input
-                    id="preferredDate"
-                    name="preferredDate"
-                    type="date"
-                    value={formData.preferredDate}
-                    onChange={handleInputChange}
-                    className="pl-12 h-14 rounded-xl border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] bg-gray-50 hover:bg-white transition-colors"
-                    required
-                  />
-                  <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#aa9578]" />
-                </div>
-              </div>
-
-              {/* Preferred Time */}
-              <div className="space-y-3 md:col-span-2">
-                <Label htmlFor="preferredTime" className="text-gray-700 font-medium">Preferred Time</Label>
-                <div className="relative">
-                  <Select
-                    name="preferredTime"
-                    value={formData.preferredTime}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, preferredTime: value }))}
-                  >
-                    <SelectTrigger className="h-14 rounded-xl pl-12 border-gray-200 bg-gray-50 hover:bg-white transition-colors">
-                      <SelectValue placeholder="Select your preferred time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="morning">Morning (9:00 AM - 12:00 PM)</SelectItem>
-                      <SelectItem value="afternoon">Afternoon (12:00 PM - 5:00 PM)</SelectItem>
-                      <SelectItem value="evening">Evening (5:00 PM - 8:00 PM)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#aa9578] pointer-events-none z-10" />
-                </div>
-              </div>
-
-              {/* Message */}
-              <div className="space-y-3 md:col-span-2">
-                <Label htmlFor="message" className="text-gray-700 font-medium">Additional Information (Optional)</Label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  placeholder="Tell us about your specific interests or requirements..."
-                  className="min-h-[120px] rounded-xl border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] bg-gray-50 hover:bg-white transition-colors resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Benefits */}
-            <div className="bg-gradient-to-br from-[#f9f6f1] to-[#f3ecdf] rounded-2xl p-6 mb-6">
-              <h4 className="font-tenor-sans text-xl text-[#473729] mb-4">What to Expect</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-[#aa9578] rounded-full mt-1.5 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Personalized property tour with expert guidance</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-[#aa9578] rounded-full mt-1.5 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Detailed insights about the neighborhood</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-[#aa9578] rounded-full mt-1.5 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Market analysis and investment potential</span>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-[#aa9578] rounded-full mt-1.5 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">No pressure, client-focused experience</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white rounded-full py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="mr-2"
+          {!isSubmitted ? (
+            <>
+              {/* Header */}
+              <div className="bg-gradient-to-br from-[#f3ecdf] to-[#e9e0cc] p-6 relative">
+                <button
+                  onClick={closeDialog}
+                  className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                </motion.div>
-              ) : (
-                <Send className="h-5 w-5 mr-2" />
-              )}
-              {isLoading ? "Scheduling..." : "Schedule Your Showing"}
-            </Button>
-          </form>
+                  <X className="h-4 w-4 text-[#473729]" />
+                </button>
+                
+                <div className="text-center">
+                  <h3 className="font-tenor-sans text-2xl text-[#473729] mb-2">Book Your Showing</h3>
+                  <p className="text-[#8a7a63] text-sm">Quick and easy scheduling</p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                {/* Name & Email Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
+                    <div className="relative">
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="John Smith"
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-gray-700 text-sm font-medium">Email</Label>
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="john@email.com"
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="(416) 555-1234"
+                      className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                      required
+                    />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                  </div>
+                </div>
+
+                {/* Date & Time Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredDate" className="text-gray-700 text-sm font-medium">Preferred Date</Label>
+                    <div className="relative">
+                      <Input
+                        id="preferredDate"
+                        name="preferredDate"
+                        type="date"
+                        value={formData.preferredDate}
+                        onChange={handleInputChange}
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>
+                    <div className="relative">
+                      <Select
+                        name="preferredTime"
+                        value={formData.preferredTime}
+                        onValueChange={(value) => setFormData((prev: typeof formData) => ({ ...prev, preferredTime: value }))}
+                      >
+                        <SelectTrigger className="h-11 rounded-lg pl-10 border-gray-200 text-sm">
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
+                          <SelectItem value="afternoon">Afternoon (12 PM - 5 PM)</SelectItem>
+                          <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none z-10" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div className="space-y-2">
+                  <Label htmlFor="message" className="text-gray-700 text-sm font-medium">Message (Optional)</Label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    placeholder="Any specific requirements or questions..."
+                    className="min-h-[80px] rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] resize-none text-sm"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white rounded-lg h-12 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="mr-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    </motion.div>
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Scheduling..." : "Schedule Showing"}
+                </Button>
+              </form>
+            </>
+          ) : (
+            /* Success State */
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="font-tenor-sans text-xl text-gray-900 mb-2">Showing Scheduled!</h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Thank you! I'll contact you shortly to confirm the details.
+              </p>
+              <div className="text-xs text-gray-500">
+                <p>Expected response time: Within 2 hours</p>
+              </div>
+            </motion.div>
+          )}
         </DialogContent>
       </Dialog>
     </>

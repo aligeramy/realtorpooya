@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, Home, DollarSign, Phone, Mail, User, Calendar, MapPin, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -142,41 +143,43 @@ export default function InteractiveContact() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 max-w-4xl mx-auto"
           >
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1"
-              onClick={() => setContactType("buy")}
-            >
-              <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
-                <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
-                  <Home className="h-8 w-8 text-[#aa9578]" />
+            <Link href="/contact" className="flex-1">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className="h-full"
+              >
+                <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
+                  <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
+                    <Home className="h-8 w-8 text-[#aa9578]" />
+                  </div>
+                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Buy</h3>
+                  <p className="text-gray-700 font-light mb-6">
+                    Find your dream property with our expert guidance and exclusive listings.
+                  </p>
+                  <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
                 </div>
-                <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Buy</h3>
-                <p className="text-gray-700 font-light mb-6">
-                  Find your dream property with our expert guidance and exclusive listings.
-                </p>
-                <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
 
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex-1"
-              onClick={() => setContactType("sell")}
-            >
-              <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
-                <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
-                  <DollarSign className="h-8 w-8 text-[#aa9578]" />
+            <Link href="/contact" className="flex-1">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className="h-full"
+              >
+                <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
+                  <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
+                    <DollarSign className="h-8 w-8 text-[#aa9578]" />
+                  </div>
+                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Sell</h3>
+                  <p className="text-gray-700 font-light mb-6">
+                    Maximize your property's value with our strategic marketing and negotiation expertise.
+                  </p>
+                  <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
                 </div>
-                <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Sell</h3>
-                <p className="text-gray-700 font-light mb-6">
-                  Maximize your property's value with our strategic marketing and negotiation expertise.
-                </p>
-                <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           </motion.div>
         )}
 
