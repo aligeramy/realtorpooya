@@ -81,13 +81,8 @@ export default function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/why-us" className="text-gray-600 hover:text-[#aa9578] transition-colors">
-                  Why Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/resources" className="text-gray-600 hover:text-[#aa9578] transition-colors">
-                  Resources
+                <Link href="/property-showcase" className="text-gray-600 hover:text-[#aa9578] transition-colors">
+                  Property Showcase
                 </Link>
               </li>
               <li>
