@@ -465,14 +465,14 @@ export default function PropertyPage({ params }: PageProps) {
                     </Badge>
                   </div>
 
-                  {property.property_tax && (
+                  {property.property_tax && property.status !== "sold" && (
                     <div className="flex justify-between text-gray-600 mb-2">
                       <span>Property Tax:</span>
                       <span>${property.property_tax.toLocaleString()}/year</span>
                     </div>
                   )}
 
-                  {property.hoa_fees && (
+                  {property.hoa_fees && property.status !== "sold" && (
                     <div className="flex justify-between text-gray-600">
                       <span>HOA Fees:</span>
                       <span>${property.hoa_fees.toLocaleString()}/month</span>

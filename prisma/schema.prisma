@@ -147,3 +147,27 @@ enum VideoType {
   YOUTUBE
   VIMEO
 }
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  category    String
+  author      String
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  
+  // Media
+  hero_image  String?
+  
+  // SEO
+  meta_title  String?
+  meta_description String?
+  
+  @@map("blog_posts")
+}
