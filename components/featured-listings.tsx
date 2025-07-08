@@ -4,8 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import PropertyCard from "./property-card"
 import type { Property } from "@/types/property"
-import Image from "next/image"
-import { MapPin } from "lucide-react"
 
 // Updated properties for the featured listings
 const mockProperties: Property[] = [
@@ -41,17 +39,23 @@ const mockProperties: Property[] = [
     listing_date: new Date().toISOString(),
     description: "Contemporary waterfront villa with infinity pool and stunning night lighting",
   },
+  {
+    id: "3",
+    address: "85 Rosedale Heights Dr",
+    city: "Toronto",
+    province: "ON",
+    postal_code: "M4T 1C4",
+    property_type: "house",
+    price: 3950000,
+    bedrooms: 4,
+    bathrooms: 3,
+    square_feet: 2900,
+    hero_image: "/images/property-3.jpg",
+    status: "sold",
+    listing_date: new Date().toISOString(),
+    description: "Elegant luxury residence with premium finishes and private garden oasis",
+  },
 ]
-
-// Special Coming Soon property
-const comingSoonProperty = {
-  id: "coming-soon",
-  address: "Luxury Property",
-  city: "Toronto",
-  province: "ON",
-  status: "coming_soon" as any,
-  hero_image: "/images/property-3.jpg",
-}
 
 export default function FeaturedListings() {
   const [properties, setProperties] = useState<Property[]>(mockProperties)
@@ -63,16 +67,33 @@ export default function FeaturedListings() {
         const response = await fetch('/api/properties/featured')
         if (response.ok) {
           const featuredProperties = await response.json()
-          if (featuredProperties.length > 0) {
-            setProperties(featuredProperties)
+          if (featuredProperties.length >= 3) {
+            // If we have 3 or more from API, use API data
+            setProperties(featuredProperties.slice(0, 3))
+          } else {
+            // If we have fewer than 3 from API, combine with mock data
+            const combinedProperties = [...featuredProperties]
+            const remainingCount = 3 - featuredProperties.length
+            
+            // Add mock properties to fill up to 3 total
+            for (let i = 0; i < remainingCount && i < mockProperties.length; i++) {
+              const mockProperty = mockProperties[i]
+              // Make sure we don't add duplicate IDs
+              if (!combinedProperties.some(p => p.id === mockProperty.id)) {
+                combinedProperties.push(mockProperty)
+              }
+            }
+            
+            setProperties(combinedProperties.slice(0, 3))
           }
-          // If no featured properties in database, keep using mock data
         } else {
           console.log('No featured properties found, using mock data')
+          setProperties(mockProperties)
         }
       } catch (error) {
         console.error('Error fetching featured properties:', error)
         // Keep using mock data on error
+        setProperties(mockProperties)
       } finally {
         setLoading(false)
       }
@@ -80,50 +101,6 @@ export default function FeaturedListings() {
 
     fetchFeaturedProperties()
   }, [])
-
-  // Custom Coming Soon Card Component
-  const ComingSoonCard = () => {
-    return (
-      <div className="group h-full">
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm h-full flex flex-col relative">
-          {/* Image Container with blur effect */}
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src={comingSoonProperty.hero_image || "/placeholder.svg?height=400&width=600&query=luxury home"}
-              alt="Coming Soon"
-              fill
-              className="object-cover blur-sm"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-white/95 backdrop-blur-sm px-8 py-3 rounded-full">
-                <span className="font-manrope font-semibold text-lg text-gray-900">Coming Soon</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-4 flex-grow flex flex-col">
-            {/* Title */}
-            <h3 className="font-manrope font-semibold text-lg text-gray-900 mb-2">{comingSoonProperty.address}</h3>
-
-            {/* Location */}
-            <div className="flex items-center text-gray-500 text-sm mb-4">
-              <MapPin className="h-3.5 w-3.5 mr-1" />
-              <span>
-                {comingSoonProperty.city}, {comingSoonProperty.province}
-              </span>
-            </div>
-
-            {/* Description */}
-            <p className="text-gray-600 text-sm mt-auto">
-              A new luxury property will be available soon.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   if (loading) {
     return (
@@ -161,7 +138,6 @@ export default function FeaturedListings() {
               <PropertyCard property={property} />
             </div>
           ))}
-          <ComingSoonCard />
         </div>
 
         {/* Only show "View All Listings" if there are 4 or more properties */}
