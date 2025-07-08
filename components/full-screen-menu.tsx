@@ -10,6 +10,14 @@ interface FullScreenMenuProps {
   onClose: () => void
 }
 
+const menuItems = [
+  { name: "Home", href: "#home" },
+  { name: "Listings", href: "#listings" },
+  { name: "About", href: "#about" },
+  { name: "Resources", href: "#resources" },
+  { name: "Contact", href: "#contact" }
+]
+
 export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
   const menuItemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -72,14 +80,21 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
 
         <div className="flex-1 flex flex-col justify-center">
           <nav className="space-y-6 md:space-y-8">
-            {["Home", "Listings", "Why Us", "Resources", "Contact"].map((item, i) => (
-              <motion.div key={item} custom={i} initial="hidden" animate="visible" variants={menuItemVariants}>
+            {menuItems.map((item, i) => (
+              <motion.div key={item.name} custom={i} initial="hidden" animate="visible" variants={menuItemVariants}>
                 <Link
-                  href={item === "Home" ? "/" : `/${item.toLowerCase().replace(" ", "-")}`}
+                  href={item.href}
                   className="block font-tenor-sans text-3xl md:text-4xl text-white hover:text-[#473729] transition-colors"
-                  onClick={onClose}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onClose()
+                    const element = document.querySelector(item.href)
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
                 >
-                  {item}
+                  {item.name}
                 </Link>
               </motion.div>
             ))}

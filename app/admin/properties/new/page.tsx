@@ -14,6 +14,7 @@ import { ArrowLeft, Save, Plus, X } from 'lucide-react'
 import Link from 'next/link'
 import MediaUpload from '@/components/admin/media-upload'
 import MLSLookup from '@/components/admin/mls-lookup'
+import AIFeatureGenerator from '@/components/admin/ai-feature-generator'
 
 interface MediaFile {
   id: string
@@ -106,6 +107,18 @@ export default function NewPropertyPage() {
 
   const removeTag = (tag: string) => {
     setTags(tags.filter(t => t !== tag))
+  }
+
+  const handleAIFeaturesGenerated = (aiFeatures: string[]) => {
+    // Add new AI-generated features that don't already exist
+    const newFeatures = aiFeatures.filter(feature => !features.includes(feature))
+    setFeatures(prev => [...prev, ...newFeatures])
+  }
+
+  const handleAITagsGenerated = (aiTags: string[]) => {
+    // Add new AI-generated tags that don't already exist
+    const newTags = aiTags.filter(tag => !tags.includes(tag))
+    setTags(prev => [...prev, ...newTags])
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -404,6 +417,13 @@ export default function NewPropertyPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Feature Generator */}
+          <AIFeatureGenerator
+            formData={formData}
+            onFeaturesGenerated={handleAIFeaturesGenerated}
+            onTagsGenerated={handleAITagsGenerated}
+          />
 
           {/* Features */}
           <Card>

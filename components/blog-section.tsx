@@ -1,60 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { ArrowRight, Calendar, User } from "lucide-react"
 
 interface BlogPost {
-  id: number
+  id: string
   title: string
   excerpt: string
-  image: string
+  hero_image: string | null
   category: string
-  date: string
+  publishedAt: string
   author: string
   slug: string
+  createdAt: string
 }
 
-const blogPosts: BlogPost[] = [
-  {
-    id: 1,
-    title: "Toronto Real Estate Market Update: Trends and Forecasts for 2025",
-    excerpt:
-      "Discover the latest trends in Toronto's luxury real estate market, from emerging neighborhoods to investment opportunities and price forecasts for the coming year.",
-    image: "/blog/1/hero.jpg",
-    category: "Market Analysis",
-    date: "May 20, 2025",
-    author: "Pooya Pirayesh",
-    slug: "toronto-real-estate-market-update",
-  },
-  {
-    id: 2,
-    title: "5 Interior Design Trends That Increase Your Property's Value",
-    excerpt:
-      "Learn which interior design choices can significantly boost your property's market value and appeal to luxury buyers in Toronto's competitive real estate market.",
-    image: "/blog/2/hero.jpg",
-    category: "Design & Architecture",
-    date: "May 15, 2025",
-    author: "Sarah Williams",
-    slug: "interior-design-trends-property-value",
-  },
-  {
-    id: 3,
-    title: "The Ultimate Guide to Toronto's Most Exclusive Neighborhoods",
-    excerpt:
-      "Explore Toronto's most prestigious neighborhoods, from Rosedale to Yorkville, and discover what makes each area unique for luxury homebuyers and investors.",
-    image: "/blog/3/hero.jpg",
-    category: "Neighborhoods",
-    date: "May 10, 2025",
-    author: "Michael Chen",
-    slug: "toronto-exclusive-neighborhoods-guide",
-  },
-]
-
 export default function BlogSection() {
-  const [hoveredPost, setHoveredPost] = useState<number | null>(null)
+  const [hoveredPost, setHoveredPost] = useState<string | null>(null)
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        const response = await fetch('/api/blog')
+        if (response.ok) {
+          const posts = await response.json()
+          setBlogPosts(posts.slice(0, 3)) // Show only first 3 posts
+        }
+      } catch (error) {
+        console.error('Error fetching blog posts:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBlogPosts()
+  }, [])
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
 
   return (
     <section className="py-24 md:py-32 bg-[#f9f6f1]">
@@ -78,61 +71,77 @@ export default function BlogSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: post.id * 0.1 }}
-              viewport={{ once: true }}
-              className="group"
-              onMouseEnter={() => setHoveredPost(post.id)}
-              onMouseLeave={() => setHoveredPost(null)}
-            >
-              <Link href={`/blog/${post.slug}`} className="block">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl mb-6">
-                  <Image
-                    src={post.image || "/placeholder.svg"}
-                    alt={post.title}
-                    fill
-                    className={`object-cover transition-transform duration-700 ${
-                      hoveredPost === post.id ? "scale-105" : "scale-100"
-                    }`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"></div>
-                  <div className="absolute bottom-0 left-0 p-6">
-                    <span className="inline-block bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-1 rounded-full text-sm font-medium">
-                      {post.category}
-                    </span>
-                  </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm animate-pulse">
+                <div className="aspect-[16/9] bg-gray-200 rounded-2xl mb-6"></div>
+                <div className="px-2">
+                  <div className="h-4 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
                 </div>
-
-                <div>
-                  <div className="flex items-center text-gray-500 text-sm mb-3">
-                    <div className="flex items-center mr-4">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span>{post.date}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>{post.author}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogPosts.map((post, index) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="group"
+                onMouseEnter={() => setHoveredPost(post.id)}
+                onMouseLeave={() => setHoveredPost(null)}
+              >
+                <Link href={`/blog/${post.slug}`} className="block">
+                  <div className="relative aspect-[16/9] overflow-hidden rounded-2xl mb-6">
+                    <Image
+                      src={post.hero_image || "/placeholder.svg"}
+                      alt={post.title}
+                      fill
+                      className={`object-cover transition-transform duration-700 ${
+                        hoveredPost === post.id ? "scale-105" : "scale-100"
+                      }`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"></div>
+                    <div className="absolute bottom-0 left-0 p-6">
+                      <span className="inline-block bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-1 rounded-full text-sm font-medium">
+                        {post.category}
+                      </span>
                     </div>
                   </div>
 
-                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-3 group-hover:text-[#473729] transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-700 font-light mb-4">{post.excerpt}</p>
-                  <div className="inline-flex items-center text-[#473729] font-medium">
-                    <span className="mr-2">Read more</span>
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <div>
+                    <div className="flex items-center text-gray-500 text-sm mb-3">
+                      <div className="flex items-center mr-4">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        <span>{formatDate(post.publishedAt || post.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <User className="h-4 w-4 mr-1" />
+                        <span>{post.author}</span>
+                      </div>
+                    </div>
+
+                    <h3 className="font-tenor-sans text-2xl text-gray-900 mb-3 group-hover:text-[#473729] transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-700 font-light mb-4">{post.excerpt}</p>
+                    <div className="inline-flex items-center text-[#473729] font-medium">
+                      <span className="mr-2">Read more</span>
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

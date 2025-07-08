@@ -11,14 +11,24 @@ import SiteFooter from "@/components/site-footer"
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <HeroSection />
-      <FeaturedListings />
-      <AboutAgent />
-      <TestimonialSection />
-      <SuccessVideoSection />
-      <RealEstateJourney />
-      <BlogSection />
-      <InteractiveContact />
+      <section id="home">
+        <HeroSection />
+      </section>
+      <section id="listings">
+        <FeaturedListings />
+      </section>
+      <section id="about">
+        <AboutAgent />
+        <TestimonialSection />
+        <SuccessVideoSection />
+        <RealEstateJourney />
+      </section>
+      <section id="resources">
+        <BlogSection />
+      </section>
+      <section id="contact">
+        <InteractiveContact />
+      </section>
       <SiteFooter />
     </main>
   )

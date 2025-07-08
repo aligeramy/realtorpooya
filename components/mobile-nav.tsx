@@ -7,6 +7,14 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
+const menuItems = [
+  { name: "Home", href: "#home" },
+  { name: "Listings", href: "#listings" },
+  { name: "About", href: "#about" },
+  { name: "Resources", href: "#resources" },
+  { name: "Contact", href: "#contact" }
+]
+
 export default function MobileNav() {
   const [open, setOpen] = useState(false)
 
@@ -34,41 +42,23 @@ export default function MobileNav() {
             </Button>
           </div>
           <nav className="flex flex-col space-y-6 mt-8">
-            <Link
-              href="/"
-              className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/listings"
-              className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Listings
-            </Link>
-            <Link
-              href="/why-us"
-              className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Why Us
-            </Link>
-            <Link
-              href="/resources"
-              className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Resources
-            </Link>
-            <Link
-              href="/contact"
-              className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Contact
-            </Link>
+            {menuItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="font-montserrat text-lg font-medium tracking-wide uppercase hover:text-primary transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setOpen(false)
+                  const element = document.querySelector(item.href)
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
         </div>
       </SheetContent>
