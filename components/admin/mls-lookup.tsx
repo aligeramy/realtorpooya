@@ -89,6 +89,7 @@ export default function MLSLookup({ onPropertyFound }: MLSLookupProps) {
           </div>
           <div className="flex items-end">
             <Button 
+              type="button"
               onClick={handleLookup} 
               disabled={false}
               className="bg-[#473729] hover:bg-[#473729]/90 enabled:hover:bg-[#473729]/90"

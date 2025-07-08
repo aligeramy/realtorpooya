@@ -61,8 +61,9 @@ export default function NewPropertyPage() {
 
   const handleMLSPropertyFound = (propertyData: any, mlsNumber: string) => {
     console.log('MLS Property Data:', propertyData) // Debug log
+    console.log('ONLY UPDATING FORM FIELDS - NOT SUBMITTING') // Debug log
     
-    // Update form data with MLS property data
+    // ONLY update form data with MLS property data - DO NOT SUBMIT
     setFormData(prev => ({
       ...prev,
       mls_id: mlsNumber,
@@ -82,7 +83,7 @@ export default function NewPropertyPage() {
     }))
     
     // Clear any previous error states
-    console.log('Form updated with MLS data')
+    console.log('Form updated with MLS data - WAITING FOR MANUAL SAVE')
   }
 
   const addFeature = () => {
