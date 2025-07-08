@@ -418,13 +418,6 @@ export default function NewPropertyPage() {
             </CardContent>
           </Card>
 
-          {/* AI Feature Generator */}
-          <AIFeatureGenerator
-            formData={formData}
-            onFeaturesGenerated={handleAIFeaturesGenerated}
-            onTagsGenerated={handleAITagsGenerated}
-          />
-
           {/* Features */}
           <Card>
             <CardHeader>
