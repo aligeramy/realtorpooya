@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Property {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Basic Information
+  title         String?
+  mls_id        String?
+  agent_owner_id String?
+  status        PropertyStatus @default(FOR_SALE)
+  featured      Boolean @default(false)
+  
+  // Location
+  address       String
+  city          String
+  province      String
+  postal_code   String?
+  geo           String?
+  
+  // Property Details
+  property_type PropertyType?
+  price         Float?
+  bedrooms      Int?
+  bathrooms     Float?
+  square_feet   Int?
+  lot_dimensions String?
+  year_built    Int?
+  
+  // Financial
+  hoa_fees      Float?
+  property_tax  Float?
+  
+  // Marketing
+  description   String?
+  listing_date  DateTime?
+  offer_date    DateTime?
+  closing_date  DateTime?
+  
+  // Media
+  hero_image    String?
+  youtube_video String?
+  
+  // Relations
+  images        PropertyImage[]
+  videos        PropertyVideo[]
+  features      PropertyFeature[]
+  tags          PropertyTag[]
+  
+  // Additional data
+  more          Json?
+
+  @@map("properties")
+}
+
+model PropertyImage {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  
+  url         String
+  alt_text    String?
+  caption     String?
+  order       Int      @default(0)
+  is_hero     Boolean  @default(false)
+  
+  @@map("property_images")
+}
+
+model PropertyVideo {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  
+  url         String
+  title       String?
+  description String?
+  order       Int      @default(0)
+  video_type  VideoType @default(UPLOAD)
+  
+  @@map("property_videos")
+}
+
+model PropertyFeature {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  
+  name        String
+  category    String?
+  
+  @@map("property_features")
+}
+
+model PropertyTag {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  
+  property_id String
+  property    Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  
+  name        String
+  
+  @@map("property_tags")
+}
+
+enum PropertyStatus {
+  FOR_SALE
+  FOR_RENT
+  SOLD
+  PENDING
+  OFF_MARKET
+  COMING_SOON
+}
+
+enum PropertyType {
+  HOUSE
+  CONDO
+  TOWNHOUSE
+  APARTMENT
+  LAND
+  COMMERCIAL
+  INDUSTRIAL
+}
+
+enum VideoType {
+  UPLOAD
+  YOUTUBE
+  VIMEO
+}

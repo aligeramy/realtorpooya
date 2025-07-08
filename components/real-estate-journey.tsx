@@ -158,7 +158,7 @@ export default function RealEstateJourney() {
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                               <Link href="/contact">
-                  <Button className="bg-[#473729] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
+                              <Button className="bg-[#473729] hover:bg-[#3a9aa7] rounded-full">Contact Us</Button>
                 </Link>
                               <Button variant="outline" className="rounded-full">
                                 Learn More

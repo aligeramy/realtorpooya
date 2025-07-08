@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import PropertyCard from "./property-card"
 import type { Property } from "@/types/property"
@@ -21,7 +21,7 @@ const mockProperties: Property[] = [
     bathrooms: 3,
     square_feet: 3200,
     hero_image: "/properties/1/hero.jpg",
-    status: "for_sale",
+    status: "sold",
     listing_date: new Date().toISOString(),
     description: "Modern architectural masterpiece with floor-to-ceiling windows and open concept living",
   },
@@ -37,7 +37,7 @@ const mockProperties: Property[] = [
     bathrooms: 4,
     square_feet: 3500,
     hero_image: "/properties/2/hero.jpg",
-    status: "for_sale",
+    status: "sold",
     listing_date: new Date().toISOString(),
     description: "Contemporary waterfront villa with infinity pool and stunning night lighting",
   },
@@ -55,6 +55,31 @@ const comingSoonProperty = {
 
 export default function FeaturedListings() {
   const [properties, setProperties] = useState<Property[]>(mockProperties)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchFeaturedProperties = async () => {
+      try {
+        const response = await fetch('/api/properties/featured')
+        if (response.ok) {
+          const featuredProperties = await response.json()
+          if (featuredProperties.length > 0) {
+            setProperties(featuredProperties)
+          }
+          // If no featured properties in database, keep using mock data
+        } else {
+          console.log('No featured properties found, using mock data')
+        }
+      } catch (error) {
+        console.error('Error fetching featured properties:', error)
+        // Keep using mock data on error
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedProperties()
+  }, [])
 
   // Custom Coming Soon Card Component
   const ComingSoonCard = () => {
@@ -97,6 +122,26 @@ export default function FeaturedListings() {
           </div>
         </div>
       </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-12">
+            <h2 className="font-tenor-sans text-4xl md:text-5xl text-black mb-4 md:mb-0">FEATURED LISTINGS</h2>
+            <p className="text-[#aa9578] font-manrope text-lg md:text-xl max-w-md">
+              Presenting the highlighted listings tailored to suit your preferences
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-gray-200 animate-pulse rounded-2xl aspect-[4/3]"></div>
+            ))}
+          </div>
+        </div>
+      </section>
     )
   }
 

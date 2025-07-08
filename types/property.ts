@@ -1,6 +1,23 @@
 export type PropertyStatus = "for_sale" | "for_rent" | "sold" | "pending" | "off_market" | "coming_soon"
 export type PropertyType = "house" | "condo" | "townhouse" | "apartment" | "land" | "commercial" | "industrial"
 
+export interface PropertyImage {
+  id: string
+  url: string
+  alt_text?: string
+  caption?: string
+  order: number
+  is_hero: boolean
+}
+
+export interface PropertyVideo {
+  id: string
+  url: string
+  title?: string
+  description?: string
+  order: number
+}
+
 export interface Property {
   id: string
   mls_id?: string
@@ -31,4 +48,8 @@ export interface Property {
   hero_image?: string
   youtube_video?: string
   more?: Record<string, any>
+  // Database schema fields
+  images?: PropertyImage[]
+  videos?: PropertyVideo[]
+  is_featured?: boolean
 }

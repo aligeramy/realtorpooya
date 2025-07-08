@@ -34,23 +34,40 @@ export default function ContactPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setIsSubmitting(false)
+        setIsSubmitted(true)
+        // Reset form after showing success
+        setTimeout(() => {
+          setIsSubmitted(false)
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            subject: "",
+            inquiryType: "",
+            message: "",
+          })
+        }, 3000)
+      } else {
+        throw new Error(result.error || 'Failed to submit message')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
       setIsSubmitting(false)
-      setIsSubmitted(true)
-      // Reset form after showing success
-      setTimeout(() => {
-        setIsSubmitted(false)
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          subject: "",
-          inquiryType: "",
-          message: "",
-        })
-      }, 3000)
-    }, 1500)
+      alert('Sorry, there was an error submitting your message. Please try again or call us directly at 416-553-7707.')
+    }
   }
 
   return (

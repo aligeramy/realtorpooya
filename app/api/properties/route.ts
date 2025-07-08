@@ -1,61 +1,66 @@
-import { NextResponse } from "next/server"
-import type { Property } from "@/types/property"
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-// Mock data for properties
-const mockProperties: Property[] = [
-  {
-    id: "1",
-    address: "123 Luxury Lane",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M5V 2A1",
-    property_type: "house",
-    price: 4800500,
-    bedrooms: 4,
-    bathrooms: 2,
-    square_feet: 2824,
-    hero_image: "/images/property-1.jpg",
-    status: "for_sale",
-    listing_date: new Date().toISOString(),
-    description: "Modern architectural masterpiece with floor-to-ceiling windows and open concept living",
-  },
-  {
-    id: "2",
-    address: "456 Prestige Ave",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M4W 1A3",
-    property_type: "house",
-    price: 4250000,
-    bedrooms: 4,
-    bathrooms: 2,
-    square_feet: 2820,
-    hero_image: "/images/property-2.jpg",
-    status: "for_sale",
-    listing_date: new Date().toISOString(),
-    description: "Contemporary waterfront villa with infinity pool and stunning night lighting",
-  },
-  {
-    id: "3",
-    address: "789 Elite Street",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M5R 2S8",
-    property_type: "house",
-    price: 3508000,
-    bedrooms: 3,
-    bathrooms: 2,
-    square_feet: 2640,
-    hero_image: "/images/property-3.jpg",
-    status: "for_sale",
-    listing_date: new Date().toISOString(),
-    description: "Mediterranean-inspired luxury estate with pool and elegant columns",
-  },
-]
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const featured = searchParams.get('featured')
+    const limit = searchParams.get('limit')
 
-export async function GET(request: Request) {
-  // In a real app, you would fetch properties from a database
-  // const properties = await db.query('SELECT * FROM properties WHERE status = $1', ['for_sale'])
+    const where: any = {}
+    
+    if (featured === 'true') {
+      where.featured = true
+    }
 
-  return NextResponse.json(mockProperties)
+    const properties = await prisma.property.findMany({
+      where,
+      include: {
+        images: {
+          orderBy: { order: 'asc' }
+        },
+        videos: {
+          orderBy: { order: 'asc' }
+        },
+        features: true,
+        tags: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: limit ? parseInt(limit) : undefined,
+    })
+
+    // Transform data to match the expected format
+    const transformedProperties = properties.map(property => ({
+      id: property.id,
+      address: property.address,
+      city: property.city,
+      province: property.province,
+      postal_code: property.postal_code,
+      property_type: property.property_type?.toLowerCase(),
+      price: property.price,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      square_feet: property.square_feet,
+      hero_image: property.hero_image || property.images.find(img => img.is_hero)?.url || property.images[0]?.url || "/placeholder.jpg",
+      status: property.status.toLowerCase(),
+      listing_date: property.listing_date?.toISOString() || property.createdAt.toISOString(),
+      description: property.description,
+      title: property.title,
+      features: property.features.map(feature => feature.name),
+      tags: property.tags.map(tag => tag.name),
+      videos: property.videos,
+      images: property.images,
+      featured: property.featured,
+    }))
+
+    return NextResponse.json(transformedProperties)
+  } catch (error) {
+    console.error('Error fetching properties:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch properties' },
+      { status: 500 }
+    )
+  }
 }

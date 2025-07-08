@@ -144,41 +144,41 @@ export default function InteractiveContact() {
             className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 max-w-4xl mx-auto"
           >
             <Link href="/contact" className="flex-1">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
                 className="h-full"
-              >
-                <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
-                  <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
-                    <Home className="h-8 w-8 text-[#aa9578]" />
-                  </div>
-                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Buy</h3>
-                  <p className="text-gray-700 font-light mb-6">
-                    Find your dream property with our expert guidance and exclusive listings.
-                  </p>
-                  <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
+            >
+              <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
+                <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
+                  <Home className="h-8 w-8 text-[#aa9578]" />
                 </div>
-              </motion.div>
+                <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Buy</h3>
+                <p className="text-gray-700 font-light mb-6">
+                  Find your dream property with our expert guidance and exclusive listings.
+                </p>
+                <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
+              </div>
+            </motion.div>
             </Link>
 
             <Link href="/contact" className="flex-1">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
                 className="h-full"
-              >
-                <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
-                  <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
-                    <DollarSign className="h-8 w-8 text-[#aa9578]" />
-                  </div>
-                  <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Sell</h3>
-                  <p className="text-gray-700 font-light mb-6">
-                    Maximize your property's value with our strategic marketing and negotiation expertise.
-                  </p>
-                  <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
+            >
+              <div className="bg-white rounded-2xl p-8 h-full cursor-pointer border border-[#e9e0cc] hover:border-[#aa9578] transition-colors">
+                <div className="w-16 h-16 bg-[#f3ecdf] rounded-full flex items-center justify-center mb-6">
+                  <DollarSign className="h-8 w-8 text-[#aa9578]" />
                 </div>
-              </motion.div>
+                <h3 className="font-tenor-sans text-2xl text-gray-900 mb-4">I Want to Sell</h3>
+                <p className="text-gray-700 font-light mb-6">
+                  Maximize your property's value with our strategic marketing and negotiation expertise.
+                </p>
+                <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] rounded-full">Get Started</Button>
+              </div>
+            </motion.div>
             </Link>
           </motion.div>
         )}

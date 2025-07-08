@@ -10,9 +10,10 @@ import { motion, AnimatePresence } from "framer-motion"
 interface PropertyImageGalleryProps {
   images: string[]
   videoUrl?: string
+  heroImage?: string
 }
 
-export default function PropertyImageGallery({ images, videoUrl }: PropertyImageGalleryProps) {
+export default function PropertyImageGallery({ images, videoUrl, heroImage }: PropertyImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showFullGallery, setShowFullGallery] = useState(false)
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null)
@@ -20,7 +21,15 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
   const slideRef = useRef<HTMLDivElement>(null)
 
   // Make sure we have valid images
-  const validImages = images.filter((img) => img && img.startsWith("/"))
+  const validImages = images.filter((img) => img && (img.startsWith("/") || img.startsWith("https://")))
+
+  // Get the background image - use hero image for first slide if available, otherwise use current image
+  const getBackgroundImage = (index: number) => {
+    if (index === 0 && heroImage) {
+      return heroImage
+    }
+    return validImages[index] || "/placeholder.svg"
+  }
 
   const nextImage = () => {
     setDirection(1)
@@ -83,13 +92,30 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
             }}
             className="absolute inset-0"
           >
-            <Image
-              src={validImages[currentIndex] || "/placeholder.svg"}
-              alt="Property"
-              fill
-              priority
-              className="object-cover"
-            />
+            {/* Blurred Background */}
+            <div className="absolute inset-0">
+              <Image
+                src={getBackgroundImage(currentIndex)}
+                alt="Property Background"
+                fill
+                priority
+                className="object-cover blur-sm scale-110"
+              />
+              <div className="absolute inset-0 bg-black/20" />
+            </div>
+            
+            {/* Main Image with Shadow */}
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="relative w-full h-full shadow-2xl rounded-lg overflow-hidden">
+                <Image
+                  src={validImages[currentIndex] || "/placeholder.svg"}
+                  alt="Property"
+                  fill
+                  priority
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            </div>
           </motion.div>
         </AnimatePresence>
 
@@ -106,7 +132,7 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
                 <DialogTitle className="sr-only">Property Video Tour</DialogTitle>
                 <div className="aspect-video w-full">
                   <iframe
-                    src={`https://www.youtube.com/embed/${videoUrl.split("v=")[1]}`}
+                    src={`https://www.youtube.com/embed/${videoUrl.split("v=")[1]}?autoplay=1`}
                     title="Property Video Tour"
                     className="w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -154,7 +180,7 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
       </div>
 
       {/* Thumbnail Navigation */}
-      <div className="container mx-auto px-4 -mt-16 relative z-10">
+      <div className="container mx-auto px-4 mt-6 relative z-10">
         <div className="bg-white rounded-xl shadow-lg p-4">
           <div className="overflow-x-auto" ref={slideRef}>
             <div className="flex space-x-4 min-w-max py-1 px-1">
@@ -163,7 +189,7 @@ export default function PropertyImageGallery({ images, videoUrl }: PropertyImage
                   key={index}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative h-20 w-32 flex-shrink-0 overflow-hidden transition-all ${
+                  className={`relative h-20 w-32 flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
                     currentIndex === index ? "ring-4 ring-[#473729] ring-offset-2 rounded-lg" : "rounded-lg"
                   }`}
                   onClick={() => goToImage(index)}

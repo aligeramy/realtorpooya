@@ -40,17 +40,31 @@ export default function PropertyCard({ property }: PropertyCardProps) {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full flex flex-col">
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
           <Image
-            src={property.hero_image || "/placeholder.svg?height=400&width=600&query=luxury home"}
+            src={
+              property.hero_image || 
+              property.images?.find(img => img.is_hero)?.url || 
+              property.images?.[0]?.url || 
+              "/placeholder.svg?height=400&width=600&query=luxury home"
+            }
             alt={propertyAddress}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          {property.status === "sold" && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <div className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12">
+                SOLD
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-5 flex-grow flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-tenor-sans text-xl text-gray-900">{propertyAddress}</h3>
-            <span className="font-manrope font-semibold text-xl text-gray-900">{formatPrice(property.price)}</span>
+            <span className="font-manrope font-semibold text-xl text-gray-900">
+              {property.status === "sold" ? "SOLD" : formatPrice(property.price)}
+            </span>
           </div>
 
           <div className="flex items-center text-[#aa9578] -mt-1 mb-2">

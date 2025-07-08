@@ -1,16 +1,17 @@
 "use client"
 
-import { useEffect, use } from "react"
+import { useEffect, useState, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MapPin, Bed, Bath, Square, Calendar, Share2, Heart, Phone, ChevronLeft } from "lucide-react"
+import { MapPin, Bed, Bath, Square, Calendar, Share2, Heart, Phone, ChevronLeft, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import PropertyImageGallery from "@/components/property-image-gallery"
 import PropertyFeatures from "@/components/property-features"
 import TopNavMenu from "@/components/top-nav-menu"
 import BookShowingButton from "@/components/book-showing-button"
+import VideoPlayer from "@/components/video-player"
 import type { Property } from "@/types/property"
 
 // Mock data for a single property
@@ -39,7 +40,7 @@ const mockProperties: Record<string, Property> = {
       "Chef's Kitchen",
     ],
     hero_image: "/properties/1/hero.jpg",
-    status: "for_sale",
+    status: "sold",
     listing_date: new Date().toISOString(),
     description:
       "Modern architectural masterpiece with floor-to-ceiling windows and open concept living. This stunning contemporary home features sleek lines, abundant natural light, and premium finishes throughout. The perfect blend of luxury and functionality in Toronto's most prestigious neighborhood.",
@@ -85,7 +86,7 @@ const mockProperties: Record<string, Property> = {
     bathrooms: 4,
     square_feet: 3500,
     hero_image: "/properties/2/hero.jpg",
-    status: "for_sale",
+    status: "sold",
     listing_date: new Date().toISOString(),
     description:
       "Contemporary waterfront villa with infinity pool and stunning night lighting. This architectural gem offers breathtaking views and seamless indoor-outdoor living. Perfect for the discerning buyer seeking luxury and privacy.",
@@ -164,17 +165,66 @@ const mockProperties: Record<string, Property> = {
   },
 }
 
-export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+interface PageProps {
+  params: Promise<{ id: string }>
+}
+
+export default function PropertyPage({ params }: PageProps) {
   const router = useRouter()
   const { id } = use(params)
+  const [property, setProperty] = useState<Property | null>(null)
+  const [loading, setLoading] = useState(true)
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0)
+    }
   }, [])
 
-  // In a real app, you would fetch the property data from an API
-  const property = mockProperties[id]
+  // Fetch property data from API
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        const response = await fetch(`/api/properties/${id}`)
+        if (response.ok) {
+          const propertyData = await response.json()
+          setProperty(propertyData)
+        } else {
+          // If property not found in database, fallback to mock data
+          const mockProperty = mockProperties[id]
+          if (mockProperty) {
+            setProperty(mockProperty)
+          } else {
+            router.push("/404")
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching property:', error)
+        // Fallback to mock data
+        const mockProperty = mockProperties[id]
+        if (mockProperty) {
+          setProperty(mockProperty)
+        } else {
+          router.push("/404")
+          return
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProperty()
+  }, [id, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#aa9578]"></div>
+      </div>
+    )
+  }
 
   if (!property) {
     router.push("/404")
@@ -278,11 +328,25 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         </div>
       </div>
 
-      {/* Property Gallery with Back Button */}
+                  {/* Property Gallery with Back Button */}
       <div className="relative">
         <PropertyImageGallery
-          images={[property.hero_image!, ...(property.media_urls || [])]}
-          videoUrl={property.youtube_video}
+          images={property.images?.length ? 
+            (() => {
+              // Sort images with hero image first, then by order
+              const sortedImages = property.images.sort((a, b) => {
+                // Hero image always comes first
+                if (a.is_hero && !b.is_hero) return -1
+                if (!a.is_hero && b.is_hero) return 1
+                // If both or neither are hero, sort by order
+                return a.order - b.order
+              })
+              return sortedImages.map(img => img.url)
+            })() : 
+            [property.hero_image!, ...(property.media_urls || [])]
+          }
+          videoUrl={property.videos?.length ? property.videos[0].url : property.youtube_video}
+          heroImage={property.hero_image}
         />
 
         {/* Back button - Simplified to just an icon button */}
@@ -373,15 +437,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             {property.youtube_video && (
               <div className="mb-12">
                 <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Video Tour</h2>
-                <div className="relative aspect-video rounded-2xl overflow-hidden">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${property.youtube_video.split("v=")[1]}`}
-                    title="Property Video Tour"
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                </div>
+                <VideoPlayer 
+                  videoUrl={property.youtube_video}
+                  posterImage={property.hero_image}
+                />
               </div>
             )}
           </div>
@@ -392,9 +451,17 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-tenor-sans text-3xl text-gray-900">{property.price ? formatPrice(property.price) : "Price upon request"}</h3>
-                    <Badge className="bg-[#473729] text-white px-3 py-1 rounded-full">
-                      {property.status === "for_sale" ? "For Sale" : "For Rent"}
+                    <h3 className="font-tenor-sans text-3xl text-gray-900">
+                      {property.status === "sold" ? "SOLD" : (property.price ? formatPrice(property.price) : "Price upon request")}
+                    </h3>
+                    <Badge className={`px-3 py-1 rounded-full ${
+                      property.status === "sold" 
+                        ? "bg-red-600 text-white" 
+                        : property.status === "for_sale" 
+                        ? "bg-[#473729] text-white" 
+                        : "bg-blue-600 text-white"
+                    }`}>
+                      {property.status === "sold" ? "SOLD" : property.status === "for_sale" ? "For Sale" : "For Rent"}
                     </Badge>
                   </div>
 
@@ -414,7 +481,16 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 </div>
 
                 <div className="p-6">
-                  <BookShowingButton fullWidth size="xl" className="mb-4" />
+                  {property.status === "sold" ? (
+                    <Button
+                      disabled
+                      className="w-full bg-gray-400 text-gray-600 cursor-not-allowed rounded-full py-6 font-manrope text-lg mb-4"
+                    >
+                      Property Sold
+                    </Button>
+                  ) : (
+                    <BookShowingButton fullWidth size="xl" className="mb-4" />
+                  )}
 
                   <Link href="/contact">
                     <Button
