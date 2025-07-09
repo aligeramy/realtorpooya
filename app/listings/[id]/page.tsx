@@ -13,157 +13,7 @@ import TopNavMenu from "@/components/top-nav-menu"
 import BookShowingButton from "@/components/book-showing-button"
 import VideoPlayer from "@/components/video-player"
 import type { Property } from "@/types/property"
-
-// Mock data for a single property
-const mockProperties: Record<string, Property> = {
-  "1": {
-    id: "1",
-    address: "266 Westlake Ave",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M5M 3H5",
-    property_type: "house",
-    price: 4800500,
-    bedrooms: 4,
-    bathrooms: 3,
-    square_feet: 3200,
-    lot_dimensions: "50 x 120 ft",
-    year_built: 2020,
-    features: [
-      "Floor-to-Ceiling Windows",
-      "Open Concept Design",
-      "Smart Home System",
-      "Heated Floors",
-      "Walk-in Closet",
-      "Home Theater",
-      "Wine Cellar",
-      "Chef's Kitchen",
-    ],
-    hero_image: "/properties/1/hero.jpg",
-    status: "sold",
-    listing_date: new Date().toISOString(),
-    description:
-      "Modern architectural masterpiece with floor-to-ceiling windows and open concept living. This stunning contemporary home features sleek lines, abundant natural light, and premium finishes throughout. The perfect blend of luxury and functionality in Toronto's most prestigious neighborhood.",
-    media_urls: [
-      "/properties/1/1.jpg",
-      "/properties/1/2.jpg",
-      "/properties/1/3.jpg",
-      "/properties/1/4.jpg",
-      "/properties/1/5.jpg",
-      "/properties/1/6.jpg",
-      "/properties/1/7.jpg",
-      "/properties/1/8.jpg",
-      "/properties/1/9.jpg",
-      "/properties/1/10.jpg",
-      "/properties/1/11.jpg",
-      "/properties/1/12.jpg",
-      "/properties/1/13.jpg",
-      "/properties/1/14.jpg",
-      "/properties/1/15.jpg",
-    ],
-    youtube_video: "https://www.youtube.com/watch?v=PpAnSuBf7Fc",
-    property_tax: 12000,
-    hoa_fees: 500,
-    more: {
-      Parking: "2-Car Garage",
-      Cooling: "Central Air",
-      Heating: "Forced Air, Radiant",
-      Basement: "Finished, Walkout",
-      Roof: "Flat Roof",
-      View: "City, Park",
-      Fireplace: "2 Gas Fireplaces",
-    },
-  },
-  "2": {
-    id: "2",
-    address: "10 Howick Ln",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M2N 0B4",
-    property_type: "house",
-    price: 4250000,
-    bedrooms: 5,
-    bathrooms: 4,
-    square_feet: 3500,
-    hero_image: "/properties/2/hero.jpg",
-    status: "sold",
-    listing_date: new Date().toISOString(),
-    description:
-      "Contemporary waterfront villa with infinity pool and stunning night lighting. This architectural gem offers breathtaking views and seamless indoor-outdoor living. Perfect for the discerning buyer seeking luxury and privacy.",
-    media_urls: [
-      "/properties/2/1.jpg",
-      "/properties/2/2.jpg",
-      "/properties/2/3.jpg",
-      "/properties/2/4.jpg",
-      "/properties/2/5.jpg",
-      "/properties/2/6.jpg",
-      "/properties/2/7.jpg",
-      "/properties/2/8.jpg",
-      "/properties/2/9.jpg",
-      "/properties/2/10.jpg",
-      "/properties/2/11.jpg",
-      "/properties/2/12.jpg",
-      "/properties/2/13.jpg",
-      "/properties/2/14.jpg",
-      "/properties/2/15.jpg",
-      "/properties/2/16.jpg",
-      "/properties/2/17.jpg",
-      "/properties/2/18.jpg",
-      "/properties/2/19.jpg",
-      "/properties/2/20.jpg",
-      "/properties/2/21.jpg",
-      "/properties/2/22.jpg",
-      "/properties/2/23.jpg",
-      "/properties/2/24.jpg",
-      "/properties/2/25.jpg",
-      "/properties/2/26.jpg",
-      "/properties/2/27.jpg",
-      "/properties/2/28.jpg",
-      "/properties/2/29.jpg",
-      "/properties/2/30.jpg",
-    ],
-    youtube_video: "https://www.youtube.com/watch?v=O6CvUZSxeT0",
-    features: [
-      "Infinity Pool",
-      "Waterfront",
-      "Outdoor Lighting",
-      "Rooftop Terrace",
-      "Smart Home",
-      "Floor-to-Ceiling Windows",
-    ],
-    year_built: 2021,
-    property_tax: 10500,
-    hoa_fees: 350,
-    more: {
-      Parking: "3-Car Garage",
-      Cooling: "Central Air",
-      Heating: "Forced Air",
-      Basement: "Finished",
-      Roof: "Slate",
-      View: "Waterfront",
-      Fireplace: "3 Gas Fireplaces",
-    },
-  },
-  "3": {
-    id: "3",
-    address: "789 Elite Street",
-    city: "Toronto",
-    province: "ON",
-    postal_code: "M5R 2S8",
-    property_type: "house",
-    price: 3508000,
-    bedrooms: 3,
-    bathrooms: 2,
-    square_feet: 2640,
-    hero_image: "/images/property-3.jpg",
-    status: "for_sale",
-    listing_date: new Date().toISOString(),
-    description:
-      "Mediterranean-inspired luxury estate with pool and elegant columns. This timeless property combines classic architecture with modern amenities, offering a serene retreat in the heart of the city.",
-    media_urls: ["/images/property-1.jpg", "/images/property-2.jpg", "/images/property-4.jpg"],
-    features: ["Swimming Pool", "Columns", "Mediterranean Style", "Landscaped Garden", "Outdoor Living Space"],
-  },
-}
+import { createAddressSlug, findPropertyBySlug } from "@/lib/utils"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -171,7 +21,7 @@ interface PageProps {
 
 export default function PropertyPage({ params }: PageProps) {
   const router = useRouter()
-  const { id } = use(params)
+  const { id: slug } = use(params)
   const [property, setProperty] = useState<Property | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -186,37 +36,39 @@ export default function PropertyPage({ params }: PageProps) {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const response = await fetch(`/api/properties/${id}`)
+        // First try to find by slug in database
+        const response = await fetch(`/api/properties`)
         if (response.ok) {
-          const propertyData = await response.json()
-          setProperty(propertyData)
-        } else {
-          // If property not found in database, fallback to mock data
-          const mockProperty = mockProperties[id]
-          if (mockProperty) {
-            setProperty(mockProperty)
-          } else {
-            router.push("/404")
+          const allProperties = await response.json()
+          const foundProperty = findPropertyBySlug(allProperties, slug)
+          if (foundProperty) {
+            setProperty(foundProperty)
+            setLoading(false)
             return
           }
         }
-      } catch (error) {
-        console.error('Error fetching property:', error)
-        // Fallback to mock data
-        const mockProperty = mockProperties[id]
-        if (mockProperty) {
-          setProperty(mockProperty)
-        } else {
-          router.push("/404")
+
+        // If not found in database, try individual property API (for backward compatibility)
+        const individualResponse = await fetch(`/api/properties/${slug}`)
+        if (individualResponse.ok) {
+          const propertyData = await individualResponse.json()
+          setProperty(propertyData)
+          setLoading(false)
           return
         }
+
+        // Property not found
+        router.push("/404")
+      } catch (error) {
+        console.error('Error fetching property:', error)
+        router.push("/404")
       } finally {
         setLoading(false)
       }
     }
 
     fetchProperty()
-  }, [id, router])
+  }, [slug, router])
 
   if (loading) {
     return (

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { MapPin, Bed, Bath, Scaling } from "lucide-react"
 import type { Property } from "@/types/property"
+import { createAddressSlug } from "@/lib/utils"
 
 interface PropertyCardProps {
   property: Property
@@ -29,8 +30,10 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    // Navigate to the property page
-    router.push(`/listings/${property.id}`)
+    // Create URL slug from address
+    const addressSlug = createAddressSlug(property.address)
+    // Navigate to the property page using address slug
+    router.push(`/listings/${addressSlug}`)
     // Ensure we're at the top of the page
     window.scrollTo(0, 0)
   }
