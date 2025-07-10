@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     }
 
     const result = Array.from(propertiesMap.values())
-    
+
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error fetching featured properties:', error)

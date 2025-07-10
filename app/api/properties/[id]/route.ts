@@ -30,7 +30,7 @@ export async function GET(
         .select()
         .from(properties)
         .where(ne(properties.status, 'archived'))
-      
+
       propertyData = findPropertyBySlug(allProperties, id)
     }
 

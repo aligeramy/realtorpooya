@@ -52,14 +52,14 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           />
           {property.status === "sold" && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold text-xl transform -rotate-12">
+              <div className="bg-red-600/80 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-tenor-sans text-xl">
                 SOLD
               </div>
             </div>
           )}
           {property.status === "not_available" && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transform -rotate-12">
+            <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+              <div className="bg-gray-600/80 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-tenor-sans  text-lg">
                 NOT AVAILABLE
               </div>
             </div>

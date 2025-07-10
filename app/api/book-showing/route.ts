@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     // Example: SendGrid, Google Calendar API, etc.
 
     return NextResponse.json({ 
-      success: true, 
+        success: true, 
       message: 'Showing request received successfully' 
     })
   } catch (error) {
