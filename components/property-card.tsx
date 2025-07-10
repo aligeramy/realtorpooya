@@ -57,13 +57,22 @@ export default function PropertyCard({ property }: PropertyCardProps) {
               </div>
             </div>
           )}
+          {property.status === "not_available" && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <div className="bg-gray-600 text-white px-6 py-3 rounded-lg font-bold text-lg transform -rotate-12">
+                NOT AVAILABLE
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-5 flex-grow flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-tenor-sans text-xl text-gray-900">{propertyAddress}</h3>
             <span className="font-manrope font-semibold text-xl text-gray-900">
-              {property.status === "sold" ? "SOLD" : formatPrice(property.price)}
+              {property.status === "sold" ? "SOLD" : 
+               property.status === "not_available" ? "NOT AVAILABLE" : 
+               formatPrice(property.price)}
             </span>
           </div>
 

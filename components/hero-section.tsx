@@ -3,32 +3,231 @@
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Search, Plus, DollarSign, Building, Bath, Bed, X, Facebook, Instagram, Linkedin, Phone } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useIsMobile } from "@/hooks/use-mobile"
-import SearchFilters from "./search-filters"
+import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath } from "lucide-react"
 import TopNavMenu from "./top-nav-menu"
 import ResponsiveLogo from "./responsive-logo"
 
-export default function HeroSection() {
+// Property Search Component
+function PropertySearchWithSuggestions() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [showFilters, setShowFilters] = useState(false)
+  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  // Fetch featured properties when component mounts or when search is focused
+  const fetchFeaturedProperties = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/properties/featured')
+      if (response.ok) {
+        const properties = await response.json()
+        setSuggestions(properties.slice(0, 6)) // Show max 6 suggestions
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Filter properties based on search query
+  const filteredSuggestions = suggestions.filter(property => {
+    if (!searchQuery.trim()) return true
+    
+    const query = searchQuery.toLowerCase()
+    return (
+      property.address?.toLowerCase().includes(query) ||
+      property.city?.toLowerCase().includes(query) ||
+      property.propertyType?.toLowerCase().includes(query) ||
+      property.description?.toLowerCase().includes(query)
+    )
+  })
+
+  // Handle input focus
+  const handleFocus = () => {
+    if (suggestions.length === 0) {
+      fetchFeaturedProperties()
+    }
+    setShowSuggestions(true)
+  }
+
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+    if (!showSuggestions) {
+      setShowSuggestions(true)
+    }
+  }
+
+  // Handle search submit
+  const handleSearch = () => {
+    window.location.href = `/property-showcase?search=${encodeURIComponent(searchQuery)}`
+    setShowSuggestions(false)
+  }
+
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Format price
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price)
+  }
+
+  // Generate property slug for URL
+  const generateSlug = (property: any) => {
+    return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
+  }
+
+  return (
+    <div ref={searchRef} className="relative">
+      {/* Search Input */}
+      <div className="flex items-center">
+        <input
+          type="text"
+          placeholder="Search For Properties"
+          className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={handleFocus}
+        />
+
+        <button 
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
+          onClick={handleSearch}
+        >
+          <Search className="h-4 w-4" />
+          <span>Search</span>
+        </button>
+      </div>
+
+      {/* Suggestions Dropdown */}
+      {showSuggestions && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+          {isLoading ? (
+            <div className="p-4 text-center text-gray-500">
+              Loading properties...
+            </div>
+          ) : filteredSuggestions.length > 0 ? (
+            <>
+              {filteredSuggestions.map((property) => (
+                <Link
+                  key={property.id}
+                  href={`/listings/${generateSlug(property)}`}
+                  className="block hover:bg-gray-50 transition-colors"
+                  onClick={() => setShowSuggestions(false)}
+                >
+                  <div className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-b-0">
+                    {/* Property Image */}
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                      {property.heroImage || (property.mediaUrls && property.mediaUrls[0]) ? (
+                        <Image
+                          src={property.heroImage || property.mediaUrls[0]}
+                          alt={property.address || 'Property'}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <MapPin className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Property Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 truncate">
+                        {property.address}
+                      </div>
+                      <div className="text-sm text-gray-600 truncate">
+                        {property.city}, {property.province}
+                      </div>
+                      <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900">
+                            {property.status === 'not_available' ? 'NOT AVAILABLE' : formatPrice(property.price)}
+                          </span>
+                          {property.status === 'sold' && (
+                            <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
+                              SOLD
+                            </span>
+                          )}
+                          {property.status === 'not_available' && (
+                            <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
+                              NOT AVAILABLE
+                            </span>
+                          )}
+                        </div>
+                        {property.bedrooms && (
+                          <span className="flex items-center gap-1">
+                            <Bed className="h-3 w-3" />
+                            {property.bedrooms}
+                          </span>
+                        )}
+                        {property.bathrooms && (
+                          <span className="flex items-center gap-1">
+                            <Bath className="h-3 w-3" />
+                            {property.bathrooms}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              
+              {/* View All Listings Link */}
+              <Link
+                href="/property-showcase"
+                className="block bg-gray-50 hover:bg-gray-100 transition-colors"
+                onClick={() => setShowSuggestions(false)}
+              >
+                <div className="p-4 text-center">
+                  <span className="text-blue-600 font-semibold">
+                    View All Listings →
+                  </span>
+                </div>
+              </Link>
+            </>
+          ) : (
+            <div className="p-4">
+              <div className="text-center text-gray-500 mb-3">
+                No properties found matching "{searchQuery}"
+              </div>
+              <Link
+                href="/property-showcase"
+                className="block bg-blue-50 hover:bg-blue-100 transition-colors rounded-lg p-3 text-center"
+                onClick={() => setShowSuggestions(false)}
+              >
+                <span className="text-blue-600 font-semibold">
+                  View All Listings →
+                </span>
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function HeroSection() {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [activeFilters, setActiveFilters] = useState<{
-    propertyType?: string
-    priceRange?: [number, number]
-    homeType?: string
-    forSale?: boolean
-    beds?: number
-    baths?: number
-    squareFeet?: [number, number]
-    keywords?: string[]
-  }>({})
-  const isMobile = useIsMobile()
 
   useEffect(() => {
     const videoElement = videoRef.current
@@ -51,29 +250,6 @@ export default function HeroSection() {
       }
     }
   }, [])
-
-  const toggleFilters = () => {
-    setShowFilters(!showFilters)
-  }
-
-  const addFilter = (key: string, value: any) => {
-    setActiveFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
-  }
-
-  const removeFilter = (key: string) => {
-    setActiveFilters((prev) => {
-      const newFilters = { ...prev }
-      delete newFilters[key as keyof typeof newFilters]
-      return newFilters
-    })
-  }
-
-  const getActiveFilterCount = () => {
-    return Object.keys(activeFilters).length
-  }
 
   return (
     <div className="relative min-h-screen w-full">
@@ -161,90 +337,8 @@ export default function HeroSection() {
 
           {/* Search Bar - Positioned Lower */}
           <div className="w-full max-w-4xl mx-auto mb-16 md:mb-24 lg:mb-32 px-4">
-            <div className="relative">
-              {/* Active Filters */}
-              {getActiveFilterCount() > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {activeFilters.propertyType && (
-                    <Badge className="bg-white/70 backdrop-blur-md text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
-                      <Building className="h-3 w-3" />
-                      {activeFilters.propertyType}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("propertyType")} />
-                    </Badge>
-                  )}
-                  {activeFilters.beds !== undefined && (
-                    <Badge className="bg-white/90 text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
-                      <Bed className="h-3 w-3" />
-                      {activeFilters.beds} Beds
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("beds")} />
-                    </Badge>
-                  )}
-                  {activeFilters.baths !== undefined && (
-                    <Badge className="bg-white/90 text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
-                      <Bath className="h-3 w-3" />
-                      {activeFilters.baths} Baths
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("baths")} />
-                    </Badge>
-                  )}
-                  {activeFilters.priceRange && (
-                    <Badge className="bg-white/90 text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
-                      <DollarSign className="h-3 w-3" />${activeFilters.priceRange[0].toLocaleString()} - $
-                      {activeFilters.priceRange[1].toLocaleString()}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("priceRange")} />
-                    </Badge>
-                  )}
-                  {activeFilters.forSale !== undefined && (
-                    <Badge className="bg-white/90 text-gray-800 hover:bg-white/80 flex items-center gap-1 py-1.5 px-3">
-                      {activeFilters.forSale ? "For Sale" : "For Rent"}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeFilter("forSale")} />
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              {/* Search Options Panel - Absolutely positioned and centered */}
-              {showFilters && (
-                <div className="absolute left-0 right-0 bottom-full mb-4 z-50">
-                  <div className="w-full p-6 bg-white/90 backdrop-blur-md border-white/30 rounded-3xl shadow-xl">
-                    <SearchFilters onApplyFilter={addFilter} activeFilters={activeFilters} />
-                  </div>
-                </div>
-              )}
-
-              {/* Search Input with Filter Button */}
-              <div className="flex items-center">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className="flex items-center justify-center w-8 h-8 bg-white/90 rounded-full hover:bg-white focus:outline-none transition-colors"
-                          onClick={toggleFilters}
-                        >
-                          <Plus className="h-4 w-4 text-gray-700" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        <p>Search Options</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-
-                <Input
-                  type="text"
-                  placeholder="Search For Properties"
-                  className="w-full h-14 md:h-16 pl-16 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2">
-                  <Search className="h-4 w-4" />
-                  <span>Search</span>
-                </Button>
-              </div>
-            </div>
+            {/* Property Search with Suggestions */}
+            <PropertySearchWithSuggestions />
           </div>
         </div>
       </div>

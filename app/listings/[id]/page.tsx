@@ -20,6 +20,29 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+// Function to extract features from property.features array and property.more JSONB
+function extractFeatures(property: Property): string[] {
+  const features: string[] = []
+  
+  // Add features from the existing features array
+  if (property.features && Array.isArray(property.features)) {
+    features.push(...property.features)
+  }
+  
+  // Add features from the more JSONB column
+  if (property.more && typeof property.more === 'object') {
+    Object.entries(property.more as Record<string, any>).forEach(([key, value]) => {
+      // Check if the key contains "feature" (case-insensitive)
+      if (key.toLowerCase().includes('feature') && value) {
+        // Convert value to string and add it as a feature
+        features.push(String(value))
+      }
+    })
+  }
+  
+  return features
+}
+
 export default function PropertyPage({ params }: PageProps) {
   const router = useRouter()
   const { id: slug } = use(params)
@@ -252,7 +275,7 @@ export default function PropertyPage({ params }: PageProps) {
             {/* Features */}
             <div className="mb-12">
               <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Features</h2>
-              <PropertyFeatures features={property.features || []} />
+              <PropertyFeatures features={extractFeatures(property)} />
             </div>
 
             {/* Additional Details */}
@@ -260,7 +283,9 @@ export default function PropertyPage({ params }: PageProps) {
               <div className="mb-12">
                 <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Additional Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(property.more as Record<string, any>).map(([key, value]) => (
+                  {Object.entries(property.more as Record<string, any>)
+                    .filter(([key]) => !key.toLowerCase().includes('feature')) // Exclude features since they're shown in the Features section
+                    .map(([key, value]) => (
                     <div key={key} className="flex justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="font-medium text-gray-700">{key}</span>
                       <span className="text-gray-600">{String(value)}</span>
@@ -289,16 +314,32 @@ export default function PropertyPage({ params }: PageProps) {
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-tenor-sans text-3xl text-gray-900">
-                      {property.status === "sold" ? "SOLD" : (property.price ? formatPrice(property.price) : "Price upon request")}
+                      {property.status === "sold" ? "SOLD" : 
+                       property.status === "not_available" ? "NOT AVAILABLE" :
+                       (property.price ? formatPrice(property.price) : "Price upon request")}
                     </h3>
                     <Badge className={`px-3 py-1 rounded-full ${
                       property.status === "sold" 
                         ? "bg-red-600 text-white" 
                         : property.status === "active" 
                         ? "bg-[#473729] text-white" 
-                        : "bg-blue-600 text-white"
+                        : property.status === "not_available"
+                        ? "bg-gray-600 text-white"
+                        : property.status === "coming_soon"
+                        ? "bg-blue-600 text-white"
+                        : property.status === "conditional"
+                        ? "bg-yellow-600 text-white"
+                        : property.status === "leased"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-500 text-white"
                     }`}>
-                      {property.status === "sold" ? "SOLD" : property.status === "active" ? "For Sale" : property.status}
+                      {property.status === "sold" ? "SOLD" : 
+                       property.status === "active" ? "For Sale" : 
+                       property.status === "not_available" ? "Not Available" :
+                       property.status === "coming_soon" ? "Coming Soon" :
+                       property.status === "conditional" ? "Conditional" :
+                       property.status === "leased" ? "Leased" :
+                       property.status}
                     </Badge>
                   </div>
 

@@ -3,7 +3,7 @@ import { pgEnum, pgTable, uuid, text, timestamp, boolean, integer, jsonb } from 
 // Enums
 export const clientTypeEnum = pgEnum('client_type', ['buyer', 'seller', 'investor', 'tenant', 'landlord']);
 export const channelEnum = pgEnum('channel', ['call', 'sms', 'email', 'whatsapp']);
-export const propertyStatusEnum = pgEnum('property_status', ['coming_soon', 'active', 'conditional', 'sold', 'leased', 'archived']);
+export const propertyStatusEnum = pgEnum('property_status', ['coming_soon', 'active', 'conditional', 'sold', 'leased', 'not_available', 'archived']);
 export const propertyTypeEnum = pgEnum('property_type', ['detached', 'condo', 'townhouse', 'lot', 'multi-res']);
 export const leadStageEnum = pgEnum('lead_stage', ['new lead', 'engaged', 'offer sent', 'closed won', 'closed lost']);
 export const assetTypeEnum = pgEnum('asset_type', ['logo', 'listing_photo', 'floorplan', 'brochure', 'social_post']);
