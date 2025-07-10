@@ -199,17 +199,17 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
       </div>
 
       {/* Thumbnail Navigation */}
-      <div className="container mx-auto px-4 mt-6 relative z-10">
+      <div className="container mx-auto px-4  relative z-10">
         <div className="bg-white rounded-xl shadow-lg p-4">
-          <div className="overflow-x-auto" ref={slideRef}>
+          <div className="overflow-x-auto overflow-y-visible p-1" ref={slideRef}>
             <div className="flex space-x-4 min-w-max py-1 px-1">
               {validImages.map((image, index) => (
                 <motion.div
                   key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.025 }}
+                  whileTap={{ scale: 0.975 }}
                   className={`relative h-20 w-32 flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
-                    currentIndex === index ? "ring-4 ring-[#473729] ring-offset-2 rounded-lg" : "rounded-lg"
+                    currentIndex === index ? "ring-2 ring-[#aa9578] ring-offset-1 rounded-lg" : "rounded-lg"
                   }`}
                   onClick={() => goToImage(index)}
                 >
@@ -316,7 +316,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                     whileTap={{ scale: 0.95 }}
                     className={`relative h-16 w-24 flex-shrink-0 overflow-hidden cursor-pointer transition-all ${
                       currentIndex === index 
-                        ? "ring-2 ring-white ring-offset-2 ring-offset-black rounded-lg opacity-100" 
+                        ? "ring-1 ring-[#473729] ring-offset-2 ring-offset-black rounded-lg opacity-100" 
                         : "rounded-lg opacity-60 hover:opacity-80"
                     }`}
                     onClick={(e) => {

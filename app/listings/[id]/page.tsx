@@ -20,44 +20,103 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Function to extract text content from JSONB description
-function extractDescriptionText(description: any): string {
-  if (!description) return ''
+// Function to convert JSONB description to React elements
+function renderDescriptionContent(description: any): React.ReactNode {
+  if (!description) return null
   
   // Handle different possible formats
   if (typeof description === 'string') {
-    return description
+    return <p className="text-gray-700 leading-relaxed">{description}</p>
   }
   
   if (typeof description === 'object') {
     // Handle the rich text editor format like: {"type": "doc", "content": [...]}
     if (description.type === 'doc' && description.content) {
-      return extractTextFromContent(description.content)
+      return renderContent(description.content)
     }
     
     // Handle other object formats
     if (description.text) {
-      return description.text
+      return <p className="text-gray-700 leading-relaxed">{description.text}</p>
     }
   }
   
-  return ''
+  return null
 }
 
-// Recursive function to extract text from content array
-function extractTextFromContent(content: any[]): string {
-  if (!Array.isArray(content)) return ''
+// Recursive function to render content array as React elements
+function renderContent(content: any[]): React.ReactNode {
+  if (!Array.isArray(content)) return null
   
-  return content.map(item => {
+  return content.map((item, index) => {
     if (item.type === 'paragraph' && item.content) {
-      return extractTextFromContent(item.content)
+      return (
+        <p key={index} className="text-gray-700 leading-relaxed mb-4">
+          {renderContent(item.content)}
+        </p>
+      )
     } else if (item.type === 'text' && item.text) {
-      return item.text
+      // Handle text with potential formatting
+      let textElement = item.text
+      
+      // Apply formatting if marks exist
+      if (item.marks) {
+        item.marks.forEach((mark: any) => {
+          if (mark.type === 'bold') {
+            textElement = <strong key={`bold-${index}`}>{textElement}</strong>
+          } else if (mark.type === 'italic') {
+            textElement = <em key={`italic-${index}`}>{textElement}</em>
+          } else if (mark.type === 'underline') {
+            textElement = <u key={`underline-${index}`}>{textElement}</u>
+          }
+        })
+      }
+      
+      return textElement
+    } else if (item.type === 'heading' && item.content) {
+      const level = item.attrs?.level || 1
+      const headingLevel = Math.min(level + 2, 6)
+      
+      // Create heading element based on level
+      const headingContent = renderContent(item.content)
+      const className = "font-tenor-sans text-xl text-gray-900 mb-3 mt-6"
+      
+      switch (headingLevel) {
+        case 3:
+          return <h3 key={index} className={className}>{headingContent}</h3>
+        case 4:
+          return <h4 key={index} className={className}>{headingContent}</h4>
+        case 5:
+          return <h5 key={index} className={className}>{headingContent}</h5>
+        case 6:
+          return <h6 key={index} className={className}>{headingContent}</h6>
+        default:
+          return <h3 key={index} className={className}>{headingContent}</h3>
+      }
+    } else if (item.type === 'bulletList' && item.content) {
+      return (
+        <ul key={index} className="list-disc list-inside text-gray-700 leading-relaxed mb-4 ml-4">
+          {renderContent(item.content)}
+        </ul>
+      )
+    } else if (item.type === 'orderedList' && item.content) {
+      return (
+        <ol key={index} className="list-decimal list-inside text-gray-700 leading-relaxed mb-4 ml-4">
+          {renderContent(item.content)}
+        </ol>
+      )
+    } else if (item.type === 'listItem' && item.content) {
+      return (
+        <li key={index} className="mb-1">
+          {renderContent(item.content)}
+        </li>
+      )
     } else if (item.content) {
-      return extractTextFromContent(item.content)
+      return renderContent(item.content)
     }
-    return ''
-  }).join(' ')
+    
+    return null
+  })
 }
 
 // Function to extract features from property.features JSONB and property.more JSONB
@@ -233,7 +292,20 @@ export default function PropertyPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#aa9578]"></div>
+        <div className="flex flex-col items-center">
+          <div className="animate-pulse">
+            <Image
+              src="/Icon/Icon_Color_RealtorPooya.png"
+              alt="Loading..."
+              width={64}
+              height={64}
+              className="animate-fade-in-out"
+            />
+          </div>
+          <div className="mt-4 text-[#aa9578] font-manrope text-lg animate-fade-in-out">
+            Loading property details...
+          </div>
+        </div>
       </div>
     )
   }
@@ -408,7 +480,9 @@ export default function PropertyPage({ params }: PageProps) {
             {/* Description */}
             <div className="mb-12">
               <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Description</h2>
-              <p className="text-gray-700 leading-relaxed">{extractDescriptionText(property.description)}</p>
+              <div className="prose prose-gray max-w-none">
+                {renderDescriptionContent(property.description)}
+              </div>
             </div>
 
             {/* Features */}
