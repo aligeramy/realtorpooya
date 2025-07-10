@@ -20,6 +20,46 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+// Function to extract text content from JSONB description
+function extractDescriptionText(description: any): string {
+  if (!description) return ''
+  
+  // Handle different possible formats
+  if (typeof description === 'string') {
+    return description
+  }
+  
+  if (typeof description === 'object') {
+    // Handle the rich text editor format like: {"type": "doc", "content": [...]}
+    if (description.type === 'doc' && description.content) {
+      return extractTextFromContent(description.content)
+    }
+    
+    // Handle other object formats
+    if (description.text) {
+      return description.text
+    }
+  }
+  
+  return ''
+}
+
+// Recursive function to extract text from content array
+function extractTextFromContent(content: any[]): string {
+  if (!Array.isArray(content)) return ''
+  
+  return content.map(item => {
+    if (item.type === 'paragraph' && item.content) {
+      return extractTextFromContent(item.content)
+    } else if (item.type === 'text' && item.text) {
+      return item.text
+    } else if (item.content) {
+      return extractTextFromContent(item.content)
+    }
+    return ''
+  }).join(' ')
+}
+
 // Function to extract features from property.features JSONB and property.more JSONB
 function extractFeatures(property: Property): string[] {
   const features: string[] = []
@@ -368,7 +408,7 @@ export default function PropertyPage({ params }: PageProps) {
             {/* Description */}
             <div className="mb-12">
               <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Description</h2>
-              <p className="text-gray-700 leading-relaxed">{property.description}</p>
+              <p className="text-gray-700 leading-relaxed">{extractDescriptionText(property.description)}</p>
             </div>
 
             {/* Features */}

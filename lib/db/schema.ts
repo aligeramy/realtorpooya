@@ -73,7 +73,7 @@ export const properties = pgTable('properties', {
   closingDate: timestamp('closing_date', { mode: 'date' }),
   hoaFees: integer('hoa_fees'),
   propertyTax: integer('property_tax'),
-  description: text('description'),
+  description: jsonb('description'),
   mediaUrls: text('media_urls').array(),
   tags: text('tags').array(),
   heroImage: text('hero_image'), // Optional hero image URL
