@@ -26,30 +26,39 @@ function extractFeatures(property: Property): string[] {
   
   // Debug: log the raw features data to understand the format
   console.log('Raw features data:', property.features, 'Type:', typeof property.features)
+  console.log('Is array?', Array.isArray(property.features))
   
   // Add features from the JSONB features column
   if (property.features) {
     if (Array.isArray(property.features)) {
       // JSONB array - process each item
-      property.features.forEach((item: any) => {
+      property.features.forEach((item: any, index: number) => {
+        console.log(`Processing item ${index}:`, item, 'Type:', typeof item)
         if (typeof item === 'string') {
           // Check if it's a JSON string that needs parsing
           if (item.startsWith('[') && item.endsWith(']')) {
+            console.log('Found JSON array string, parsing:', item)
             try {
               const parsed = JSON.parse(item)
+              console.log('Parsed successfully:', parsed)
               if (Array.isArray(parsed)) {
-                features.push(...parsed.filter((f: any) => f && typeof f === 'string'))
+                const validFeatures = parsed.filter((f: any) => f && typeof f === 'string')
+                console.log('Adding parsed features:', validFeatures)
+                features.push(...validFeatures)
               }
-            } catch {
+            } catch (error) {
+              console.log('Parsing failed:', error)
               // If parsing fails, treat as regular string
               features.push(item)
             }
           } else {
             // Regular string feature
+            console.log('Adding regular string feature:', item)
             features.push(item)
           }
         } else if (Array.isArray(item)) {
           // Nested array
+          console.log('Found nested array:', item)
           features.push(...item.filter((f: any) => f && typeof f === 'string'))
         }
       })
@@ -81,16 +90,37 @@ function extractFeatures(property: Property): string[] {
   
   // Add features from the more JSONB column
   if (property.more && typeof property.more === 'object') {
+    console.log('Processing property.more:', property.more)
     Object.entries(property.more as Record<string, any>).forEach(([key, value]) => {
+      console.log(`Checking key: ${key}, value:`, value)
       // Check if the key contains "feature" (case-insensitive)
       if (key.toLowerCase().includes('feature') && value) {
-        // Convert value to string and add it as a feature
-        features.push(String(value))
+        console.log(`Found feature in more column: ${key} = ${value}`)
+        // Check if value is a JSON array string and parse it
+        if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
+          console.log('Value is JSON array string, parsing:', value)
+          try {
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed)) {
+              const validFeatures = parsed.filter((f: any) => f && typeof f === 'string')
+              console.log('Adding parsed features from more column:', validFeatures)
+              features.push(...validFeatures)
+            }
+          } catch (error) {
+            console.log('Failed to parse JSON from more column:', error)
+            features.push(String(value))
+          }
+        } else {
+          // Convert value to string and add it as a feature
+          features.push(String(value))
+        }
       }
     })
   }
   
-  return features.filter((f: string) => f && f.length > 0) // Remove empty features
+  const finalFeatures = features.filter((f: string) => f && f.length > 0) // Remove empty features
+  console.log('Final features array:', finalFeatures)
+  return finalFeatures
 }
 
 export default function PropertyPage({ params }: PageProps) {
