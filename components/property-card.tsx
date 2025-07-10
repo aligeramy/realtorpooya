@@ -34,8 +34,6 @@ export default function PropertyCard({ property }: PropertyCardProps) {
     const addressSlug = createAddressSlug(property.address)
     // Navigate to the property page using address slug
     router.push(`/listings/${addressSlug}`)
-    // Ensure we're at the top of the page
-    window.scrollTo(0, 0)
   }
 
   return (

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight, Play, Maximize2, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import { motion, AnimatePresence } from "framer-motion"
@@ -22,6 +22,31 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
 
   // Make sure we have valid images
   const validImages = images.filter((img) => img && (img.startsWith("/") || img.startsWith("https://")))
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (showFullGallery) {
+        switch (event.key) {
+          case 'ArrowLeft':
+            event.preventDefault()
+            prevImage()
+            break
+          case 'ArrowRight':
+            event.preventDefault()
+            nextImage()
+            break
+          case 'Escape':
+            event.preventDefault()
+            setShowFullGallery(false)
+            break
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [showFullGallery, currentIndex, validImages.length])
 
   // Get the background image - use hero image for first slide if available, otherwise use current image
   const getBackgroundImage = (index: number) => {
@@ -203,30 +228,111 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
 
       {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
-        <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
+        <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 overflow-hidden bg-black border-none ring-0">
           <DialogTitle className="sr-only">Property Image Gallery</DialogTitle>
-          <div className="h-full overflow-y-auto">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
-              {validImages.map((image, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.5) }}
-                  className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#473729] transition-all"
-                  onClick={() => openFullScreen(image)}
-                >
+          <div className="relative h-full w-full flex items-center justify-center">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 bg-white/20 hover:bg-white/40 text-white rounded-full"
+              onClick={() => setShowFullGallery(false)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+
+            {/* Main Gallery Image */}
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30, duration: 0.3 },
+                  opacity: { duration: 0.2 },
+                }}
+                className="relative w-full h-full flex items-center justify-center p-8"
+                onClick={() => setShowFullGallery(false)}
+              >
+                <div className="relative w-full h-full max-w-6xl max-h-full">
                   <Image
-                    src={image || "/placeholder.svg"}
-                    alt={`Property image ${index + 1}`}
+                    src={validImages[currentIndex] || "/placeholder.svg"}
+                    alt={`Property image ${currentIndex + 1}`}
                     fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    className="object-contain cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowFullGallery(false)
+                    }}
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
-                    <span className="text-white text-sm font-medium">{index + 1}</span>
-                  </div>
-                </motion.div>
-              ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Arrows */}
+            {validImages.length > 1 && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white rounded-full h-12 w-12 z-20"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    prevImage()
+                  }}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white rounded-full h-12 w-12 z-20"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    nextImage()
+                  }}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
+
+            {/* Image Counter */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full z-20">
+              {currentIndex + 1} of {validImages.length}
+            </div>
+
+            {/* Thumbnail Strip */}
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20 max-w-4xl w-full px-4">
+              <div className="flex justify-center space-x-2 overflow-x-auto py-2">
+                {validImages.map((image, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative h-16 w-24 flex-shrink-0 overflow-hidden cursor-pointer transition-all ${
+                      currentIndex === index 
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-black rounded-lg opacity-100" 
+                        : "rounded-lg opacity-60 hover:opacity-80"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToImage(index)
+                    }}
+                  >
+                    <Image
+                      src={image || "/placeholder.svg"}
+                      alt={`Thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </DialogContent>

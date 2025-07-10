@@ -457,7 +457,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="font-tenor-sans text-xl text-gray-900 mb-4">Schedule a Consultation</h3>
                 <p className="text-gray-600 mb-6 text-sm">
-                  Book a personalized meeting to discuss your real estate goals and market opportunities.
+                  Book a personalized meeting to discuss your real estate goals.
                 </p>
                 <Button className="bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full px-6 py-3">
                   Book Consultation
