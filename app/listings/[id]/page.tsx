@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MapPin, Bed, Bath, Square, Calendar, Share2, Heart, Phone, ChevronLeft, Play } from "lucide-react"
+import { MapPin, Bed, Bath, Square, Calendar, Share2, Heart, Phone, ChevronLeft, Play, Car } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import PropertyImageGallery from "@/components/property-image-gallery"
@@ -89,30 +89,46 @@ function extractFeatures(property: Property): string[] {
   }
   
   // Add features from the more JSONB column
+  // The more field should be structured as: { "category_name": ["feature1", "feature2", ...] }
   if (property.more && typeof property.more === 'object') {
     console.log('Processing property.more:', property.more)
-    Object.entries(property.more as Record<string, any>).forEach(([key, value]) => {
-      console.log(`Checking key: ${key}, value:`, value)
-      // Check if the key contains "feature" (case-insensitive)
-      if (key.toLowerCase().includes('feature') && value) {
-        console.log(`Found feature in more column: ${key} = ${value}`)
-        // Check if value is a JSON array string and parse it
-        if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-          console.log('Value is JSON array string, parsing:', value)
-          try {
-            const parsed = JSON.parse(value)
-            if (Array.isArray(parsed)) {
-              const validFeatures = parsed.filter((f: any) => f && typeof f === 'string')
-              console.log('Adding parsed features from more column:', validFeatures)
-              features.push(...validFeatures)
+    Object.entries(property.more as Record<string, any>).forEach(([categoryKey, categoryValue]) => {
+      console.log(`Processing category: ${categoryKey}, value:`, categoryValue)
+      
+      // Skip non-feature categories (like tps, etc.)
+      const skipCategories = ['tps', 'total_parking_space', 'parking_space', 'id', 'created_at', 'updated_at']
+      if (skipCategories.includes(categoryKey.toLowerCase())) {
+        console.log(`Skipping non-feature category: ${categoryKey}`)
+        return
+      }
+      
+      if (categoryValue) {
+        if (Array.isArray(categoryValue)) {
+          // Category value is already an array
+          const validFeatures = categoryValue.filter((f: any) => f && typeof f === 'string')
+          console.log(`Adding features from category ${categoryKey}:`, validFeatures)
+          features.push(...validFeatures)
+        } else if (typeof categoryValue === 'string') {
+          // Check if it's a JSON array string
+          if (categoryValue.startsWith('[') && categoryValue.endsWith(']')) {
+            console.log('Category value is JSON array string, parsing:', categoryValue)
+            try {
+              const parsed = JSON.parse(categoryValue)
+              if (Array.isArray(parsed)) {
+                const validFeatures = parsed.filter((f: any) => f && typeof f === 'string')
+                console.log(`Adding parsed features from category ${categoryKey}:`, validFeatures)
+                features.push(...validFeatures)
+              }
+            } catch (error) {
+              console.log('Failed to parse JSON from category:', error)
+              // Treat as single feature
+              features.push(categoryValue)
             }
-          } catch (error) {
-            console.log('Failed to parse JSON from more column:', error)
-            features.push(String(value))
+          } else {
+            // Single feature string
+            console.log(`Adding single feature from category ${categoryKey}:`, categoryValue)
+            features.push(categoryValue)
           }
-        } else {
-          // Convert value to string and add it as a feature
-          features.push(String(value))
         }
       }
     })
@@ -329,22 +345,22 @@ export default function PropertyPage({ params }: PageProps) {
             {/* Key Details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 p-6 bg-[#f3ecdf] rounded-2xl">
               <div className="flex flex-col items-center">
-                <span className="text-sm text-[#aa9578] mb-2">Beds</span>
-                <span className="text-lg font-semibold">{property.bedrooms} Bedroom{property.bedrooms === '1' ? '' : 's'}</span>
+                <Bed className="h-8 w-8 text-[#aa9578] mb-2" />
+                <span className="text-lg font-tenor-sans font-semibold">{property.bedrooms} Bedroom{property.bedrooms === '1' ? '' : 's'}</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-sm text-[#aa9578] mb-2">Baths</span>
-                <span className="text-lg font-semibold">{property.bathrooms} Bathrooms</span>
+                <Bath className="h-8 w-8 text-[#aa9578] mb-2" />
+                <span className="text-lg font-tenor-sans font-semibold">{property.bathrooms} Bathrooms</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-sm text-[#aa9578] mb-2">Size</span>
-                <span className="text-lg font-semibold">{property.squareFeet?.toLocaleString() || 'N/A'} sq ft</span>
+                <Square className="h-8 w-8 text-[#aa9578] mb-2" />
+                <span className="text-lg font-tenor-sans font-semibold">{property.squareFeet?.toLocaleString() || 'N/A'} sq ft</span>
               </div>
               {/* Total Parking Space - only show if tps exists in more JSONB */}
               {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
                 <div className="flex flex-col items-center">
-                  <span className="text-sm text-[#aa9578] mb-2">Total Parking Space</span>
-                  <span className="text-lg font-semibold">{(property.more as Record<string, any>).tps}</span>
+                  <Car className="h-8 w-8 text-[#aa9578] mb-2" />
+                                      <span className="text-lg font-tenor-sans font-semibold">{(property.more as Record<string, any>).tps} Parking Space{(property.more as Record<string, any>).tps === '1' ? '' : 's'}</span>
                 </div>
               )}
             </div>
