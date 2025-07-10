@@ -201,7 +201,7 @@ export default function PropertyShowcasePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-center mb-12"
+              className="text-center mb-0"
             >
               <h1 className="font-tenor-sans text-4xl md:text-5xl lg:text-6xl text-gray-900 mb-4">
                 Property Showcase
@@ -218,9 +218,9 @@ export default function PropertyShowcasePage() {
       </section>
 
       {/* Search and Filters */}
-      <section className="py-8 bg-[#f9f6f1]">
+      <section className="py-8">
         <div className="container mx-auto px-4">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-4 items-center">
               {/* Search */}
               <div className="flex-1 relative">
@@ -334,7 +334,7 @@ export default function PropertyShowcasePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+                    <Card className="overflow-hidden hover:shadow-xl shadow-lg rounded-3xl transition-shadow duration-300 group">
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
                           src={property.heroImage || property.mediaUrls?.[0] || "/placeholder.svg"}
@@ -358,8 +358,8 @@ export default function PropertyShowcasePage() {
                       
                       <CardContent className="p-6">
                         <div className="mb-4">
-                          <div className="text-2xl font-bold text-[#aa9578] mb-2">
-                            {property.status === 'not_available' ? 'NOT AVAILABLE' : 
+                          <div className="text-2xl font-medium text-[#aa9578] mb-2">
+                            {property.status === 'not_available' ? 'Not Available' : 
                              property.price ? formatPrice(property.price) : 'Price upon request'}
                           </div>
                           <h3 className="font-tenor-sans text-xl text-gray-900 mb-2 line-clamp-2">
