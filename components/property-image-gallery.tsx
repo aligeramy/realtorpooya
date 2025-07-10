@@ -166,17 +166,11 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
         {/* Full Gallery Button */}
         <Button
           variant="ghost"
-          size="icon"
-          className="absolute right-4 bottom-4 bg-white/80 hover:bg-white text-gray-800 rounded-full h-12 w-12 z-10"
+          className="absolute right-4 bottom-4 bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg z-10 font-medium"
           onClick={() => setShowFullGallery(true)}
         >
-          <Maximize2 className="h-6 w-6" />
+          See all {validImages.length} photos
         </Button>
-
-        {/* Image Counter */}
-        <div className="absolute left-4 bottom-4 bg-white/80 text-gray-800 px-4 py-2 rounded-full z-10">
-          {currentIndex + 1} / {validImages.length}
-        </div>
       </div>
 
       {/* Thumbnail Navigation */}
