@@ -67,7 +67,7 @@ export const properties = pgTable('properties', {
   squareFeet: integer('square_feet'),
   lotDimensions: text('lot_dimensions'),
   yearBuilt: integer('year_built'),
-  features: text('features').array(),
+  features: jsonb('features'),
   listingDate: timestamp('listing_date', { mode: 'date' }).notNull(),
   offerDate: timestamp('offer_date', { mode: 'date' }),
   closingDate: timestamp('closing_date', { mode: 'date' }),

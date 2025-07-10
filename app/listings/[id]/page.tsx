@@ -20,32 +20,77 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Function to extract dynamic sections from property.more JSONB
-function extractDynamicSections(property: Property): Record<string, string[]> {
-  const sections: Record<string, string[]> = {}
+// Function to extract features from property.features JSONB and property.more JSONB
+function extractFeatures(property: Property): string[] {
+  const features: string[] = []
   
+  // Debug: log the raw features data to understand the format
+  console.log('Raw features data:', property.features, 'Type:', typeof property.features)
+  
+  // Add features from the JSONB features column
+  if (property.features) {
+    if (Array.isArray(property.features)) {
+      // JSONB array - process each item
+      property.features.forEach((item: any) => {
+        if (typeof item === 'string') {
+          // Check if it's a JSON string that needs parsing
+          if (item.startsWith('[') && item.endsWith(']')) {
+            try {
+              const parsed = JSON.parse(item)
+              if (Array.isArray(parsed)) {
+                features.push(...parsed.filter((f: any) => f && typeof f === 'string'))
+              }
+            } catch {
+              // If parsing fails, treat as regular string
+              features.push(item)
+            }
+          } else {
+            // Regular string feature
+            features.push(item)
+          }
+        } else if (Array.isArray(item)) {
+          // Nested array
+          features.push(...item.filter((f: any) => f && typeof f === 'string'))
+        }
+      })
+    } else if (typeof property.features === 'object') {
+      // JSONB object - extract values that look like features
+      Object.values(property.features as Record<string, any>).forEach(value => {
+        if (value && typeof value === 'string') {
+          features.push(value)
+        } else if (Array.isArray(value)) {
+          features.push(...value.filter((f: any) => f && typeof f === 'string'))
+        }
+      })
+    } else if (typeof property.features === 'string') {
+      // Single feature as string - check if it's a JSON array
+      if (property.features.startsWith('[') && property.features.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(property.features)
+          if (Array.isArray(parsed)) {
+            features.push(...parsed.filter((f: any) => f && typeof f === 'string'))
+          }
+        } catch {
+          features.push(property.features)
+        }
+      } else {
+        features.push(property.features)
+      }
+    }
+  }
+  
+  // Add features from the more JSONB column
   if (property.more && typeof property.more === 'object') {
     Object.entries(property.more as Record<string, any>).forEach(([key, value]) => {
-      if (value) {
-        // Convert key to a readable heading (capitalize first letter, replace underscores with spaces)
-        const heading = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        
-        // Handle different value types
-        if (Array.isArray(value)) {
-          sections[heading] = value.map(String)
-        } else if (typeof value === 'string') {
-          // Split by common delimiters if it's a string
-          const items = value.split(/[,;|\n]/).map(item => item.trim()).filter(Boolean)
-          sections[heading] = items
-        } else {
-          // Convert other types to string
-          sections[heading] = [String(value)]
-        }
+      // Check if the key contains "feature" (case-insensitive)
+      if (key.toLowerCase().includes('feature') && value) {
+        // Convert value to string and add it as a feature
+        features.push(String(value))
       }
     })
   }
   
-  return sections
+  return features.filter((f: string) => f && f.length > 0) // Remove empty features
 }
 
 export default function PropertyPage({ params }: PageProps) {
@@ -254,21 +299,24 @@ export default function PropertyPage({ params }: PageProps) {
             {/* Key Details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 p-6 bg-[#f3ecdf] rounded-2xl">
               <div className="flex flex-col items-center">
-                <Bed className="h-6 w-6 text-[#aa9578] mb-2" />
+                <span className="text-sm text-[#aa9578] mb-2">Beds</span>
                 <span className="text-lg font-semibold">{property.bedrooms} Bedroom{property.bedrooms === '1' ? '' : 's'}</span>
               </div>
               <div className="flex flex-col items-center">
-                <Bath className="h-6 w-6 text-[#aa9578] mb-2" />
+                <span className="text-sm text-[#aa9578] mb-2">Baths</span>
                 <span className="text-lg font-semibold">{property.bathrooms} Bathrooms</span>
               </div>
               <div className="flex flex-col items-center">
-                <Square className="h-6 w-6 text-[#aa9578] mb-2" />
+                <span className="text-sm text-[#aa9578] mb-2">Size</span>
                 <span className="text-lg font-semibold">{property.squareFeet?.toLocaleString() || 'N/A'} sq ft</span>
               </div>
-              <div className="flex flex-col items-center">
-                <Calendar className="h-6 w-6 text-[#aa9578] mb-2" />
-                <span className="text-lg font-semibold">{property.yearBuilt || 'N/A'}</span>
-              </div>
+              {/* Total Parking Space - only show if tps exists in more JSONB */}
+              {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-[#aa9578] mb-2">Parking</span>
+                  <span className="text-lg font-semibold">{(property.more as Record<string, any>).tps} Total Parking Space</span>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -277,15 +325,13 @@ export default function PropertyPage({ params }: PageProps) {
               <p className="text-gray-700 leading-relaxed">{property.description}</p>
             </div>
 
-            {/* Dynamic Sections from JSONB */}
-            {Object.entries(extractDynamicSections(property)).map(([heading, items]) => (
-              <div key={heading} className="mb-12">
-                <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">{heading}</h2>
-                <PropertyFeatures features={items} />
-              </div>
-            ))}
+            {/* Features */}
+            <div className="mb-12">
+              <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Features</h2>
+              <PropertyFeatures features={extractFeatures(property)} />
+            </div>
 
-
+          
 
             {/* Video Tour */}
             {property.youtubeVideo && (
