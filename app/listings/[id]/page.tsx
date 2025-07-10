@@ -20,27 +20,32 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Function to extract features from property.features array and property.more JSONB
-function extractFeatures(property: Property): string[] {
-  const features: string[] = []
+// Function to extract dynamic sections from property.more JSONB
+function extractDynamicSections(property: Property): Record<string, string[]> {
+  const sections: Record<string, string[]> = {}
   
-  // Add features from the existing features array
-  if (property.features && Array.isArray(property.features)) {
-    features.push(...property.features)
-  }
-  
-  // Add features from the more JSONB column
   if (property.more && typeof property.more === 'object') {
     Object.entries(property.more as Record<string, any>).forEach(([key, value]) => {
-      // Check if the key contains "feature" (case-insensitive)
-      if (key.toLowerCase().includes('feature') && value) {
-        // Convert value to string and add it as a feature
-        features.push(String(value))
+      if (value) {
+        // Convert key to a readable heading (capitalize first letter, replace underscores with spaces)
+        const heading = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        
+        // Handle different value types
+        if (Array.isArray(value)) {
+          sections[heading] = value.map(String)
+        } else if (typeof value === 'string') {
+          // Split by common delimiters if it's a string
+          const items = value.split(/[,;|\n]/).map(item => item.trim()).filter(Boolean)
+          sections[heading] = items
+        } else {
+          // Convert other types to string
+          sections[heading] = [String(value)]
+        }
       }
     })
   }
   
-  return features
+  return sections
 }
 
 export default function PropertyPage({ params }: PageProps) {
@@ -272,28 +277,15 @@ export default function PropertyPage({ params }: PageProps) {
               <p className="text-gray-700 leading-relaxed">{property.description}</p>
             </div>
 
-            {/* Features */}
-            <div className="mb-12">
-              <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Features</h2>
-              <PropertyFeatures features={extractFeatures(property)} />
-            </div>
-
-            {/* Additional Details */}
-            {property.more && typeof property.more === 'object' && Object.keys(property.more).length > 0 && (
-              <div className="mb-12">
-                <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Additional Details</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(property.more as Record<string, any>)
-                    .filter(([key]) => !key.toLowerCase().includes('feature')) // Exclude features since they're shown in the Features section
-                    .map(([key, value]) => (
-                    <div key={key} className="flex justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="font-medium text-gray-700">{key}</span>
-                      <span className="text-gray-600">{String(value)}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* Dynamic Sections from JSONB */}
+            {Object.entries(extractDynamicSections(property)).map(([heading, items]) => (
+              <div key={heading} className="mb-12">
+                <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">{heading}</h2>
+                <PropertyFeatures features={items} />
               </div>
-            )}
+            ))}
+
+
 
             {/* Video Tour */}
             {property.youtubeVideo && (
