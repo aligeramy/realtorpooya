@@ -44,9 +44,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
           <Image
             src={
-              property.hero_image || 
-              property.images?.find(img => img.is_hero)?.url || 
-              property.images?.[0]?.url || 
+              property.heroImage || 
+              (property.mediaUrls && property.mediaUrls.length > 0 ? property.mediaUrls[0] : null) || 
               "/placeholder.svg?height=400&width=600&query=luxury home"
             }
             alt={propertyAddress}
@@ -81,7 +80,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             {property.bedrooms && (
               <div className="flex items-center text-gray-600 border border-gray-200 rounded-md px-3 py-1.5">
                 <Bed className="h-4 w-4 mr-1.5" />
-                <span className="text-sm">{property.bedrooms} Beds</span>
+                <span className="text-sm">{property.bedrooms} Bed{property.bedrooms === '1' ? '' : 's'}</span>
               </div>
             )}
 
@@ -92,10 +91,10 @@ export default function PropertyCard({ property }: PropertyCardProps) {
               </div>
             )}
 
-            {property.square_feet && (
+            {property.squareFeet && (
               <div className="flex items-center text-gray-600 border border-gray-200 rounded-md px-3 py-1.5">
                 <Scaling className="h-4 w-4 mr-1.5" />
-                <span className="text-sm">{property.square_feet.toLocaleString()} sqft</span>
+                <span className="text-sm">{property.squareFeet.toLocaleString()} sqft</span>
               </div>
             )}
           </div>

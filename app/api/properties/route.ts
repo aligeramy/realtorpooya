@@ -1,61 +1,95 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { properties, propertyImages } from '@/lib/db/schema'
+import { eq, like, and, or, desc, gte, lte, ne } from 'drizzle-orm'
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const featured = searchParams.get('featured')
-    const limit = searchParams.get('limit')
+    const search = searchParams.get('search')
+    const city = searchParams.get('city')
+    const minPrice = searchParams.get('minPrice')
+    const maxPrice = searchParams.get('maxPrice')
+    const bedrooms = searchParams.get('bedrooms')
+    const propertyType = searchParams.get('propertyType')
 
-    const where: any = {}
-    
-    if (featured === 'true') {
-      where.featured = true
+    // Build where conditions
+    const conditions = []
+
+    // Only show non-archived properties on the website (following database documentation pattern)
+    conditions.push(ne(properties.status, 'archived'))
+
+    if (search) {
+      conditions.push(
+        or(
+          like(properties.address, `%${search}%`),
+          like(properties.city, `%${search}%`),
+          like(properties.description, `%${search}%`)
+        )
+      )
     }
 
-    const properties = await prisma.property.findMany({
-      where,
-      include: {
-        images: {
-          orderBy: { order: 'asc' }
-        },
-        videos: {
-          orderBy: { order: 'asc' }
-        },
-        features: true,
-        tags: true,
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: limit ? parseInt(limit) : undefined,
-    })
+    if (city) {
+      conditions.push(like(properties.city, `%${city}%`))
+    }
 
-    // Transform data to match the expected format
-    const transformedProperties = properties.map(property => ({
-      id: property.id,
-      address: property.address,
-      city: property.city,
-      province: property.province,
-      postal_code: property.postal_code,
-      property_type: property.property_type?.toLowerCase(),
-      price: property.price,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      square_feet: property.square_feet,
-      hero_image: property.hero_image || property.images.find(img => img.is_hero)?.url || property.images[0]?.url || "/placeholder.jpg",
-      status: property.status.toLowerCase(),
-      listing_date: property.listing_date?.toISOString() || property.createdAt.toISOString(),
-      description: property.description,
-      title: property.title,
-      features: property.features.map(feature => feature.name),
-      tags: property.tags.map(tag => tag.name),
-      videos: property.videos,
-      images: property.images,
-      featured: property.featured,
-    }))
+    if (minPrice) {
+      conditions.push(gte(properties.price, parseInt(minPrice)))
+    }
 
-    return NextResponse.json(transformedProperties)
+    if (maxPrice) {
+      conditions.push(lte(properties.price, parseInt(maxPrice)))
+    }
+
+    if (bedrooms) {
+      conditions.push(eq(properties.bedrooms, bedrooms))
+    }
+
+    if (propertyType) {
+      // Map frontend property types to CRM enum values
+      const typeMap: Record<string, 'detached' | 'condo' | 'townhouse' | 'lot' | 'multi-res'> = {
+        'house': 'detached',
+        'condo': 'condo',
+        'townhouse': 'townhouse',
+        'land': 'lot',
+        'multi-family': 'multi-res'
+      }
+      const mappedType = typeMap[propertyType.toLowerCase()]
+      if (mappedType) {
+        conditions.push(eq(properties.propertyType, mappedType))
+      }
+    }
+
+    // Build the query with conditional where
+    const allProperties = await db
+      .select()
+      .from(properties)
+      .leftJoin(propertyImages, eq(properties.id, propertyImages.propertyId))
+      .where(and(...conditions))
+      .orderBy(desc(properties.displayOrder), desc(properties.createdAt))
+
+    // Group images by property
+    const propertiesMap = new Map()
+    
+    for (const row of allProperties) {
+      const property = row.properties
+      const image = row.property_images
+      
+      if (!propertiesMap.has(property.id)) {
+        propertiesMap.set(property.id, {
+          ...property,
+          images: []
+        })
+      }
+      
+      if (image) {
+        propertiesMap.get(property.id).images.push(image)
+      }
+    }
+
+    const result = Array.from(propertiesMap.values())
+    
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error fetching properties:', error)
     return NextResponse.json(

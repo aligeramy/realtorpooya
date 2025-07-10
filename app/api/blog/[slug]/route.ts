@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
+import { blog_posts } from '@/lib/db/schema'
+import { eq, and } from 'drizzle-orm'
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
-    const post = await prisma.blogPost.findUnique({
-      where: {
-        slug: params.slug,
-        published: true
-      }
-    })
+    const { slug } = params
+
+    const [post] = await db
+      .select()
+      .from(blog_posts)
+      .where(and(
+        eq(blog_posts.slug, slug),
+        eq(blog_posts.published, true)
+      ))
 
     if (!post) {
       return NextResponse.json(

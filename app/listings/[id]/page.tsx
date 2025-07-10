@@ -14,6 +14,7 @@ import BookShowingButton from "@/components/book-showing-button"
 import VideoPlayer from "@/components/video-player"
 import type { Property } from "@/types/property"
 import { createAddressSlug, findPropertyBySlug } from "@/lib/utils"
+import ResponsiveLogo from "@/components/responsive-logo"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -100,13 +101,7 @@ export default function PropertyPage({ params }: PageProps) {
           {/* Logo on Left */}
           <div>
             <Link href="/">
-              <Image
-                src="/images/logo-color.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={250}
-                height={50}
-                className="h-10 w-auto"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
           </div>
 
@@ -123,7 +118,7 @@ export default function PropertyPage({ params }: PageProps) {
 
             {/* Social Media Icons */}
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.facebook.com/realtorpooya" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -139,7 +134,7 @@ export default function PropertyPage({ params }: PageProps) {
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
               </Link>
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.instagram.com/realtorpooya/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -157,7 +152,7 @@ export default function PropertyPage({ params }: PageProps) {
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </Link>
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.linkedin.com/in/pooya-pirayesh-758998366/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -183,22 +178,12 @@ export default function PropertyPage({ params }: PageProps) {
                   {/* Property Gallery with Back Button */}
       <div className="relative">
         <PropertyImageGallery
-          images={property.images?.length ? 
-            (() => {
-              // Sort images with hero image first, then by order
-              const sortedImages = property.images.sort((a, b) => {
-                // Hero image always comes first
-                if (a.is_hero && !b.is_hero) return -1
-                if (!a.is_hero && b.is_hero) return 1
-                // If both or neither are hero, sort by order
-                return a.order - b.order
-              })
-              return sortedImages.map(img => img.url)
-            })() : 
-            [property.hero_image!, ...(property.media_urls || [])]
+          images={property.mediaUrls && property.mediaUrls.length > 0 ? 
+            property.mediaUrls : 
+            property.heroImage ? [property.heroImage] : []
           }
-          videoUrl={property.videos?.length ? property.videos[0].url : property.youtube_video}
-          heroImage={property.hero_image}
+          videoUrl={property.youtubeVideo || undefined}
+          heroImage={property.heroImage || undefined}
         />
 
         {/* Back button - Simplified to just an icon button */}
@@ -224,7 +209,7 @@ export default function PropertyPage({ params }: PageProps) {
                 <div className="flex items-center text-[#aa9578]">
                   <MapPin className="h-5 w-5 mr-2" />
                   <span className="text-lg">
-                    {property.city}, {property.province} {property.postal_code}
+                    {property.city}, {property.province} {property.postalCode}
                   </span>
                 </div>
               </div>
@@ -242,7 +227,7 @@ export default function PropertyPage({ params }: PageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 p-6 bg-[#f3ecdf] rounded-2xl">
               <div className="flex flex-col items-center">
                 <Bed className="h-6 w-6 text-[#aa9578] mb-2" />
-                <span className="text-lg font-semibold">{property.bedrooms} Bedrooms</span>
+                <span className="text-lg font-semibold">{property.bedrooms} Bedroom{property.bedrooms === '1' ? '' : 's'}</span>
               </div>
               <div className="flex flex-col items-center">
                 <Bath className="h-6 w-6 text-[#aa9578] mb-2" />
@@ -250,11 +235,11 @@ export default function PropertyPage({ params }: PageProps) {
               </div>
               <div className="flex flex-col items-center">
                 <Square className="h-6 w-6 text-[#aa9578] mb-2" />
-                <span className="text-lg font-semibold">{property.square_feet?.toLocaleString()} sq ft</span>
+                <span className="text-lg font-semibold">{property.squareFeet?.toLocaleString() || 'N/A'} sq ft</span>
               </div>
               <div className="flex flex-col items-center">
                 <Calendar className="h-6 w-6 text-[#aa9578] mb-2" />
-                <span className="text-lg font-semibold">{property.year_built}</span>
+                <span className="text-lg font-semibold">{property.yearBuilt || 'N/A'}</span>
               </div>
             </div>
 
@@ -271,14 +256,14 @@ export default function PropertyPage({ params }: PageProps) {
             </div>
 
             {/* Additional Details */}
-            {property.more && Object.keys(property.more).length > 0 && (
+            {property.more && typeof property.more === 'object' && Object.keys(property.more).length > 0 && (
               <div className="mb-12">
                 <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Additional Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(property.more).map(([key, value]) => (
+                  {Object.entries(property.more as Record<string, any>).map(([key, value]) => (
                     <div key={key} className="flex justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="font-medium text-gray-700">{key}</span>
-                      <span className="text-gray-600">{value}</span>
+                      <span className="text-gray-600">{String(value)}</span>
                     </div>
                   ))}
                 </div>
@@ -286,12 +271,12 @@ export default function PropertyPage({ params }: PageProps) {
             )}
 
             {/* Video Tour */}
-            {property.youtube_video && (
+            {property.youtubeVideo && (
               <div className="mb-12">
                 <h2 className="font-tenor-sans text-2xl text-gray-900 mb-4">Video Tour</h2>
                 <VideoPlayer 
-                  videoUrl={property.youtube_video}
-                  posterImage={property.hero_image}
+                  videoUrl={property.youtubeVideo}
+                  posterImage={property.heroImage || undefined}
                 />
               </div>
             )}
@@ -309,25 +294,25 @@ export default function PropertyPage({ params }: PageProps) {
                     <Badge className={`px-3 py-1 rounded-full ${
                       property.status === "sold" 
                         ? "bg-red-600 text-white" 
-                        : property.status === "for_sale" 
+                        : property.status === "active" 
                         ? "bg-[#473729] text-white" 
                         : "bg-blue-600 text-white"
                     }`}>
-                      {property.status === "sold" ? "SOLD" : property.status === "for_sale" ? "For Sale" : "For Rent"}
+                      {property.status === "sold" ? "SOLD" : property.status === "active" ? "For Sale" : property.status}
                     </Badge>
                   </div>
 
-                  {property.property_tax && property.status !== "sold" && (
+                  {property.propertyTax && property.status !== "sold" && (
                     <div className="flex justify-between text-gray-600 mb-2">
                       <span>Property Tax:</span>
-                      <span>${property.property_tax.toLocaleString()}/year</span>
+                      <span>${property.propertyTax.toLocaleString()}/year</span>
                     </div>
                   )}
 
-                  {property.hoa_fees && property.status !== "sold" && (
+                  {property.hoaFees && property.status !== "sold" && (
                     <div className="flex justify-between text-gray-600">
                       <span>HOA Fees:</span>
-                      <span>${property.hoa_fees.toLocaleString()}/month</span>
+                      <span>${property.hoaFees.toLocaleString()}/month</span>
                     </div>
                   )}
                 </div>

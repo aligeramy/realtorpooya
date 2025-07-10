@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useIsMobile } from "@/hooks/use-mobile"
 import SearchFilters from "./search-filters"
 import TopNavMenu from "./top-nav-menu"
+import ResponsiveLogo from "./responsive-logo"
 
 export default function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -117,15 +118,7 @@ export default function HeroSection() {
         <div className="w-full py-6 px-6">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             {/* Logo on Left */}
-            <div>
-              <Image
-                src="/images/logo.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={219}
-                height={75}
-                className="h-auto"
-              />
-            </div>
+            <ResponsiveLogo variant="white" />
 
             {/* Right Side Elements */}
             <div className="flex items-center space-x-6">
@@ -140,13 +133,13 @@ export default function HeroSection() {
 
               {/* Social Media Icons */}
               <div className="hidden md:flex items-center space-x-4">
-                <Link href="#" className="text-white hover:text-white/80 transition-colors">
+                <Link href="https://www.facebook.com/realtorpooya" className="text-white hover:text-white/80 transition-colors">
                   <Facebook className="h-5 w-5" />
                 </Link>
-                <Link href="#" className="text-white hover:text-white/80 transition-colors">
+                <Link href="https://www.instagram.com/realtorpooya/" className="text-white hover:text-white/80 transition-colors">
                   <Instagram className="h-5 w-5" />
                 </Link>
-                <Link href="#" className="text-white hover:text-white/80 transition-colors">
+                <Link href="https://www.linkedin.com/in/pooya-pirayesh-758998366/" className="text-white hover:text-white/80 transition-colors">
                   <Linkedin className="h-5 w-5" />
                 </Link>
               </div>

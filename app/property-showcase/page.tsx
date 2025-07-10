@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -10,6 +10,7 @@ import SiteFooter from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import ResponsiveLogo from "@/components/responsive-logo"
 
 interface PropertyData {
   id: string
@@ -19,7 +20,7 @@ interface PropertyData {
   province: string
   status: "for_sale" | "sold" | "pending"
   price: number
-  bedrooms: number
+  bedrooms: string  // Changed from number to string to support "3+1", "4+x" format
   bathrooms: number
   squareFeet: number
   lotSize: string
@@ -44,7 +45,7 @@ const propertyData: PropertyData = {
   province: "ON",
   status: "sold",
   price: 4850000,
-  bedrooms: 5,
+  bedrooms: "5+1",
   bathrooms: 4.5,
   squareFeet: 4200,
   lotSize: "80' x 150'",
@@ -134,13 +135,7 @@ export default function PropertyShowcasePage() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <Link href="/">
-              <Image
-                src="/images/logo-color.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={250}
-                height={50}
-                className="h-10 w-auto"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
           </div>
           <TopNavMenu />
@@ -217,7 +212,7 @@ export default function PropertyShowcasePage() {
                   src={propertyData.images[selectedImageIndex]}
                   alt={`${propertyData.title} - Image ${selectedImageIndex + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-contain bg-gray-100"
                 />
               </div>
               <div className="grid grid-cols-4 md:grid-cols-8 gap-4">

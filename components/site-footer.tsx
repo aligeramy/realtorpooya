@@ -40,19 +40,19 @@ export default function SiteFooter() {
             </p>
             <div className="flex space-x-4">
               <Link
-                href="#"
+                href="https://www.facebook.com/realtorpooya"
                 className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[#aa9578] hover:border-[#aa9578] transition-colors"
               >
                 <Facebook className="h-5 w-5" />
               </Link>
               <Link
-                href="#"
+                href="https://www.instagram.com/realtorpooya/"
                 className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[#aa9578] hover:border-[#aa9578] transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </Link>
               <Link
-                href="#"
+                href="https://www.linkedin.com/in/pooya-pirayesh-758998366/"
                 className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-[#aa9578] hover:border-[#aa9578] transition-colors"
               >
                 <Linkedin className="h-5 w-5" />

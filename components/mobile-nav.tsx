@@ -30,11 +30,11 @@ export default function MobileNav() {
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center py-4">
             <Image
-              src="/images/logo.png"
+              src="/icon.png"
               alt="Pooya Pirayesh Luxury Real Estate"
-              width={180}
-              height={45}
-              className="h-auto"
+              width={60}
+              height={20}
+              className="h-auto max-h-[35px] w-auto"
             />
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
               <X className="h-6 w-6" />

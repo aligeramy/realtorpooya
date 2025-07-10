@@ -9,6 +9,7 @@ import TopNavMenu from "@/components/top-nav-menu"
 import SiteFooter from "@/components/site-footer"
 import { Button } from "@/components/ui/button"
 import ReactMarkdown from 'react-markdown'
+import ResponsiveLogo from "@/components/responsive-logo"
 
 interface BlogPost {
   id: string
@@ -69,13 +70,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div>
               <Link href="/">
-                <Image
-                  src="/images/logo-color.png"
-                  alt="Pooya Pirayesh Luxury Real Estate"
-                  width={250}
-                  height={50}
-                  className="h-10 w-auto"
-                />
+                <ResponsiveLogo variant="color" />
               </Link>
             </div>
             <TopNavMenu />
@@ -106,13 +101,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <div className="flex items-center justify-between max-w-7xl mx-auto">
             <div>
               <Link href="/">
-                <Image
-                  src="/images/logo-color.png"
-                  alt="Pooya Pirayesh Luxury Real Estate"
-                  width={250}
-                  height={50}
-                  className="h-10 w-auto"
-                />
+                <ResponsiveLogo variant="color" />
               </Link>
             </div>
             <TopNavMenu />
@@ -139,13 +128,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <Link href="/">
-              <Image
-                src="/images/logo-color.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={250}
-                height={50}
-                className="h-10 w-auto"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
           </div>
           <TopNavMenu />

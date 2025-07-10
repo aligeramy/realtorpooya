@@ -112,7 +112,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                   alt="Property"
                   fill
                   priority
-                  className="object-cover w-full h-full"
+                  className="object-contain w-full h-full"
                 />
               </div>
             </div>

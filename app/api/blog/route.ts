@@ -1,27 +1,15 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
+import { blog_posts } from '@/lib/db/schema'
+import { eq, desc } from 'drizzle-orm'
 
 export async function GET() {
   try {
-    const posts = await prisma.blogPost.findMany({
-      where: {
-        published: true
-      },
-      orderBy: {
-        publishedAt: 'desc'
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        category: true,
-        author: true,
-        publishedAt: true,
-        hero_image: true,
-        createdAt: true
-      }
-    })
+    const posts = await db
+      .select()
+      .from(blog_posts)
+      .where(eq(blog_posts.published, true))
+      .orderBy(desc(blog_posts.published_at))
 
     return NextResponse.json(posts)
   } catch (error) {

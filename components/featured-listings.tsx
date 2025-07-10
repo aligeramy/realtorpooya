@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import PropertyCard from "./property-card"
 import type { Property } from "@/types/property"
 
 export default function FeaturedListings() {
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const propertiesPerPage = 3
 
   useEffect(() => {
     const fetchFeaturedProperties = async () => {
@@ -30,6 +33,23 @@ export default function FeaturedListings() {
 
     fetchFeaturedProperties()
   }, [])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(properties.length / propertiesPerPage)
+  const startIndex = currentPage * propertiesPerPage
+  const currentProperties = properties.slice(startIndex, startIndex + propertiesPerPage)
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % totalPages)
+  }
+
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages)
+  }
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+  }
 
   if (loading) {
     return (
@@ -81,22 +101,69 @@ export default function FeaturedListings() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {properties.map((property) => (
+        {/* Properties Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          {currentProperties.map((property) => (
             <div key={property.id} className="h-full">
               <PropertyCard property={property} />
             </div>
           ))}
         </div>
 
-        {/* Only show "View All Listings" if there are 4 or more properties */}
-        {properties.length >= 4 && (
-          <div className="mt-12 text-center">
-            <Button className="bg-[#f3ecdf] text-[#aa9578] hover:bg-[#e9e0cc] rounded-full px-8 py-6 font-manrope text-lg">
-              View All Listings
+        {/* Navigation Controls - Only show if more than 3 properties */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center space-x-4">
+            {/* Previous Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToPrevPage}
+              className="rounded-full border-[#aa9578] text-[#aa9578] hover:bg-[#aa9578] hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            {/* Page Indicators */}
+            <div className="flex space-x-2">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goToPage(i)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    currentPage === i
+                      ? 'bg-[#aa9578]'
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Go to page ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Next Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={goToNextPage}
+              className="rounded-full border-[#aa9578] text-[#aa9578] hover:bg-[#aa9578] hover:text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         )}
+
+        {/* Property Status Info */}
+        {properties.length > 0 && (
+          <div className="mt-8 text-center text-sm text-gray-600">
+            Showing {currentProperties.length} of {properties.length}  properties
+          </div>
+        )}
+
+        {/* View All Listings Button */}
+        <div className="mt-12 text-center hidden">
+          <Button className="bg-[#f3ecdf] text-[#aa9578] hover:bg-[#e9e0cc] rounded-full px-8 py-6 font-manrope text-lg">
+            View All Listings
+          </Button>
+        </div>
       </div>
     </section>
   )

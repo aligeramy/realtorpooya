@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { ArrowRight, Calendar, User, ArrowLeft } from "lucide-react"
 import TopNavMenu from "@/components/top-nav-menu"
 import SiteFooter from "@/components/site-footer"
+import ResponsiveLogo from "@/components/responsive-logo"
 
 interface BlogPost {
   id: string
@@ -63,13 +64,7 @@ export default function BlogPage() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <Link href="/">
-              <Image
-                src="/images/logo-color.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={250}
-                height={50}
-                className="h-10 w-auto"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
           </div>
           <TopNavMenu />

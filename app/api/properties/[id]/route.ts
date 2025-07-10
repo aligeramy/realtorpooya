@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server"
-import { prisma } from '@/lib/prisma'
-import { findPropertyBySlug } from '@/lib/utils'
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { properties, propertyImages } from '@/lib/db/schema'
+import { eq, ne } from 'drizzle-orm'
+import { createAddressSlug, findPropertyBySlug } from '@/lib/utils'
 
 export async function GET(
   request: Request,
@@ -8,96 +10,61 @@ export async function GET(
 ) {
   try {
     const { id } = params
-    let property = null
+    let propertyData = null
 
-    // First, try to find by ID (for backward compatibility)
-    try {
-      property = await prisma.property.findUnique({
-        where: { id },
-        include: {
-          images: {
-            orderBy: { order: 'asc' }
-          },
-          videos: {
-            orderBy: { order: 'asc' }
-          },
-          features: true,
-          tags: true,
-        }
-      })
-    } catch (error) {
-      // ID might not be a valid UUID, continue to slug search
+    // First try to get by UUID (for direct ID access)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    
+    if (isUUID) {
+      const [result] = await db
+        .select()
+        .from(properties)
+        .where(eq(properties.id, id))
+      propertyData = result
     }
 
-    // If not found by ID, try to find by address slug
-    if (!property) {
-      const allProperties = await prisma.property.findMany({
-        include: {
-          images: {
-            orderBy: { order: 'asc' }
-          },
-          videos: {
-            orderBy: { order: 'asc' }
-          },
-          features: true,
-          tags: true,
-        }
-      })
-
-      // Transform to match expected format for slug search
-      const transformedProperties = allProperties.map(prop => ({
-        ...prop,
-        address: prop.address,
-        property_type: prop.property_type?.toLowerCase(),
-        status: prop.status.toLowerCase(),
-        listing_date: prop.listing_date?.toISOString() || prop.createdAt.toISOString(),
-        hero_image: prop.hero_image || prop.images.find((img) => img.is_hero)?.url || prop.images[0]?.url || "/placeholder.jpg",
-        features: prop.features.map((feature) => feature.name),
-        tags: prop.tags.map((tag) => tag.name),
-      }))
-
-      property = findPropertyBySlug(transformedProperties, id)
+    // If not found by UUID or not a UUID, try to find by slug
+    if (!propertyData) {
+      // Get all non-archived properties and search by slug
+      const allProperties = await db
+        .select()
+        .from(properties)
+        .where(ne(properties.status, 'archived'))
+      
+      propertyData = findPropertyBySlug(allProperties, id)
     }
 
-    if (!property) {
+    if (!propertyData) {
       return NextResponse.json(
         { error: 'Property not found' },
         { status: 404 }
       )
     }
 
-    // Transform data to match the expected format
-    const transformedProperty = {
-      id: property.id,
-      address: property.address,
-      city: property.city,
-      province: property.province,
-      postal_code: property.postal_code,
-      property_type: property.property_type?.toLowerCase(),
-      price: property.price,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      square_feet: property.square_feet,
-      lot_dimensions: property.lot_dimensions,
-      year_built: property.year_built,
-      hero_image: property.hero_image || property.images?.find(img => img.is_hero)?.url || property.images?.[0]?.url || "/placeholder.jpg",
-      status: property.status?.toLowerCase() || property.status,
-      listing_date: property.listing_date?.toISOString() || property.createdAt?.toISOString(),
-      description: property.description,
-      title: property.title,
-      features: property.features?.map ? property.features.map(feature => feature.name) : property.features || [],
-      tags: property.tags?.map ? property.tags.map(tag => tag.name) : property.tags || [],
-      videos: property.videos || [],
-      images: property.images || [],
-      featured: property.featured,
-      property_tax: property.property_tax,
-      hoa_fees: property.hoa_fees,
-      more: property.more,
-      media_urls: property.images?.map ? property.images.map(img => img.url) : property.media_urls,
-      youtube_video: property.youtube_video,
+    // Get images
+    const images = await db
+      .select()
+      .from(propertyImages)
+      .where(eq(propertyImages.propertyId, propertyData.id))
+      .orderBy(propertyImages.displayOrder)
+
+    // Combine all data
+    const property = {
+      ...propertyData,
+      images,
+      // Convert CRM fields to frontend format for backward compatibility
+      media_urls: propertyData.mediaUrls,
+      hero_image: propertyData.heroImage,
+      youtube_video: propertyData.youtubeVideo,
+      square_feet: propertyData.squareFeet,
+      year_built: propertyData.yearBuilt,
+      property_type: propertyData.propertyType,
+      postal_code: propertyData.postalCode,
+      listing_date: propertyData.listingDate?.toISOString(),
+      created_at: propertyData.createdAt?.toISOString(),
     }
 
-    return NextResponse.json(transformedProperty)
+    return NextResponse.json(property)
   } catch (error) {
     console.error('Error fetching property:', error)
     return NextResponse.json(

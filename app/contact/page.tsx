@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import TopNavMenu from "@/components/top-nav-menu"
 import SiteFooter from "@/components/site-footer"
+import ResponsiveLogo from "@/components/responsive-logo"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -77,13 +78,7 @@ export default function ContactPage() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <Link href="/">
-              <Image
-                src="/images/logo-color.png"
-                alt="Pooya Pirayesh Luxury Real Estate"
-                width={250}
-                height={50}
-                className="h-10 w-auto"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
           </div>
 
@@ -94,19 +89,19 @@ export default function ContactPage() {
             </div>
             <TopNavMenu />
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.facebook.com/realtorpooya" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
               </Link>
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.instagram.com/realtorpooya/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </Link>
-              <Link href="#" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+              <Link href="https://www.linkedin.com/in/pooya-pirayesh-758998366/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
                   <rect width="4" height="12" x="2" y="9" />
