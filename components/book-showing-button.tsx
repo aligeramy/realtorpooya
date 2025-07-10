@@ -3,13 +3,17 @@
 import * as React from "react"
 import { useState } from "react"
 import { Button, type ButtonProps } from "@/components/ui/button"
-import { Calendar, Phone, Mail, User, Clock, Send, X, CheckCircle } from "lucide-react"
+import { Calendar as CalendarIcon, Phone, Mail, User, Clock, Send, X, CheckCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { motion } from "framer-motion"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
   variant?: "primary" | "secondary" | "outline" | "text"
@@ -34,7 +38,7 @@ export default function BookShowingButton({
     name: "",
     email: "",
     phone: "",
-    preferredDate: "",
+    preferredDate: undefined as Date | undefined,
     preferredTime: "",
     message: "",
   })
@@ -54,7 +58,10 @@ export default function BookShowingButton({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          preferredDate: formData.preferredDate ? format(formData.preferredDate, 'yyyy-MM-dd') : '',
+        }),
       })
 
       const result = await response.json()
@@ -70,7 +77,7 @@ export default function BookShowingButton({
         name: "",
         email: "",
         phone: "",
-        preferredDate: "",
+        preferredDate: undefined,
         preferredTime: "",
         message: "",
       })
@@ -119,7 +126,7 @@ export default function BookShowingButton({
   return (
     <>
       <Button className={buttonStyles} onClick={() => setIsOpen(true)} {...props}>
-        {showIcon && <Calendar className="h-5 w-5 mr-2" />}
+        {showIcon && <CalendarIcon className="h-5 w-5 mr-2" />}
         {props.children || "Book a Showing"}
       </Button>
 
@@ -202,20 +209,35 @@ export default function BookShowingButton({
                 {/* Date & Time Row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="preferredDate" className="text-gray-700 text-sm font-medium">Preferred Date</Label>
-                <div className="relative">
-                  <Input
-                    id="preferredDate"
-                    name="preferredDate"
-                    type="date"
-                    value={formData.preferredDate}
-                    onChange={handleInputChange}
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                    required
-                  />
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
-                </div>
-              </div>
+                    <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                            !formData.preferredDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                          {formData.preferredDate ? (
+                            format(formData.preferredDate, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.preferredDate}
+                          onSelect={(date) => setFormData((prev) => ({ ...prev, preferredDate: date }))}
+                          disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>

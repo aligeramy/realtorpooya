@@ -200,7 +200,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
 
       {/* Thumbnail Navigation */}
       <div className="container mx-auto px-4  relative z-10">
-        <div className="bg-white rounded-xl shadow-lg p-4">
+        <div className="bg-white rounded-xl shadow-lg p-4 relative">
           <div className="overflow-x-auto overflow-y-visible p-1" ref={slideRef}>
             <div className="flex space-x-4 min-w-max py-1 px-1">
               {validImages.map((image, index) => (
@@ -223,6 +223,8 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
               ))}
             </div>
           </div>
+          {/* Right fade gradient */}
+          <div className="absolute right-4 top-4 bottom-4 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none rounded-r-xl"></div>
         </div>
       </div>
 

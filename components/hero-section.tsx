@@ -117,7 +117,7 @@ function PropertySearchWithSuggestions() {
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#fff]/70 backdrop-blur-md rounded-3xl shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto">
           {isLoading ? (
             <div className="p-4 text-center text-gray-500">
               Loading properties...
@@ -128,7 +128,7 @@ function PropertySearchWithSuggestions() {
                 <Link
                   key={property.id}
                   href={`/listings/${generateSlug(property)}`}
-                  className="block hover:bg-gray-50 transition-colors"
+                  className="block hover:bg-gray-50 transition-colors border-b border-gray-600/20 last:border-b-0"
                   onClick={() => setShowSuggestions(false)}
                 >
                   <div className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-b-0">
@@ -150,7 +150,7 @@ function PropertySearchWithSuggestions() {
 
                     {/* Property Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900 truncate">
+                      <div className="font-semibold text-gray-900 truncat font-tenor-sans">
                         {property.address}
                       </div>
                       <div className="text-sm text-gray-600 truncate">
@@ -193,11 +193,11 @@ function PropertySearchWithSuggestions() {
               {/* View All Listings Link */}
               <Link
                 href="/property-showcase"
-                className="block bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="block bg-[#000]/20 backdrop-blur-md hover:bg-[#eae7e1] transition-colors shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto"
                 onClick={() => setShowSuggestions(false)}
               >
                 <div className="p-4 text-center">
-                  <span className="text-blue-600 font-semibold">
+                  <span className="text-[#444] font-semibold font-tenor-sans">
                     View All Listings →
                   </span>
                 </div>
