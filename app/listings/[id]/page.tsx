@@ -512,8 +512,7 @@ export default function PropertyPage({ params }: PageProps) {
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-tenor-sans text-3xl text-gray-900">
-                      {property.status === "sold" ? "SOLD" : 
-                       property.status === "not_available" ? "NOT AVAILABLE" :
+                      {property.status === "not_available" ? "NOT AVAILABLE" :
                        (property.price ? formatPrice(property.price) : "Price upon request")}
                     </h3>
                     <Badge className={`px-3 py-1 rounded-full ${

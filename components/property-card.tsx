@@ -70,9 +70,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-tenor-sans text-xl text-gray-900">{propertyAddress}</h3>
             <span className="font-manrope font-semibold text-xl text-gray-900">
-              {property.status === "sold" ? "SOLD" : 
-               property.status === "not_available" ? "NOT AVAILABLE" : 
-               formatPrice(property.price)}
+              {property.status === "not_available" ? "NOT AVAILABLE" : formatPrice(property.price)}
             </span>
           </div>
 
