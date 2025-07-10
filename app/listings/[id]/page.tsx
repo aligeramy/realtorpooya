@@ -343,8 +343,8 @@ export default function PropertyPage({ params }: PageProps) {
               {/* Total Parking Space - only show if tps exists in more JSONB */}
               {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
                 <div className="flex flex-col items-center">
-                  <span className="text-sm text-[#aa9578] mb-2">Parking</span>
-                  <span className="text-lg font-semibold">{(property.more as Record<string, any>).tps} Total Parking Space</span>
+                  <span className="text-sm text-[#aa9578] mb-2">Total Parking Space</span>
+                  <span className="text-lg font-semibold">{(property.more as Record<string, any>).tps}</span>
                 </div>
               )}
             </div>
