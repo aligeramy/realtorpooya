@@ -472,7 +472,7 @@ export default function PropertyPage({ params }: PageProps) {
               {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
                 <div className="flex flex-col items-center">
                   <Car className="h-8 w-8 text-[#aa9578] mb-2" />
-                                      <span className="text-lg font-tenor-sans font-semibold">{(property.more as Record<string, any>).tps} Parking Space{(property.more as Record<string, any>).tps === '1' ? '' : 's'}</span>
+                                      <span className="text-lg font-tenor-sans font-semibold">{(property.more as Record<string, any>).tps} Tot. Prk Spc{(property.more as Record<string, any>).tps === '1' ? '' : 's'}</span>
                 </div>
               )}
             </div>
