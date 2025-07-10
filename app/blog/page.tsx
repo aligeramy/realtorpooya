@@ -83,7 +83,7 @@ export default function BlogPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 hidden">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -23,7 +23,7 @@ export default function Home() {
         <SuccessVideoSection />
         <RealEstateJourney />
       </section>
-      <section id="resources">
+      <section id="resources" className="hidden">
         <BlogSection />
       </section>
       <section id="contact">
