@@ -131,7 +131,7 @@ export default function BookShowingButton({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh]">
+        <DialogContent className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh] [&>button]:hidden">
           <DialogTitle className="sr-only">Book a Property Showing</DialogTitle>
           
           {!isSubmitted ? (
@@ -153,24 +153,25 @@ export default function BookShowingButton({
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                {/* Name & Email Row - Single column on mobile */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
-                    <div className="relative">
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="John Smith"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                        required
-                      />
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
-                    </div>
+                {/* Name - Full width */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
+                  <div className="relative">
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="John Smith"
+                      className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                      required
+                    />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                   </div>
+                </div>
 
+                {/* Email & Phone Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-700 text-sm font-medium">Email</Label>
                     <div className="relative">
@@ -187,26 +188,25 @@ export default function BookShowingButton({
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
                   </div>
-                </div>
 
-                {/* Phone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
-                  <div className="relative">
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="(416) 555-1234"
-                      className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                      required
-                    />
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
+                    <div className="relative">
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="(416) 555-1234"
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Date & Time Row - Single column on mobile */}
+                {/* Date & Time Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
