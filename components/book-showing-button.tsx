@@ -70,17 +70,17 @@ export default function BookShowingButton({
         setIsLoading(false)
         setIsSubmitted(true)
         // Reset after 3 seconds
-    setTimeout(() => {
+        setTimeout(() => {
           setIsSubmitted(false)
-      setIsOpen(false)
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        preferredDate: undefined,
-        preferredTime: "",
-        message: "",
-      })
+          setIsOpen(false)
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            preferredDate: undefined,
+            preferredTime: "",
+            message: "",
+          })
         }, 3000)
       } else {
         throw new Error(result.error || 'Failed to submit request')
@@ -131,83 +131,83 @@ export default function BookShowingButton({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-md w-full mx-4 p-0 rounded-2xl bg-white overflow-hidden">
+        <DialogContent className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh]">
           <DialogTitle className="sr-only">Book a Property Showing</DialogTitle>
           
           {!isSubmitted ? (
             <>
-          {/* Header */}
-              <div className="bg-gradient-to-br from-[#f3ecdf] to-[#e9e0cc] p-6 relative">
+              {/* Header */}
+              <div className="bg-gradient-to-br from-[#f3ecdf] to-[#e9e0cc] p-4 sm:p-6 relative">
                 <button
                   onClick={closeDialog}
-                  className="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                  className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
                 >
                   <X className="h-4 w-4 text-[#473729]" />
                 </button>
                 
                 <div className="text-center">
-                  <h3 className="font-tenor-sans text-2xl text-[#473729] mb-2">Book Your Showing</h3>
+                  <h3 className="font-tenor-sans text-xl sm:text-2xl text-[#473729] mb-2">Book Your Showing</h3>
                   <p className="text-[#8a7a63] text-sm">Quick and easy scheduling</p>
-            </div>
-          </div>
-
-          {/* Form */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                {/* Name & Email Row */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="John Smith"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                    required
-                  />
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                 </div>
               </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                {/* Name & Email Row - Single column on mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
+                    <div className="relative">
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="John Smith"
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                    </div>
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-700 text-sm font-medium">Email</Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
                         placeholder="john@email.com"
                         className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                    required
-                  />
+                        required
+                      />
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Phone */}
+                {/* Phone */}
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
-                <div className="relative">
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="(416) 555-1234"
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="(416) 555-1234"
                       className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                    required
-                  />
+                      required
+                    />
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
+                  </div>
                 </div>
-              </div>
 
-                {/* Date & Time Row */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Date & Time Row - Single column on mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
                     <Popover>
@@ -215,19 +215,21 @@ export default function BookShowingButton({
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm relative",
                             !formData.preferredDate && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
-                          {formData.preferredDate ? (
-                            format(formData.preferredDate, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          <span className="ml-6">
+                            {formData.preferredDate ? (
+                              format(formData.preferredDate, "MMM dd, yyyy")
+                            ) : (
+                              "Pick a date"
+                            )}
+                          </span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
                         <Calendar
                           mode="single"
                           selected={formData.preferredDate}
@@ -241,71 +243,71 @@ export default function BookShowingButton({
 
                   <div className="space-y-2">
                     <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>
-                <div className="relative">
-                  <Select
-                    name="preferredTime"
-                    value={formData.preferredTime}
+                    <div className="relative">
+                      <Select
+                        name="preferredTime"
+                        value={formData.preferredTime}
                         onValueChange={(value) => setFormData((prev: typeof formData) => ({ ...prev, preferredTime: value }))}
-                  >
+                      >
                         <SelectTrigger className="h-11 rounded-lg pl-10 border-gray-200 text-sm">
                           <SelectValue placeholder="Select time" />
-                    </SelectTrigger>
-                    <SelectContent>
+                        </SelectTrigger>
+                        <SelectContent>
                           <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
                           <SelectItem value="afternoon">Afternoon (12 PM - 5 PM)</SelectItem>
                           <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                        </SelectContent>
+                      </Select>
                       <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none z-10" />
                     </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Message */}
+                {/* Message */}
                 <div className="space-y-2">
                   <Label htmlFor="message" className="text-gray-700 text-sm font-medium">Message (Optional)</Label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
+                  <Textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
                     placeholder="Any specific requirements or questions..."
                     className="min-h-[80px] rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] resize-none text-sm"
                   />
-            </div>
+                </div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
                   className="w-full bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white rounded-lg h-12 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="mr-2"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                  {isLoading ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="mr-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                </motion.div>
-              ) : (
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    </motion.div>
+                  ) : (
                     <Send className="h-4 w-4 mr-2" />
-              )}
+                  )}
                   {isLoading ? "Scheduling..." : "Schedule Showing"}
-            </Button>
-          </form>
+                </Button>
+              </form>
             </>
           ) : (
             /* Success State */
@@ -313,7 +315,7 @@ export default function BookShowingButton({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="p-8 text-center"
+              className="p-6 sm:p-8 text-center"
             >
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="h-8 w-8 text-green-600" />
