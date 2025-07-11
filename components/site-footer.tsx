@@ -163,19 +163,30 @@ export default function SiteFooter() {
       <div className="border-t border-gray-200 py-6">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
+            <div className="flex flex-col items-start mb-4 md:mb-0">
+            <div className="flex items-center space-x-4">
+                <Image
+                  src="/images/lepage.png"
+                  alt="Royal LePage Your Community Realty"
+                  width={150}
+                  height={50}
+                  className="h-auto"
+                />
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/mls-black-1rmnXlTHQTGR6fPeklCHx40wdv3Lgx.png"
+                  alt="MLS Realtor"
+                  width={100}
+                  height={27}
+                  className="h-auto -mt-1"
+                />
+              </div>
               <p className="text-gray-500 text-sm mr-4">
                 © {new Date().getFullYear()} Pooya Pirayesh Luxury Real Estate. All rights reserved.
               </p>
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/mls-black-1rmnXlTHQTGR6fPeklCHx40wdv3Lgx.png"
-                alt="MLS Realtor"
-                width={80}
-                height={27}
-                className="h-auto"
-              />
+             
+
             </div>
-            <div className="text-gray-500 text-sm">
+            <div className="text-gray-500 text-xs">
               <p className="text-center md:text-right">
                 The trademarks REALTOR®, REALTORS®, and the REALTOR® logo are controlled by The Canadian Real Estate
                 Association (CREA).

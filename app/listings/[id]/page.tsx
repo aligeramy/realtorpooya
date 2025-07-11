@@ -455,24 +455,34 @@ export default function PropertyPage({ params }: PageProps) {
             </div>
 
             {/* Key Details */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 p-6 bg-[#f3ecdf] rounded-2xl">
-              <div className="flex flex-col items-center">
-                <Bed className="h-8 w-8 text-[#aa9578] mb-2" />
-                <span className="text-lg font-tenor-sans font-semibold">{property.bedrooms} Bedroom{property.bedrooms === '1' ? '' : 's'}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-12 p-4 sm:p-6 bg-[#f3ecdf] rounded-2xl">
+              <div className="flex flex-col items-center p-2 sm:p-0">
+                <Bed className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
+                <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.bedrooms}</span>
+                <span className="text-xs sm:text-sm text-gray-600 text-center">BEDROOMS</span>
               </div>
-              <div className="flex flex-col items-center">
-                <Bath className="h-8 w-8 text-[#aa9578] mb-2" />
-                <span className="text-lg font-tenor-sans font-semibold">{property.bathrooms} Bathrooms</span>
+              <div className="flex flex-col items-center p-2 sm:p-0">
+                <Bath className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
+                <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.bathrooms}</span>
+                <span className="text-xs sm:text-sm text-gray-600 text-center">BATHROOMS</span>
               </div>
-              <div className="flex flex-col items-center">
-                <Square className="h-8 w-8 text-[#aa9578] mb-2" />
-                <span className="text-lg font-tenor-sans font-semibold">{property.squareFeet?.toLocaleString() || 'N/A'} sq ft</span>
+              <div className="flex flex-col items-center p-2 sm:p-0">
+                <Square className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
+                <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.squareFeet?.toLocaleString() || 'N/A'}</span>
+                <span className="text-xs sm:text-sm text-gray-600 text-center">SQ FT</span>
               </div>
               {/* Total Parking Space - only show if tps exists in more JSONB */}
-              {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
-                <div className="flex flex-col items-center">
-                  <Car className="h-8 w-8 text-[#aa9578] mb-2" />
-                                      <span className="text-lg font-tenor-sans font-semibold">{(property.more as Record<string, any>).tps} Tot. Prk Spc{(property.more as Record<string, any>).tps === '1' ? '' : 's'}</span>
+              {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps ? (
+                <div className="flex flex-col items-center p-2 sm:p-0">
+                  <Car className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
+                  <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{(property.more as Record<string, any>).tps}</span>
+                  <span className="text-xs sm:text-sm text-gray-600 text-center">PARKING</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center p-2 sm:p-0">
+                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
+                  <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.yearBuilt || '2024'}</span>
+                  <span className="text-xs sm:text-sm text-gray-600 text-center">BUILT</span>
                 </div>
               )}
             </div>

@@ -21,7 +21,9 @@ export default function Home() {
         <AboutAgent />
         <TestimonialSection />
         <SuccessVideoSection />
-        <RealEstateJourney />
+        <div className="hidden md:block">
+          <RealEstateJourney />
+        </div>
       </section>
       <section id="resources" className="hidden">
         <BlogSection />

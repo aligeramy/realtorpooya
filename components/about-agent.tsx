@@ -28,18 +28,18 @@ export default function AboutAgent() {
               capitalize on a GTA luxury segment.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8">
-              <div className="flex flex-col p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-4xl text-[#473729]  rounded-full">150+</span>
-                <span className="text-gray-600">Properties Sold</span>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 mb-8">
+              <div className="flex flex-col p-3 sm:p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">150+</span>
+                <span className="text-gray-600 text-xs sm:text-base">Properties Sold</span>
               </div>
-              <div className="flex flex-col p-5 bg-[#473729]/5 border border-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-4xl text-[#473729]">$500M+</span>
-                <span className="text-gray-600">In Sales Volume</span>
+              <div className="flex flex-col p-3 sm:p-5 bg-[#473729]/5 border border-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">$500M+</span>
+                <span className="text-gray-600 text-xs sm:text-base">In Sales Volume</span>
               </div>
-              <div className="flex flex-col p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-4xl text-[#473729]">12+</span>
-                <span className="text-gray-600">Years Experience</span>
+              <div className="flex flex-col p-3 sm:p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
+                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">12+</span>
+                <span className="text-gray-600 text-xs sm:text-base">Years Experience</span>
               </div>
             </div>
 
