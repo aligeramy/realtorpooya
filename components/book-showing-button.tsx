@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button, type ButtonProps } from "@/components/ui/button"
 import { Calendar as CalendarIcon, Phone, Mail, User, Clock, Send, X, CheckCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import BookShowingMobile from "./book-showing-mobile"
 
 interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
   variant?: "primary" | "secondary" | "outline" | "text"
@@ -30,6 +31,7 @@ export default function BookShowingButton({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,6 +40,24 @@ export default function BookShowingButton({
     preferredTime: "",
     message: "",
   })
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Emit custom event when form opens/closes to disable menu
+  useEffect(() => {
+    const event = new CustomEvent('bookingFormToggle', { detail: { isOpen } })
+    window.dispatchEvent(event)
+  }, [isOpen])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -119,6 +139,19 @@ export default function BookShowingButton({
   // Get today's date in YYYY-MM-DD format for min date
   const today = new Date().toISOString().split('T')[0]
 
+  // Use mobile form on mobile devices
+  if (isMobile) {
+    return (
+      <>
+        <Button className={buttonStyles} onClick={() => setIsOpen(true)} {...props}>
+          {showIcon && <CalendarIcon className="h-5 w-5 mr-2" />}
+          {props.children || "Book a Showing"}
+        </Button>
+        <BookShowingMobile isOpen={isOpen} onClose={closeDialog} />
+      </>
+    )
+  }
+
   return (
     <>
       <Button className={buttonStyles} onClick={() => setIsOpen(true)} {...props}>
@@ -127,7 +160,10 @@ export default function BookShowingButton({
       </Button>
 
       <Dialog open={isOpen} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh] [&>button]:hidden">
+        <DialogContent 
+          className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh] [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogTitle className="sr-only">Book a Property Showing</DialogTitle>
           
           {!isSubmitted ? (
@@ -202,38 +238,53 @@ export default function BookShowingButton({
                   </div>
                 </div>
 
-                {/* Date & Time Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Date & Time Row - Custom Picker */}
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="preferredDate" className="text-gray-700 text-sm font-medium">Preferred Date</Label>
-                    <div className="relative">
-                      <Input
-                        id="preferredDate"
-                        name="preferredDate"
-                        type="date"
-                        value={formData.preferredDate}
-                        onChange={handleInputChange}
-                        min={today}
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                        required
-                      />
-                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none" />
+                    <Label className="text-gray-700 text-sm font-medium">Select Date</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {Array.from({ length: 8 }, (_, i) => {
+                        const date = new Date()
+                        date.setDate(date.getDate() + i)
+                        const dateStr = date.toISOString().split('T')[0]
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, preferredDate: dateStr }))}
+                            className={cn(
+                              "p-2 rounded-lg border text-xs font-medium transition-colors",
+                              formData.preferredDate === dateStr
+                                ? "bg-[#aa9578] text-white border-[#aa9578]"
+                                : "bg-white text-gray-700 border-gray-200 hover:border-[#aa9578]"
+                            )}
+                          >
+                            <div>{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                            <div className="text-sm">{date.getDate()}</div>
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Preferred Time</Label>
-                    <div className="relative">
-                      <Input
-                        id="preferredTime"
-                        name="preferredTime"
-                        type="time"
-                        value={formData.preferredTime}
-                        onChange={handleInputChange}
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
-                        required
-                      />
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none" />
+                    <Label className="text-gray-700 text-sm font-medium">Select Time</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"].map((time) => (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, preferredTime: time }))}
+                          className={cn(
+                            "p-2 rounded-lg border text-xs font-medium transition-colors",
+                            formData.preferredTime === time
+                              ? "bg-[#aa9578] text-white border-[#aa9578]"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-[#aa9578]"
+                          )}
+                        >
+                          {time}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -254,7 +305,7 @@ export default function BookShowingButton({
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !formData.name || !formData.email || !formData.phone || !formData.preferredDate || !formData.preferredTime}
                   className="w-full bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white rounded-lg h-12 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                 >
                   {isLoading ? (
