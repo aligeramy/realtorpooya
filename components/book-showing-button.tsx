@@ -9,10 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { motion } from "framer-motion"
-import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 
 interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
@@ -21,6 +18,23 @@ interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
   showIcon?: boolean
   fullWidth?: boolean
   className?: string
+}
+
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  preferredDate: string
+  preferredTime: string
+  message: string
+}
+
+interface FormErrors {
+  name?: string
+  email?: string
+  phone?: string
+  preferredDate?: string
+  preferredTime?: string
 }
 
 export default function BookShowingButton({
@@ -34,22 +48,80 @@ export default function BookShowingButton({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
-    preferredDate: undefined as Date | undefined,
+    preferredDate: "",
     preferredTime: "",
     message: "",
   })
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required"
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address"
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required"
+    } else if (!/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number"
+    }
+    
+    if (!formData.preferredDate) {
+      newErrors.preferredDate = "Please select a date"
+    } else {
+      const selectedDate = new Date(formData.preferredDate)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (selectedDate < today) {
+        newErrors.preferredDate = "Please select a future date"
+      }
+    }
+    
+    if (!formData.preferredTime) {
+      newErrors.preferredTime = "Please select a time"
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev: typeof formData) => ({ ...prev, [name]: value }))
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev: FormErrors) => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }))
+    
+    // Clear error when user makes selection
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev: FormErrors) => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setIsLoading(true)
 
     try {
@@ -58,10 +130,7 @@ export default function BookShowingButton({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          preferredDate: formData.preferredDate ? format(formData.preferredDate, 'yyyy-MM-dd') : '',
-        }),
+        body: JSON.stringify(formData),
       })
 
       const result = await response.json()
@@ -77,10 +146,11 @@ export default function BookShowingButton({
             name: "",
             email: "",
             phone: "",
-            preferredDate: undefined,
+            preferredDate: "",
             preferredTime: "",
             message: "",
           })
+          setErrors({})
         }, 3000)
       } else {
         throw new Error(result.error || 'Failed to submit request')
@@ -95,7 +165,20 @@ export default function BookShowingButton({
   const closeDialog = () => {
     setIsOpen(false)
     setIsSubmitted(false)
+    setErrors({})
   }
+
+  // Get today's date in YYYY-MM-DD format for min date
+  const today = new Date()
+  const todayString = today.toISOString().split('T')[0]
+
+  // Generate time slots
+  const timeSlots = [
+    { value: "morning", label: "Morning (9:00 AM - 12:00 PM)" },
+    { value: "early-afternoon", label: "Early Afternoon (12:00 PM - 3:00 PM)" },
+    { value: "afternoon", label: "Afternoon (3:00 PM - 6:00 PM)" },
+    { value: "evening", label: "Evening (6:00 PM - 8:00 PM)" },
+  ]
 
   // Define variant styles
   const variantStyles = {
@@ -141,6 +224,7 @@ export default function BookShowingButton({
                 <button
                   onClick={closeDialog}
                   className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                  aria-label="Close dialog"
                 >
                   <X className="h-4 w-4 text-[#473729]" />
                 </button>
@@ -155,25 +239,35 @@ export default function BookShowingButton({
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 {/* Name - Full width */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
+                  <Label htmlFor="name" className="text-gray-700 text-sm font-medium">
+                    Full Name <span className="text-red-500">*</span>
+                  </Label>
                   <div className="relative">
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="John Smith"
-                      className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                      placeholder="Enter your full name"
+                      className={cn(
+                        "pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                        errors.name && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      )}
                       required
                     />
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                   </div>
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                  )}
                 </div>
 
                 {/* Email & Phone Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-700 text-sm font-medium">Email</Label>
+                    <Label htmlFor="email" className="text-gray-700 text-sm font-medium">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
                     <div className="relative">
                       <Input
                         id="email"
@@ -181,98 +275,118 @@ export default function BookShowingButton({
                         type="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="john@email.com"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        placeholder="your@email.com"
+                        className={cn(
+                          "pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                          errors.email && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        )}
                         required
                       />
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
+                    {errors.email && (
+                      <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
+                    <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">
+                      Phone <span className="text-red-500">*</span>
+                    </Label>
                     <div className="relative">
                       <Input
                         id="phone"
                         name="phone"
+                        type="tel"
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="(416) 555-1234"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        className={cn(
+                          "pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                          errors.phone && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        )}
                         required
                       />
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
+                    {errors.phone && (
+                      <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Date & Time Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm relative",
-                            !formData.preferredDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
-                          <span className="ml-6">
-                            {formData.preferredDate ? (
-                              format(formData.preferredDate, "MMM dd, yyyy")
-                            ) : (
-                              "Pick a date"
-                            )}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                        <Calendar
-                          mode="single"
-                          selected={formData.preferredDate}
-                          onSelect={(date) => setFormData((prev) => ({ ...prev, preferredDate: date }))}
-                          disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="preferredDate" className="text-gray-700 text-sm font-medium">
+                      Date <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="preferredDate"
+                        name="preferredDate"
+                        type="date"
+                        value={formData.preferredDate}
+                        onChange={handleInputChange}
+                        min={todayString}
+                        className={cn(
+                          "pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm",
+                          errors.preferredDate && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        )}
+                        required
+                      />
+                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none" />
+                    </div>
+                    {errors.preferredDate && (
+                      <p className="text-red-500 text-xs mt-1">{errors.preferredDate}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>
+                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">
+                      Time <span className="text-red-500">*</span>
+                    </Label>
                     <div className="relative">
                       <Select
                         name="preferredTime"
                         value={formData.preferredTime}
-                        onValueChange={(value) => setFormData((prev: typeof formData) => ({ ...prev, preferredTime: value }))}
+                        onValueChange={(value) => handleSelectChange("preferredTime", value)}
                       >
-                        <SelectTrigger className="h-11 rounded-lg pl-10 border-gray-200 text-sm">
-                          <SelectValue placeholder="Select time" />
+                        <SelectTrigger className={cn(
+                          "h-11 rounded-lg pl-10 border-gray-200 text-sm",
+                          errors.preferredTime && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        )}>
+                          <SelectValue placeholder="Select time slot" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
-                          <SelectItem value="afternoon">Afternoon (12 PM - 5 PM)</SelectItem>
-                          <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
+                          {timeSlots.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>
+                              {slot.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none z-10" />
                     </div>
+                    {errors.preferredTime && (
+                      <p className="text-red-500 text-xs mt-1">{errors.preferredTime}</p>
+                    )}
                   </div>
                 </div>
 
                 {/* Message */}
                 <div className="space-y-2">
-                  <Label htmlFor="message" className="text-gray-700 text-sm font-medium">Message (Optional)</Label>
+                  <Label htmlFor="message" className="text-gray-700 text-sm font-medium">
+                    Additional Message (Optional)
+                  </Label>
                   <Textarea
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
-                    placeholder="Any specific requirements or questions..."
+                    placeholder="Any specific requirements, questions, or preferences..."
                     className="min-h-[80px] rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] resize-none text-sm"
+                    rows={3}
                   />
                 </div>
 
@@ -307,6 +421,12 @@ export default function BookShowingButton({
                   )}
                   {isLoading ? "Scheduling..." : "Schedule Showing"}
                 </Button>
+
+                {/* Form Footer */}
+                <div className="text-center text-xs text-gray-500 mt-4">
+                  <p>* Required fields</p>
+                  <p className="mt-1">Need help? Call us at <a href="tel:416-553-7707" className="text-[#aa9578] hover:underline">416-553-7707</a></p>
+                </div>
               </form>
             </>
           ) : (
@@ -326,6 +446,7 @@ export default function BookShowingButton({
               </p>
               <div className="text-xs text-gray-500">
                 <p>Expected response time: Within 2 hours</p>
+                <p className="mt-1">Check your email for confirmation</p>
               </div>
             </motion.div>
           )}
