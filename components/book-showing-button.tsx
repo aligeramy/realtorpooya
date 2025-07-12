@@ -8,11 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { motion } from "framer-motion"
-import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 
 interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
@@ -38,7 +34,7 @@ export default function BookShowingButton({
     name: "",
     email: "",
     phone: "",
-    preferredDate: undefined as Date | undefined,
+    preferredDate: "",
     preferredTime: "",
     message: "",
   })
@@ -58,10 +54,7 @@ export default function BookShowingButton({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          preferredDate: formData.preferredDate ? format(formData.preferredDate, 'yyyy-MM-dd') : '',
-        }),
+        body: JSON.stringify(formData),
       })
 
       const result = await response.json()
@@ -77,7 +70,7 @@ export default function BookShowingButton({
             name: "",
             email: "",
             phone: "",
-            preferredDate: undefined,
+            preferredDate: "",
             preferredTime: "",
             message: "",
           })
@@ -122,6 +115,9 @@ export default function BookShowingButton({
     rounded-full font-manrope tracking-tight flex items-center justify-center
     ${className || ""}
   `
+
+  // Get today's date in YYYY-MM-DD format for min date
+  const today = new Date().toISOString().split('T')[0]
 
   return (
     <>
@@ -209,56 +205,35 @@ export default function BookShowingButton({
                 {/* Date & Time Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm relative",
-                            !formData.preferredDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
-                          <span className="ml-6">
-                            {formData.preferredDate ? (
-                              format(formData.preferredDate, "MMM dd, yyyy")
-                            ) : (
-                              "Pick a date"
-                            )}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                        <Calendar
-                          mode="single"
-                          selected={formData.preferredDate}
-                          onSelect={(date) => setFormData((prev) => ({ ...prev, preferredDate: date }))}
-                          disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="preferredDate" className="text-gray-700 text-sm font-medium">Preferred Date</Label>
+                    <div className="relative">
+                      <Input
+                        id="preferredDate"
+                        name="preferredDate"
+                        type="date"
+                        value={formData.preferredDate}
+                        onChange={handleInputChange}
+                        min={today}
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none" />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>
+                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Preferred Time</Label>
                     <div className="relative">
-                      <Select
+                      <Input
+                        id="preferredTime"
                         name="preferredTime"
+                        type="time"
                         value={formData.preferredTime}
-                        onValueChange={(value) => setFormData((prev: typeof formData) => ({ ...prev, preferredTime: value }))}
-                      >
-                        <SelectTrigger className="h-11 rounded-lg pl-10 border-gray-200 text-sm">
-                          <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
-                          <SelectItem value="afternoon">Afternoon (12 PM - 5 PM)</SelectItem>
-                          <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none z-10" />
+                        onChange={handleInputChange}
+                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        required
+                      />
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none" />
                     </div>
                   </div>
                 </div>
