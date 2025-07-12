@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         Royal LePage Your Community Realty
         
         Phone: 416-553-7707
-        Email: info@realtorpooya.ca
+        Email: sold@realtorpooya.ca
         Website: realtorpooya.ca
       `
 
