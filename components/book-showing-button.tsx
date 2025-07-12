@@ -4,7 +4,7 @@ import * as React from "react"
 import { useState } from "react"
 import { Button, type ButtonProps } from "@/components/ui/button"
 import { Calendar as CalendarIcon, Phone, Mail, User, Clock, Send, X, CheckCircle } from "lucide-react"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,6 +23,15 @@ interface BookShowingButtonProps extends Omit<ButtonProps, "variant" | "size"> {
   className?: string
 }
 
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  preferredDate: Date | undefined
+  preferredTime: string
+  message: string
+}
+
 export default function BookShowingButton({
   variant = "primary",
   size = "default",
@@ -34,18 +43,18 @@ export default function BookShowingButton({
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
-    preferredDate: undefined as Date | undefined,
+    preferredDate: undefined,
     preferredTime: "",
     message: "",
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev: typeof formData) => ({ ...prev, [name]: value }))
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,40 +73,47 @@ export default function BookShowingButton({
         }),
       })
 
-      const result = await response.json()
-
-      if (response.ok) {
-        setIsLoading(false)
-        setIsSubmitted(true)
-        // Reset after 3 seconds
-        setTimeout(() => {
-          setIsSubmitted(false)
-          setIsOpen(false)
-          setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            preferredDate: undefined,
-            preferredTime: "",
-            message: "",
-          })
-        }, 3000)
-      } else {
-        throw new Error(result.error || 'Failed to submit request')
+      if (!response.ok) {
+        throw new Error('Failed to submit request')
       }
+
+      setIsSubmitted(true)
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false)
+        setIsOpen(false)
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          preferredDate: undefined,
+          preferredTime: "",
+          message: "",
+        })
+      }, 3000)
     } catch (error) {
       console.error('Error submitting form:', error)
-      setIsLoading(false)
       alert('Sorry, there was an error submitting your request. Please try again or call us directly at 416-553-7707.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const closeDialog = () => {
+  const resetForm = () => {
     setIsOpen(false)
     setIsSubmitted(false)
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      preferredDate: undefined,
+      preferredTime: "",
+      message: "",
+    })
   }
 
-  // Define variant styles
+  // Button styles
   const variantStyles = {
     primary: "bg-[#473729] hover:bg-[#3a9aa7] text-white",
     secondary: "bg-[#f3ecdf] text-[#aa9578] hover:bg-[#e9e0cc]",
@@ -105,7 +121,6 @@ export default function BookShowingButton({
     text: "bg-transparent hover:bg-transparent text-[#aa9578] hover:text-[#473729] p-0",
   }
 
-  // Define size styles
   const sizeStyles = {
     default: "px-6 py-2",
     sm: "px-4 py-1 text-sm",
@@ -114,14 +129,13 @@ export default function BookShowingButton({
     icon: "p-2",
   }
 
-  // Combine styles
-  const buttonStyles = `
-    ${variantStyles[variant]} 
-    ${variant !== "text" ? sizeStyles[size] : ""} 
-    ${fullWidth ? "w-full" : ""} 
-    rounded-full font-manrope tracking-tight flex items-center justify-center
-    ${className || ""}
-  `
+  const buttonStyles = cn(
+    variantStyles[variant],
+    variant !== "text" && sizeStyles[size],
+    fullWidth && "w-full",
+    "rounded-full font-manrope tracking-tight flex items-center justify-center transition-all duration-200",
+    className
+  )
 
   return (
     <>
@@ -130,110 +144,123 @@ export default function BookShowingButton({
         {props.children || "Book a Showing"}
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={closeDialog}>
-        <DialogContent className="max-w-lg w-full mx-2 sm:mx-4 p-0 rounded-2xl bg-white overflow-hidden max-h-[95vh] [&>button]:hidden">
-          <DialogTitle className="sr-only">Book a Property Showing</DialogTitle>
+      <Dialog open={isOpen} onOpenChange={resetForm}>
+        <DialogContent className="sm:max-w-md w-[95%] sm:w-full p-0 rounded-xl bg-white overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Book a Property Showing</DialogTitle>
+          </DialogHeader>
           
+          {/* Close button - positioned to avoid mobile nav conflicts */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={resetForm}
+            className="absolute top-4 left-4 z-10 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full"
+            aria-label="Close dialog"
+          >
+            <X className="h-4 w-4 text-gray-600" />
+          </Button>
+
           {!isSubmitted ? (
             <>
               {/* Header */}
-              <div className="bg-gradient-to-br from-[#f3ecdf] to-[#e9e0cc] p-4 sm:p-6 relative">
-                <button
-                  onClick={closeDialog}
-                  className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
-                >
-                  <X className="h-4 w-4 text-[#473729]" />
-                </button>
-                
-                <div className="text-center">
-                  <h3 className="font-tenor-sans text-xl sm:text-2xl text-[#473729] mb-2">Book Your Showing</h3>
-                  <p className="text-[#8a7a63] text-sm">Quick and easy scheduling</p>
-                </div>
+              <div className="bg-gradient-to-r from-[#f3ecdf] to-[#e9e0cc] px-6 py-8 text-center">
+                <h2 className="font-tenor-sans text-2xl text-[#473729] mb-2">Book Your Showing</h2>
+                <p className="text-[#8a7a63] text-sm">Let's schedule your property visit</p>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                {/* Name - Full width */}
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {/* Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-700 text-sm font-medium">Name</Label>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                    Full Name *
+                  </Label>
                   <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     <Input
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="John Smith"
-                      className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                      placeholder="Enter your full name"
+                      className="pl-10 h-11 border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
                       required
                     />
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                   </div>
                 </div>
 
-                {/* Email & Phone Row */}
+                {/* Email and Phone */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-700 text-sm font-medium">Email</Label>
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                      Email Address *
+                    </Label>
                     <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                       <Input
                         id="email"
                         name="email"
                         type="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="john@email.com"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        placeholder="your@email.com"
+                        className="pl-10 h-11 border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
                         required
                       />
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">Phone Number</Label>
+                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                      Phone Number *
+                    </Label>
                     <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                       <Input
                         id="phone"
                         name="phone"
+                        type="tel"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="(416) 555-1234"
-                        className="pl-10 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm"
+                        placeholder="(416) 555-0123"
+                        className="pl-10 h-11 border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
                         required
                       />
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                     </div>
                   </div>
                 </div>
 
-                {/* Date & Time Row */}
+                {/* Date and Time */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-gray-700 text-sm font-medium">Preferred Date</Label>
+                    <Label className="text-sm font-medium text-gray-700">
+                      Preferred Date
+                    </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full h-11 pl-10 justify-start text-left font-normal rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] text-sm relative",
+                            "w-full h-11 pl-10 justify-start text-left font-normal border-gray-200 hover:border-[#aa9578]",
                             !formData.preferredDate && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578]" />
                           <span className="ml-6">
                             {formData.preferredDate ? (
-                              format(formData.preferredDate, "MMM dd, yyyy")
+                              format(formData.preferredDate, "PPP")
                             ) : (
-                              "Pick a date"
+                              "Select date"
                             )}
                           </span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start" side="bottom">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={formData.preferredDate}
-                          onSelect={(date) => setFormData((prev) => ({ ...prev, preferredDate: date }))}
+                          onSelect={(date) => setFormData(prev => ({ ...prev, preferredDate: date }))}
                           disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
                           initialFocus
                         />
@@ -242,14 +269,16 @@ export default function BookShowingButton({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preferredTime" className="text-gray-700 text-sm font-medium">Time</Label>
+                    <Label className="text-sm font-medium text-gray-700">
+                      Preferred Time
+                    </Label>
                     <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] z-10" />
                       <Select
-                        name="preferredTime"
                         value={formData.preferredTime}
-                        onValueChange={(value) => setFormData((prev: typeof formData) => ({ ...prev, preferredTime: value }))}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, preferredTime: value }))}
                       >
-                        <SelectTrigger className="h-11 rounded-lg pl-10 border-gray-200 text-sm">
+                        <SelectTrigger className="h-11 pl-10 border-gray-200 focus:border-[#aa9578]">
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
                         <SelectContent>
@@ -258,21 +287,22 @@ export default function BookShowingButton({
                           <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#aa9578] pointer-events-none z-10" />
                     </div>
                   </div>
                 </div>
 
                 {/* Message */}
                 <div className="space-y-2">
-                  <Label htmlFor="message" className="text-gray-700 text-sm font-medium">Message (Optional)</Label>
+                  <Label htmlFor="message" className="text-sm font-medium text-gray-700">
+                    Additional Message (Optional)
+                  </Label>
                   <Textarea
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
                     placeholder="Any specific requirements or questions..."
-                    className="min-h-[80px] rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] resize-none text-sm"
+                    className="min-h-[80px] border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578] resize-none"
                   />
                 </div>
 
@@ -280,52 +310,52 @@ export default function BookShowingButton({
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white rounded-lg h-12 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                  className="w-full h-12 bg-gradient-to-r from-[#aa9578] to-[#8a7a63] hover:from-[#8a7a63] hover:to-[#aa9578] text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {isLoading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="mr-2"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="mr-2"
                       >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                    </motion.div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                      </motion.div>
+                      Scheduling...
+                    </>
                   ) : (
-                    <Send className="h-4 w-4 mr-2" />
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Schedule Showing
+                    </>
                   )}
-                  {isLoading ? "Scheduling..." : "Schedule Showing"}
                 </Button>
               </form>
             </>
           ) : (
             /* Success State */
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="p-6 sm:p-8 text-center"
+              transition={{ duration: 0.3 }}
+              className="p-8 text-center"
             >
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
                 <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="font-tenor-sans text-xl text-gray-900 mb-2">Showing Scheduled!</h3>
+              </motion.div>
+              <h3 className="font-tenor-sans text-xl text-gray-900 mb-2">
+                Showing Scheduled!
+              </h3>
               <p className="text-gray-600 text-sm mb-4">
-                Thank you! I'll contact you shortly to confirm the details.
+                Thank you for your request. I'll contact you within 2 hours to confirm the details.
               </p>
               <div className="text-xs text-gray-500">
-                <p>Expected response time: Within 2 hours</p>
+                <p>Questions? Call directly: 416-553-7707</p>
               </div>
             </motion.div>
           )}
