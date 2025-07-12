@@ -30,7 +30,7 @@ const playfairDisplay = Playfair_Display({
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Pooya Pirayesh Luxury Real Estate",
+      title: "Pooya Pirayeshakbari Luxury Real Estate",
   description: "Find your dream home in Toronto and the GTA",
   generator: 'v0.dev'
 }

@@ -80,7 +80,7 @@ export default function SuccessVideoSection() {
               viewport={{ once: true }}
               className="text-white/90 text-lg md:text-xl mb-6 max-w-3xl font-light"
             >
-              At Pooya Pirayesh Luxury Real Estate, we only succeed when you achieve your goal, whether it's selling,
+              At Pooya Pirayeshakbari Luxury Real Estate, we only succeed when you achieve your goal, whether it's selling,
               letting your property, or buying a property. Unlike traditional estate agents, our brokerage model
               operates on a commission-only basis, meaning our trusted property partners are not only highly experienced
               and knowledgeable but also must be successful to be part of our team.

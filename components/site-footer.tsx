@@ -29,13 +29,13 @@ export default function SiteFooter() {
           <div className="space-y-6">
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Logo_Black_RealtorPooya-pj0A0Uo2XwYRg6zyPepeLZYVH9KRL8.png"
-              alt="Pooya Pirayesh Luxury Real Estate"
+              alt="Pooya Pirayeshakbari Luxury Real Estate"
               width={250}
               height={100}
               className="h-auto"
             />
             <p className="text-gray-600 font-light">
-              Pooya Pirayesh is a Toronto-based luxury realtor who shepherds clients through the full property
+              Pooya Pirayeshakbari is a Toronto-based luxury realtor who shepherds clients through the full property
               lifecycle—from sourcing land to selling the finished home for maximum return.
             </p>
             <div className="flex space-x-4">
@@ -181,7 +181,7 @@ export default function SiteFooter() {
                 />
               </div>
               <p className="text-gray-500 text-sm mr-4">
-                © {new Date().getFullYear()} Pooya Pirayesh Luxury Real Estate. All rights reserved.
+                © {new Date().getFullYear()} Pooya Pirayeshakbari Luxury Real Estate. All rights reserved.
               </p>
              
 

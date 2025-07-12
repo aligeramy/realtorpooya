@@ -92,7 +92,7 @@ export default function TestimonialTimeline() {
       <div className="container mx-auto px-4 mb-16">
         <h2 className="font-tenor-sans text-4xl md:text-5xl text-center text-gray-900 mb-4">Client Testimonials</h2>
         <p className="text-[#aa9578] font-manrope text-lg md:text-xl text-center max-w-2xl mx-auto">
-          Discover what our clients have to say about their experience working with Pooya Pirayesh
+          Discover what our clients have to say about their experience working with Pooya Pirayeshakbari
         </p>
       </div>
 

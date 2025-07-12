@@ -22,26 +22,13 @@ export default function AboutAgent() {
             </h2>
 
             <p className="text-gray-700 font-manrope text-lg leading-relaxed mb-8">
-              Pooya Pirayesh is a Toronto-based engineer-turned-luxury-realtor who shepherds clients through the full
+              Pooya Pirayeshakbari is a Toronto-based engineer-turned-luxury-realtor who shepherds clients through the full
               property lifecycle—sourcing land, overseeing seven-figure custom builds, then listing the finished home
               for maximum return. His boots-on-site experience and data-driven market strategy have helped clients
               capitalize on a GTA luxury segment.
             </p>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 mb-8">
-              <div className="flex flex-col p-3 sm:p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">150+</span>
-                <span className="text-gray-600 text-xs sm:text-base">Properties Sold</span>
-              </div>
-              <div className="flex flex-col p-3 sm:p-5 bg-[#473729]/5 border border-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">$500M+</span>
-                <span className="text-gray-600 text-xs sm:text-base">In Sales Volume</span>
-              </div>
-              <div className="flex flex-col p-3 sm:p-5 border border-[#473729]/5 bg-[#473729]/5 rounded-md">
-                <span className="font-tenor-sans text-2xl sm:text-4xl text-[#473729]">12+</span>
-                <span className="text-gray-600 text-xs sm:text-base">Years Experience</span>
-              </div>
-            </div>
+
 
             <BookShowingButton variant="primary" size="xl" />
           </motion.div>
@@ -57,7 +44,7 @@ export default function AboutAgent() {
             <div className="relative h-[500px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-xl">
               <Image
                 src="/images/pooya-profile.jpg"
-                alt="Pooya Pirayesh"
+                alt="Pooya Pirayeshakbari"
                 fill
                 className="object-cover object-top"
                 priority
@@ -68,7 +55,7 @@ export default function AboutAgent() {
                 <h4 className="text-[#473729] font-manrope text-xs uppercase tracking-widest mb-1">
                   Luxury Real Estate Specialist
                 </h4>
-                <h3 className="font-tenor-sans text-3xl tracking-tighter text-gray-900 mb-2">Pooya Pirayesh</h3>
+                <h3 className="font-tenor-sans text-3xl tracking-tighter text-gray-900 mb-2">Pooya Pirayeshakbari</h3>
                 <p className="text-gray-700 mb-4">
                   From our first conversation to the final handshake, I provide the insight and support you need to
                   achieve your property goals.

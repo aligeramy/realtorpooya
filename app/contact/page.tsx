@@ -174,20 +174,16 @@ export default function ContactPage() {
                   <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
                     <Image
                       src="/images/agent-pooya.jpg"
-                      alt="Pooya Pirayesh"
+                      alt="Pooya Pirayeshakbari"
                       width={80}
                       height={80}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-tenor-sans text-2xl text-[#473729] mb-2">Pooya Pirayesh</h3>
+                    <h3 className="font-tenor-sans text-2xl text-[#473729] mb-2">Pooya Pirayeshakbari</h3>
                     <p className="text-[#aa9578] mb-4">Luxury Real Estate Specialist</p>
-                    <div className="space-y-2 text-gray-700">
-                      <p className="text-sm">12+ Years Experience</p>
-                      <p className="text-sm">150+ Properties Sold</p>
-                      <p className="text-sm">$500M+ in Sales Volume</p>
-                    </div>
+
                   </div>
                 </div>
               </div>

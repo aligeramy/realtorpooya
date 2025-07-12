@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         If you have any urgent questions, please don't hesitate to call me directly at 416-553-7707.
         
         Best regards,
-        Pooya Pirayesh
+        Pooya Pirayeshakbari
         Luxury Real Estate Specialist
         Royal LePage Your Community Realty
         
@@ -105,9 +105,9 @@ export async function POST(request: Request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `Pooya Pirayesh <${process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca'}>`,
+          from: `Pooya Pirayeshakbari <${process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca'}>`,
           to: [email],
-          subject: 'Property Showing Request Received - Pooya Pirayesh Real Estate',
+          subject: 'Property Showing Request Received - Pooya Pirayeshakbari Real Estate',
           text: autoReplyContent,
         }),
       })

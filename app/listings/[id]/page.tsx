@@ -592,10 +592,10 @@ export default function PropertyPage({ params }: PageProps) {
                   <h4 className="font-tenor-sans text-xl text-[#473729] mb-4">Agent Information</h4>
                   <div className="flex items-center">
                     <div className="w-16 h-16 rounded-full bg-gray-200 mr-4 overflow-hidden relative">
-                      <Image src="/images/agent-pooya.jpg" alt="Pooya Pirayesh" fill className="object-cover" />
+                      <Image src="/images/agent-pooya.jpg" alt="Pooya Pirayeshakbari" fill className="object-cover" />
                     </div>
                     <div>
-                      <h5 className="font-manrope font-semibold text-[#473729]">Pooya Pirayesh</h5>
+                      <h5 className="font-manrope font-semibold text-[#473729]">Pooya Pirayeshakbari</h5>
                       <p className="text-[#aa9578]">Luxury Real Estate Specialist</p>
                       <p className="text-[#aa9578]">416-553-7707</p>
                     </div>

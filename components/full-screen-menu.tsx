@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
+import { useRouter, usePathname } from "next/navigation"
 
 interface FullScreenMenuProps {
   onClose: () => void
@@ -14,11 +15,13 @@ const menuItems = [
   { name: "Home", href: "#home" },
   { name: "Listings", href: "#listings" },
   { name: "About", href: "#about" },
-  { name: "Resources", href: "#resources" },
   { name: "Contact", href: "#contact" }
 ]
 
 export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  
   const menuItemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -71,7 +74,7 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
         <div className="mb-12">
           <Image
             src="/images/logo.png"
-            alt="Pooya Pirayesh Luxury Real Estate"
+            alt="Pooya Pirayeshakbari Luxury Real Estate"
             width={250}
             height={60}
             className="h-auto"
@@ -88,9 +91,16 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
                   onClick={(e) => {
                     e.preventDefault()
                     onClose()
-                    const element = document.querySelector(item.href)
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' })
+                    
+                    // If we're not on the home page, navigate to home first
+                    if (pathname !== '/') {
+                      router.push('/' + item.href)
+                    } else {
+                      // If we're on the home page, scroll to the section
+                      const element = document.querySelector(item.href)
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' })
+                      }
                     }
                   }}
                 >

@@ -14,7 +14,7 @@ export default function ResponsiveLogo({ variant = "white", className = "" }: Re
       {/* Mobile Logo - Use icon-w.png for white, icon.png for color with max 35px height */}
       <Image
         src={mobileSrc}
-        alt="Pooya Pirayesh Luxury Real Estate"
+        alt="Pooya Pirayeshakbari Luxury Real Estate"
         width={50}
         height={15}
         className="h-auto max-h-[35px] w-auto md:hidden"
@@ -22,7 +22,7 @@ export default function ResponsiveLogo({ variant = "white", className = "" }: Re
       {/* Desktop Logo - Use white or color variant with max 35px height */}
       <Image
         src={desktopSrc}
-        alt="Pooya Pirayesh Luxury Real Estate"
+        alt="Pooya Pirayeshakbari Luxury Real Estate"
         width={variant === "white" ? 110 : 120}
         height={variant === "white" ? 30 : 25}
         className="h-auto max-h-[35px] w-auto hidden md:block"
