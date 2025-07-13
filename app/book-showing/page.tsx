@@ -231,9 +231,9 @@ function BookShowingForm() {
           <div>
             <Label className="text-[#473729] text-center text-md block mb-2">Preferred Time</Label>
             <div className="grid grid-cols-3 gap-2">
-              {renderTimeCard("morning", "Morning\n(9-12)")}
-              {renderTimeCard("afternoon", "Afternoon\n(12-5)")}
-              {renderTimeCard("evening", "Evening\n(5-8)")}
+              {renderTimeCard("morning", "Morning\n(9am-12pm)")}
+              {renderTimeCard("afternoon", "Afternoon\n(12pm-5pm)")}
+              {renderTimeCard("evening", "Evening\n(5pm-8pm)")}
             </div>
           </div>
         </div>
