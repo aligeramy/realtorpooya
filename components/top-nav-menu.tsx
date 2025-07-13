@@ -12,15 +12,15 @@ export default function TopNavMenu() {
 
   return (
     <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
-      <DialogTrigger asChild>
-        <div className="flex items-center bg-[#f3ecdf] backdrop-blur-sm rounded-full p-1 cursor-pointer">
-          <BookShowingButton variant="primary" size="default" className="mr-2" />
-          <div className="flex items-center bg-transparent px-4 py-2">
+      <div className="flex items-center bg-[#f3ecdf] backdrop-blur-sm rounded-full p-1">
+        <BookShowingButton variant="primary" size="default" className="mr-2" />
+        <DialogTrigger asChild>
+          <div className="flex items-center bg-transparent px-4 py-2 cursor-pointer">
             <Menu className="h-5 w-5 text-[#aa9578] mr-2" />
             <span className="text-[#aa9578] font-manrope tracking-tight">Menu</span>
           </div>
-        </div>
-      </DialogTrigger>
+        </DialogTrigger>
+      </div>
       <AnimatePresence>
         {menuOpen && (
           <DialogContent

@@ -574,7 +574,7 @@ export default function PropertyPage({ params }: PageProps) {
                       Property Sold
                     </Button>
                   ) : (
-                    <BookShowingButton fullWidth size="xl" className="mb-4" />
+                    <BookShowingButton fullWidth size="xl" className="mb-4" propertyId={use(params).id} />
                   )}
 
                   <Link href="/contact">

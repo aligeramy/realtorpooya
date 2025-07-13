@@ -208,8 +208,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-manrope font-semibold text-gray-900">Email</h4>
-                    <a href="mailto:info@realtorpooya.ca" className="text-[#aa9578] hover:text-[#473729] transition-colors">
-                      info@realtorpooya.ca
+                    <a href="mailto:sold@realtorpooya.ca" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+                      sold@realtorpooya.ca
                     </a>
                   </div>
                 </div>
@@ -502,7 +502,7 @@ export default function ContactPage() {
                 </p>
                 <Button 
                   className="bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full px-6 py-3"
-                  onClick={() => window.location.href = 'mailto:info@realtorpooya.ca'}
+                  onClick={() => window.location.href = 'mailto:sold@realtorpooya.ca'}
                 >
                   Send Email
                 </Button>

@@ -111,7 +111,7 @@ export default function SiteFooter() {
               </li>
               <li className="flex items-start">
                 <Mail className="h-5 w-5 text-[#aa9578] mr-3 mt-0.5" />
-                <p className="text-gray-600">info@realtorpooya.ca</p>
+                <p className="text-gray-600">sold@realtorpooya.ca</p>
               </li>
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-[#aa9578] mr-3 mt-0.5" />
