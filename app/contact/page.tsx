@@ -220,7 +220,9 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-manrope font-semibold text-gray-900">Office</h4>
-                    <p className="text-gray-700">123 Bay Street, Suite 1500<br />Toronto, ON M5J 2X2</p>
+                    <p className="text-gray-700">187 King Street East,
+                  <br />
+                  Toronto, ON, M5A 1J5</p>
                   </div>
                 </div>
 
