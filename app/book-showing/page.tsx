@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,7 +32,7 @@ interface Property {
   // Add other fields as needed
 }
 
-export default function BookShowingPage() {
+function BookShowingForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const propertyId = searchParams.get("propertyId") ?? undefined
@@ -305,5 +305,13 @@ export default function BookShowingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BookShowingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <BookShowingForm />
+    </Suspense>
   )
 } 
