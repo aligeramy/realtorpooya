@@ -12,42 +12,14 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-// Sample properties for the buyer form
-const sampleProperties = [
-  {
-    id: "prop1",
-    title: "Modern Architectural Masterpiece",
-    address: "123 Luxury Lane, Toronto",
-    price: "$4,800,500",
-    image: "/images/property-1.jpg",
-    beds: 4,
-    baths: 2,
-  },
-  {
-    id: "prop2",
-    title: "Contemporary Waterfront Villa",
-    address: "456 Prestige Ave, Toronto",
-    price: "$4,250,000",
-    image: "/images/property-2.jpg",
-    beds: 4,
-    baths: 2,
-  },
-  {
-    id: "prop3",
-    title: "Mediterranean-inspired Luxury Estate",
-    address: "789 Elite Street, Toronto",
-    price: "$3,508,000",
-    image: "/images/property-3.jpg",
-    beds: 3,
-    baths: 2,
-  },
-]
+import type { PropertyWithDetails } from "@/types/property"
 
 export default function InteractiveContact() {
   const [contactType, setContactType] = useState<"buy" | "sell" | null>(null)
   const [step, setStep] = useState(1)
   const [selectedProperties, setSelectedProperties] = useState<string[]>([])
+  const [properties, setProperties] = useState<PropertyWithDetails[]>([])
+  const [loadingProperties, setLoadingProperties] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -63,6 +35,27 @@ export default function InteractiveContact() {
     sellingReason: "",
   })
   const formRef = useRef<HTMLDivElement>(null)
+
+  // Fetch properties when user reaches step 3 of buy form
+  useEffect(() => {
+    if (contactType === "buy" && step === 3 && properties.length === 0) {
+      const fetchProperties = async () => {
+        setLoadingProperties(true)
+        try {
+          const response = await fetch('/api/properties/featured')
+          if (response.ok) {
+            const data = await response.json()
+            setProperties(data.slice(0, 6)) // Show first 6 properties
+          }
+        } catch (error) {
+          console.error('Error fetching properties:', error)
+        } finally {
+          setLoadingProperties(false)
+        }
+      }
+      fetchProperties()
+    }
+  }, [contactType, step, properties.length])
 
   // Scroll to form when contact type is selected
   useEffect(() => {
@@ -91,6 +84,7 @@ export default function InteractiveContact() {
     setContactType(null)
     setStep(1)
     setSelectedProperties([])
+    setProperties([])
     setFormData({
       name: "",
       email: "",
@@ -113,6 +107,33 @@ export default function InteractiveContact() {
 
   const prevStep = () => {
     setStep((prev) => prev - 1)
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price)
+  }
+
+  const getPropertyImage = (property: PropertyWithDetails) => {
+    if (property.images && property.images.length > 0) {
+      return property.images[0].url
+    }
+    if (property.heroImage) {
+      return property.heroImage
+    }
+    return "/placeholder.jpg"
+  }
+
+  const getPropertyTitle = (property: PropertyWithDetails) => {
+    // Use description if it's a string, otherwise create a title from address
+    if (typeof property.description === 'string' && property.description) {
+      return property.description
+    }
+    return `Property at ${property.address}`
   }
 
   return (
@@ -143,7 +164,7 @@ export default function InteractiveContact() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 max-w-4xl mx-auto"
           >
-            <Link href="/contact" className="flex-1">
+            <Link href="/contact?type=buy" className="flex-1">
             <motion.div
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
@@ -162,7 +183,7 @@ export default function InteractiveContact() {
             </motion.div>
             </Link>
 
-            <Link href="/contact" className="flex-1">
+            <Link href="/contact?type=sell" className="flex-1">
             <motion.div
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
@@ -469,46 +490,52 @@ export default function InteractiveContact() {
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                          {sampleProperties.map((property) => (
-                            <motion.div
-                              key={property.id}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
-                                selectedProperties.includes(property.id) ? "border-[#aa9578]" : "border-[#e9e0cc]"
-                              }`}
-                              onClick={() => handlePropertyToggle(property.id)}
-                            >
-                              <div className="relative aspect-[4/3]">
-                                <Image
-                                  src={property.image || "/placeholder.svg"}
-                                  alt={property.title}
-                                  fill
-                                  className="object-cover"
-                                />
-                                {selectedProperties.includes(property.id) && (
-                                  <div className="absolute top-2 right-2 bg-[#aa9578] text-white rounded-full p-1">
-                                    <Check className="h-4 w-4" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="p-4 bg-white">
-                                <h5 className="font-tenor-sans text-lg text-gray-900 mb-1 truncate">
-                                  {property.title}
-                                </h5>
-                                <div className="flex items-center text-gray-500 text-sm mb-2">
-                                  <MapPin className="h-3 w-3 mr-1" />
-                                  <span className="truncate">{property.address}</span>
+                          {loadingProperties ? (
+                            <p className="text-center py-8">Loading properties...</p>
+                          ) : properties.length === 0 ? (
+                            <p className="text-center py-8">No properties found matching your criteria.</p>
+                          ) : (
+                            properties.map((property) => (
+                              <motion.div
+                                key={property.id}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
+                                  selectedProperties.includes(property.id) ? "border-[#aa9578]" : "border-[#e9e0cc]"
+                                }`}
+                                onClick={() => handlePropertyToggle(property.id)}
+                              >
+                                <div className="relative aspect-[4/3]">
+                                  <Image
+                                    src={getPropertyImage(property)}
+                                    alt={getPropertyTitle(property)}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                  {selectedProperties.includes(property.id) && (
+                                    <div className="absolute top-2 right-2 bg-[#aa9578] text-white rounded-full p-1">
+                                      <Check className="h-4 w-4" />
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium text-[#aa9578]">{property.price}</span>
-                                  <div className="text-xs text-gray-500">
-                                    {property.beds} beds • {property.baths} baths
+                                <div className="p-4 bg-white">
+                                  <h5 className="font-tenor-sans text-lg text-gray-900 mb-1 truncate">
+                                    {getPropertyTitle(property)}
+                                  </h5>
+                                  <div className="flex items-center text-gray-500 text-sm mb-2">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    <span className="truncate">{property.address}, {property.city}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-medium text-[#aa9578]">{formatPrice(property.price)}</span>
+                                    <div className="text-xs text-gray-500">
+                                      {property.bedrooms} beds • {property.bathrooms} baths
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </motion.div>
-                          ))}
+                              </motion.div>
+                            ))
+                          )}
                         </div>
                       </div>
 

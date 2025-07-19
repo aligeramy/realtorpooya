@@ -128,7 +128,7 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
           </p>
           <p className="flex items-center">
             <Mail className="h-5 w-5 text-white mr-3" />
-            <span>info@pooyapirayesh.com</span>
+            <span>sold@realtorpooya.ca</span>
           </p>
         </motion.div>
 

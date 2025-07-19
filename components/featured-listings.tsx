@@ -108,7 +108,7 @@ function FeaturedPropertiesContent() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative px-16 md:px-20"> {/* Add horizontal padding to make room for arrows */}
       {/* Navigation Arrows */}
       {properties.length > propertiesPerPage && (
         <>
@@ -117,8 +117,8 @@ function FeaturedPropertiesContent() {
             size="icon"
             onClick={prevSlide}
             disabled={!canGoPrev}
-            className={`absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-10 h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-lg border border-gray-200 transition-all duration-200 ${
-              !canGoPrev ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105'
+            className={`absolute left-0 top-1/2 transform -translate-y-1/2 z-10 h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-lg border border-gray-200 transition-all duration-200 ${
+              !canGoPrev ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105 hover:shadow-xl'
             }`}
           >
             <ChevronLeft className="h-5 w-5 text-gray-700" />
@@ -129,8 +129,8 @@ function FeaturedPropertiesContent() {
             size="icon"
             onClick={nextSlide}
             disabled={!canGoNext}
-            className={`absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-10 h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-lg border border-gray-200 transition-all duration-200 ${
-              !canGoNext ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105'
+            className={`absolute right-0 top-1/2 transform -translate-y-1/2 z-10 h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-lg border border-gray-200 transition-all duration-200 ${
+              !canGoNext ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105 hover:shadow-xl'
             }`}
           >
             <ChevronRight className="h-5 w-5 text-gray-700" />
