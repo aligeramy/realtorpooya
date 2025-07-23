@@ -82,7 +82,7 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
     
     <div class="footer">
       <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-        <img src="https://realtorpooya.ca/images/agent-photo.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
+        <img src="https://realtorpooya.ca/images/agent-pooya.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
         <div style="text-align: left;">
           <div style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">Pooya Pirayeshakbari</div>
           <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Luxury Real Estate Specialist</div>
@@ -140,7 +140,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://realtorpooya.ca/images/logo.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 60px; height: auto;" />
+      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 30px; height: auto;" />
     </div>
     
     <div class="content">
@@ -172,7 +172,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
     
     <div class="footer">
       <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-        <img src="https://realtorpooya.ca/images/agent-photo.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
+        <img src="https://realtorpooya.ca/images/agent-pooya.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
         <div style="text-align: left;">
           <div style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">Pooya Pirayeshakbari</div>
           <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Luxury Real Estate Specialist</div>
@@ -182,7 +182,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
         </div>
       </div>
       <div style="text-align: center;">
-        <img src="https://realtorpooya.ca/images/lepage-logo.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
+        <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
       </div>
     </div>
   </div>
