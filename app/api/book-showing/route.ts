@@ -112,9 +112,10 @@ function createShowingNotificationEmailHTML({ name, email, phone, preferredDate,
           </div>
         </div>
       </div>
-      <div style="text-align: center;">
-        <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
-      </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; text-align: center;">
+      <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
     </div>
   </div>
 </body>
@@ -211,9 +212,10 @@ function createShowingAutoReplyEmailHTML({ name, preferredDate, preferredTime }:
           </div>
         </div>
       </div>
-      <div style="text-align: center;">
-        <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
-      </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; text-align: center;">
+      <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
     </div>
   </div>
 </body>
