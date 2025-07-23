@@ -49,7 +49,7 @@ function createShowingNotificationEmailHTML({ name, email, phone, preferredDate,
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 60px; height: auto;" />
+      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 50px; height: auto;" />
     </div>
     
     <div class="content">
@@ -162,7 +162,7 @@ function createShowingAutoReplyEmailHTML({ name, preferredDate, preferredTime }:
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 30px; height: auto;" />
+      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 50px; height: auto;" />
     </div>
     
     <div class="content">
