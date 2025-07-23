@@ -12,10 +12,12 @@ interface FullScreenMenuProps {
 }
 
 const menuItems = [
-  { name: "Home", href: "#home" },
-  { name: "Listings", href: "#listings" },
-  { name: "About", href: "#about" },
-  { name: "Contact", href: "#contact" }
+  { name: "Home", href: "/" },
+  { name: "Listings", href: "/listings" },
+  { name: "Property Showcase", href: "/property-showcase" },
+  { name: "Blog", href: "/blog" },
+  { name: "Book Showing", href: "/book-showing" },
+  { name: "Contact", href: "/contact" }
 ]
 
 export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
@@ -88,20 +90,9 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
                 <Link
                   href={item.href}
                   className="block font-tenor-sans text-3xl md:text-4xl text-white hover:text-[#473729] transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault()
+                  onClick={() => {
                     onClose()
-                    
-                    // If we're not on the home page, navigate to home first
-                    if (pathname !== '/') {
-                      router.push('/' + item.href)
-                    } else {
-                      // If we're on the home page, scroll to the section
-                      const element = document.querySelector(item.href)
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth' })
-                      }
-                    }
+                    router.push(item.href)
                   }}
                 >
                   {item.name}

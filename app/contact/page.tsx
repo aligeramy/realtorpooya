@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import Image from "next/image"
+import TopNavMenu from "@/components/top-nav-menu"
+import ResponsiveLogo from "@/components/responsive-logo"
 
 function ContactForm() {
   const searchParams = useSearchParams()
@@ -94,27 +96,80 @@ function ContactForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f9f6f1] to-[#f3ecdf]">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-[#e9e0cc]">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+      <div className="w-full py-6 px-6 bg-white">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          {/* Logo on Left */}
+          <div>
             <Link href="/">
-              <Image
-                src="/icon.png"
-                alt="Pooya Pirayeshakbari Luxury Real Estate"
-                width={40}
-                height={40}
-                className="h-auto w-auto text-[#aa9578]"
-              />
+              <ResponsiveLogo variant="color" />
             </Link>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center text-[#aa9578]">
-                <Phone className="h-4 w-4 mr-2" />
-                <span className="font-medium">416-553-7707</span>
-              </div>
-              <div className="flex items-center text-[#aa9578]">
-                <Mail className="h-4 w-4 mr-2" />
-                <span className="font-medium">sold@realtorpooya.ca</span>
-              </div>
+          </div>
+
+          {/* Right Side Elements */}
+          <div className="flex items-center space-x-6">
+            {/* Phone Number */}
+            <div className="hidden md:flex items-center text-[#aa9578] font-manrope tracking-tight">
+              <Phone className="h-4 w-4 mr-2" />
+              <span>416-553-7707</span>
+            </div>
+
+            {/* Menu Container */}
+            <TopNavMenu />
+
+            {/* Social Media Icons */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link href="https://www.facebook.com/realtorpooya" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-facebook"
+                >
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                </svg>
+              </Link>
+              <Link href="https://www.instagram.com/realtorpooya/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-instagram"
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+              </Link>
+              <Link href="https://www.linkedin.com/in/pooya-pirayeshakbari/" className="text-[#aa9578] hover:text-[#473729] transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-linkedin"
+                >
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect width="4" height="12" x="2" y="9" />
+                  <circle cx="4" cy="4" r="2" />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>
