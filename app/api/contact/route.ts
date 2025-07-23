@@ -37,14 +37,15 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
       .content { padding: 20px; }
       .info-row { flex-direction: column; }
       .info-label { min-width: auto; margin-bottom: 5px; }
+      .footer div[style*="display: flex"] { flex-direction: column; text-align: center; }
+      .footer img[style*="border-radius"] { margin-right: 0; margin-bottom: 15px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">Pooya Pirayeshakbari</div>
-      <div style="color: rgba(255,255,255,0.9); margin-top: 5px; font-size: 14px;">Luxury Real Estate Specialist</div>
+      <img src="https://realtorpooya.ca/images/logo.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 60px; height: auto;" />
     </div>
     
     <div class="content">
@@ -80,11 +81,18 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
     </div>
     
     <div class="footer">
-      <div style="font-weight: 600; margin-bottom: 10px;">Pooya Pirayeshakbari</div>
-      <div style="color: rgba(255,255,255,0.9); font-size: 14px;">
-        Royal LePage Your Community Realty<br>
-        Phone: 416-553-7707 | Email: sold@realtorpooya.ca<br>
-        Website: realtorpooya.ca
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+        <img src="https://realtorpooya.ca/images/agent-photo.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
+        <div style="text-align: left;">
+          <div style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">Pooya Pirayeshakbari</div>
+          <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Luxury Real Estate Specialist</div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">
+            Phone: 416-553-7707 | Email: sold@realtorpooya.ca
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center;">
+        <img src="https://realtorpooya.ca/images/lepage-logo.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
       </div>
     </div>
   </div>
@@ -124,14 +132,15 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
       .content { padding: 20px; }
       .contact-row { flex-direction: column; text-align: center; }
       .contact-label { margin-right: 0; margin-bottom: 5px; }
+      .footer div[style*="display: flex"] { flex-direction: column; text-align: center; }
+      .footer img[style*="border-radius"] { margin-right: 0; margin-bottom: 15px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">Pooya Pirayeshakbari</div>
-      <div style="color: rgba(255,255,255,0.9); margin-top: 5px; font-size: 14px;">Luxury Real Estate Specialist</div>
+      <img src="https://realtorpooya.ca/images/logo.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 60px; height: auto;" />
     </div>
     
     <div class="content">
@@ -140,8 +149,8 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
       <p class="message">Dear ${name},</p>
       
       <div class="highlight-box">
-        <p style="color: #aa9578; font-weight: 600; font-size: 18px; margin-bottom: 10px;">Message Received Successfully</p>
-        <p style="color: #473729;">I have received your message and will get back to you within 24 hours.</p>
+        <p style="color: #aa9578; font-weight: 600; font-size: 18px; margin-bottom: 10px;">Thank You!</p>
+        <p style="color: #473729;">Your message has been received successfully.</p>
       </div>
       
       <div class="contact-info">
@@ -159,18 +168,22 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
           <span class="contact-value">realtorpooya.ca</span>
         </div>
       </div>
-      
-      <p style="text-align: center; color: #8a7a63; font-style: italic; margin-top: 20px;">
-        Looking forward to helping you with your real estate needs!
-      </p>
     </div>
     
     <div class="footer">
-      <div class="agent-info">
-        <div class="agent-name">Pooya Pirayeshakbari</div>
-        <div class="agent-title">Luxury Real Estate Specialist</div>
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+        <img src="https://realtorpooya.ca/images/agent-photo.jpg" alt="Pooya Pirayeshakbari" style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px;" />
+        <div style="text-align: left;">
+          <div style="font-weight: 600; font-size: 18px; margin-bottom: 5px;">Pooya Pirayeshakbari</div>
+          <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Luxury Real Estate Specialist</div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">
+            Phone: 416-553-7707 | Email: sold@realtorpooya.ca
+          </div>
+        </div>
       </div>
-      <div class="company">Royal LePage Your Community Realty</div>
+      <div style="text-align: center;">
+        <img src="https://realtorpooya.ca/images/lepage-logo.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
+      </div>
     </div>
   </div>
 </body>
