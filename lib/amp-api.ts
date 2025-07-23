@@ -36,12 +36,17 @@ class AMPAPIService {
 
   constructor() {
     this.apiKey = process.env.TREB_KEY || ''
+    // Only throw error when actually using the service, not during module loading
+  }
+
+  private checkApiKey() {
     if (!this.apiKey) {
       throw new Error('TREB_KEY environment variable is required')
     }
   }
 
   private async makeRequest<T>(endpoint: string): Promise<AMPResponse<T>> {
+    this.checkApiKey()
     const url = `${this.baseUrl}${endpoint}`
     
     const response = await fetch(url, {

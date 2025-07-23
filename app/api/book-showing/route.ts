@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify({
           from: process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca',
-          to: [process.env.EMAIL_TO || 'realtorpooya@gmail.com'],
+          to: [process.env.EMAIL_TO || 'sold@realtorpooya.ca'],
           subject: emailSubject,
           text: emailContent,
         }),
