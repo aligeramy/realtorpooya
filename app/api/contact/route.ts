@@ -45,7 +45,7 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://realtorpooya.ca/images/logo.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 60px; height: auto;" />
+      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 30px; height: auto;" />
     </div>
     
     <div class="content">
@@ -92,7 +92,7 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
         </div>
       </div>
       <div style="text-align: center;">
-        <img src="https://realtorpooya.ca/images/lepage-logo.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
+        <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
       </div>
     </div>
   </div>
@@ -274,9 +274,9 @@ export async function POST(request: Request) {
       } catch (emailError) {
         console.error('EXCEPTION while sending email:', emailError)
         console.error('Error details:', {
-          message: emailError.message,
-          stack: emailError.stack,
-          name: emailError.name
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+          stack: emailError instanceof Error ? emailError.stack : undefined,
+          name: emailError instanceof Error ? emailError.name : 'Unknown'
         })
       }
     }
