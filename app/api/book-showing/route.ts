@@ -276,6 +276,7 @@ export async function POST(request: Request) {
           to: [process.env.EMAIL_TO || 'sold@realtorpooya.ca'],
           subject: emailSubject,
           html: emailContent,
+          reply_to: 'sold@realtorpooya.ca',
         }),
       })
 
@@ -307,6 +308,7 @@ export async function POST(request: Request) {
           to: [email],
           subject: 'Property Showing Request Received - Pooya Pirayeshakbari Real Estate',
           html: autoReplyContent,
+          reply_to: 'sold@realtorpooya.ca',
         }),
       })
     } catch (autoReplyError) {
