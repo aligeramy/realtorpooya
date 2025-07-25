@@ -36,11 +36,19 @@ function PropertySearchWithSuggestions() {
     if (!searchQuery.trim()) return true
     
     const query = searchQuery.toLowerCase()
+    
+    // Handle description field which can be a JSON object or string
+    const descriptionText = typeof property.description === 'string' 
+      ? property.description 
+      : typeof property.description === 'object' && property.description
+        ? JSON.stringify(property.description)
+        : ''
+    
     return (
       property.address?.toLowerCase().includes(query) ||
       property.city?.toLowerCase().includes(query) ||
       property.propertyType?.toLowerCase().includes(query) ||
-      property.description?.toLowerCase().includes(query)
+      descriptionText.toLowerCase().includes(query)
     )
   })
 
@@ -204,20 +212,18 @@ function PropertySearchWithSuggestions() {
               </Link>
             </>
           ) : (
-            <div className="p-4">
-              <div className="text-center text-gray-500 mb-3">
-                No properties found matching "{searchQuery}"
-              </div>
-              <Link
+            <Link
                 href="/property-showcase"
-                className="block bg-blue-50 hover:bg-blue-100 transition-colors rounded-lg p-3 text-center"
+                className="block bg-[#000]/20 backdrop-blur-md hover:bg-[#eae7e1] transition-colors shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto"
                 onClick={() => setShowSuggestions(false)}
               >
-                <span className="text-blue-600 font-semibold">
-                  View All Listings →
-                </span>
+                <div className="p-4 text-center">
+                  <div className="text-[#444] font-semibold font-tenor-sans flex items-center justify-center">
+                    No Results Found. 
+                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">View All Listings →</span>
+                  </div>
+                </div>
               </Link>
-            </div>
           )}
         </div>
       )}
