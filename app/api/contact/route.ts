@@ -45,7 +45,7 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
 <body>
   <div class="container">
     <div class="header">
-      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 30px; height: auto;" />
+      <img src="https://realtorpooya.ca/icon.png" alt="Pooya Pirayeshakbari Real Estate" style="max-height: 50px; height: auto;" />
     </div>
     
     <div class="content">
@@ -114,7 +114,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.6; color: #473729; background-color: #f9f6f1; }
     .container { max-width: 600px; margin: 0 auto; background: white; }
-    .header { background: linear-gradient(135deg, #aa9578 0%, #8a7a63 100%); padding: 40px 30px; text-align: center; }
+    .header { background: linear-gradient(135deg, #aa9578 0%, #8a7a63 100%); padding: 40px 10px; text-align: center; }
     .logo { color: white; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
     .content { padding: 40px 30px; }
     .title { color: #473729; font-size: 28px; font-weight: 700; margin-bottom: 20px; text-align: center; }
@@ -247,7 +247,7 @@ export async function POST(request: Request) {
           to: [process.env.EMAIL_TO || 'sold@realtorpooya.ca'],
           subject: emailSubject,
           html: emailContent,
-          reply_to: 'sold@realtorpooya.ca',
+          reply_to: email,
         }
         
         console.log('Email payload:', JSON.stringify(emailPayload, null, 2))
