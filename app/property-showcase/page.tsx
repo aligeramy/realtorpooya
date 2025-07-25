@@ -25,13 +25,50 @@ export default function PropertyShowcasePage() {
   const [selectedType, setSelectedType] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [priceRange, setPriceRange] = useState("all")
+  const [bedrooms, setBedrooms] = useState("all")
+  const [bathrooms, setBathrooms] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
 
-  // Fetch all properties
+      // Parse URL parameters on component mount
+    useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search)
+      
+      // Set initial filter values from URL parameters (from hero section)
+      const searchParam = urlParams.get('search')
+      const propertyTypeParam = urlParams.get('propertyType')
+      const bedroomsParam = urlParams.get('bedrooms')
+      const bathroomsParam = urlParams.get('bathrooms')
+      const priceRangeParam = urlParams.get('priceRange')
+      
+      if (searchParam) setSearchQuery(searchParam)
+      if (propertyTypeParam) setSelectedType(propertyTypeParam)
+      if (bedroomsParam && bedroomsParam !== 'any') setBedrooms(bedroomsParam)
+      if (bathroomsParam && bathroomsParam !== 'any') setBathrooms(bathroomsParam)
+      if (priceRangeParam && priceRangeParam !== 'any') setPriceRange(priceRangeParam)
+      
+      // Show filters if any filter parameters are present
+      if (propertyTypeParam || bedroomsParam || bathroomsParam || priceRangeParam) {
+        setShowFilters(true)
+      }
+    }, [])
+
+  // Fetch all properties with filters
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch('/api/properties')
+        // Build query parameters
+        const params = new URLSearchParams()
+        if (searchQuery) params.set('search', searchQuery)
+        if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
+        if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
+        if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
+        if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
+        if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
+
+        const queryString = params.toString()
+        const url = `/api/properties${queryString ? `?${queryString}` : ''}`
+        
+        const response = await fetch(url)
         if (response.ok) {
           const data = await response.json()
           setProperties(data)
@@ -45,54 +82,21 @@ export default function PropertyShowcasePage() {
     }
 
     fetchProperties()
-  }, [])
+  }, [searchQuery, selectedType, bedrooms, bathrooms, priceRange, selectedCity])
 
-  // Filter properties based on search and filters
+  // Client-side additional filtering for status (since we handle most filtering server-side now)
   useEffect(() => {
-    let filtered = properties
+    let filtered = [...properties]
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(property =>
-        property.address?.toLowerCase().includes(query) ||
-        property.city?.toLowerCase().includes(query) ||
-        (typeof property.description === 'string' && property.description.toLowerCase().includes(query))
-      )
-    }
-
-    // City filter
-    if (selectedCity && selectedCity !== "all") {
-      filtered = filtered.filter(property => property.city === selectedCity)
-    }
-
-    // Property type filter
-    if (selectedType && selectedType !== "all") {
-      filtered = filtered.filter(property => property.propertyType === selectedType)
-    }
-
-    // Status filter
+    // Status filter (still handled client-side)
     if (selectedStatus && selectedStatus !== "all") {
       filtered = filtered.filter(property => property.status === selectedStatus)
     }
 
-    // Price range filter
-    if (priceRange && priceRange !== "all") {
-      const [min, max] = priceRange.split('-').map(Number)
-      filtered = filtered.filter(property => {
-        if (!property.price) return false
-        if (max) {
-          return property.price >= min && property.price <= max
-        } else {
-          return property.price >= min
-        }
-      })
-    }
-
     setFilteredProperties(filtered)
-  }, [properties, searchQuery, selectedCity, selectedType, selectedStatus, priceRange])
+  }, [properties, selectedStatus])
 
-  // Get unique cities for filter
+  // Get unique cities for filter (from fetched properties)
   const uniqueCities = Array.from(new Set(properties.map(p => p.city).filter(Boolean)))
   const uniqueTypes = Array.from(new Set(properties.map(p => p.propertyType).filter(Boolean)))
   const uniqueStatuses = Array.from(new Set(properties.map(p => p.status).filter(Boolean)))
@@ -136,29 +140,35 @@ export default function PropertyShowcasePage() {
       case 'coming_soon':
         return 'COMING SOON'
       case 'active':
-        return 'FOR SALE'
+        return 'ACTIVE'
       default:
-        return status?.toUpperCase() || 'ACTIVE'
+        return status.toUpperCase()
     }
   }
 
-  const generateSlug = (property: Property) => {
-    const addressSlug = createAddressSlug(property.address || '')
-    return `${addressSlug}-${property.id.slice(-8)}`
+  // Convert property type enum to display text
+  const getPropertyTypeText = (type: string) => {
+    switch (type) {
+      case 'detached':
+        return 'House'
+      case 'condo':
+        return 'Condo'
+      case 'townhouse':
+        return 'Townhouse'
+      case 'lot':
+        return 'Land/Lot'
+      case 'multi-res':
+        return 'Multi-Family'
+      default:
+        return type
+    }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-pulse">
-            <Image
-              src="/Icon/Icon_Color_RealtorPooya.png"
-              alt="Loading..."
-              width={64}
-              height={64}
-              className="animate-fade-in-out"
-            />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#aa9578] mx-auto">
           </div>
           <div className="mt-4 text-[#aa9578] font-manrope text-lg animate-fade-in-out">
             Loading properties...
@@ -200,131 +210,140 @@ export default function PropertyShowcasePage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center mb-0"
+              transition={{ duration: 0.6 }}
+              className="text-center mb-12"
             >
-              <h1 className="font-tenor-sans text-4xl md:text-5xl lg:text-6xl text-gray-900 mb-4">
+              <h1 className="font-tenor-sans text-4xl md:text-5xl lg:text-6xl font-light text-[#473729] mb-6">
                 Property Showcase
               </h1>
-              <p className="text-gray-700 text-lg max-w-2xl mx-auto mb-8">
-                Discover exceptional properties in Toronto's luxury market
+              <p className="font-manrope text-lg text-gray-600 max-w-2xl mx-auto">
+                Discover exceptional properties in Toronto and surrounding areas
               </p>
-              <div className="text-2xl font-semibold text-[#aa9578]">
-                {filteredProperties.length} Properties Available
-              </div>
             </motion.div>
-          </div>
-        </div>
-      </section>
 
-      {/* Search and Filters */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col lg:flex-row gap-4 items-center">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  placeholder="Search properties by address, city, or description..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-12 rounded-full border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
-                />
+            {/* Search and Filters */}
+            <div className="max-w-4xl mx-auto mb-12">
+              {/* Search Bar */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Search properties..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-12 pl-12 rounded-full border-gray-200"
+                  />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+                <Button
+                  onClick={() => setShowFilters(!showFilters)}
+                  variant="outline"
+                  className="h-12 px-6 rounded-full border-gray-200"
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
               </div>
 
-              {/* Filter Toggle */}
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="h-12 px-6 rounded-full border-gray-200 hover:bg-gray-50"
-              >
-                <SlidersHorizontal className="h-5 w-5 mr-2" />
-                Filters
-              </Button>
+              {/* Filter Options */}
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4"
+                >
+                  <Select value={selectedCity} onValueChange={setSelectedCity}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="All Cities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Cities</SelectItem>
+                      {uniqueCities.map(city => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={selectedType} onValueChange={setSelectedType}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="detached">House</SelectItem>
+                      <SelectItem value="condo">Condo</SelectItem>
+                      <SelectItem value="townhouse">Townhouse</SelectItem>
+                      <SelectItem value="lot">Land/Lot</SelectItem>
+                      <SelectItem value="multi-res">Multi-Family</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={bedrooms} onValueChange={setBedrooms}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="Bedrooms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any Beds</SelectItem>
+                      <SelectItem value="1">1+</SelectItem>
+                      <SelectItem value="2">2+</SelectItem>
+                      <SelectItem value="3">3+</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                      <SelectItem value="5">5+</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={bathrooms} onValueChange={setBathrooms}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="Bathrooms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any Baths</SelectItem>
+                      <SelectItem value="1">1+</SelectItem>
+                      <SelectItem value="2">2+</SelectItem>
+                      <SelectItem value="3">3+</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                      <SelectItem value="5">5+</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      {uniqueStatuses.map(status => (
+                        <SelectItem key={status} value={status}>{getStatusText(status)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={priceRange} onValueChange={setPriceRange}>
+                    <SelectTrigger className="h-12 rounded-full">
+                      <SelectValue placeholder="Price Range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Prices</SelectItem>
+                      <SelectItem value="0-500000">Under $500K</SelectItem>
+                      <SelectItem value="500000-1000000">$500K - $1M</SelectItem>
+                      <SelectItem value="1000000-2000000">$1M - $2M</SelectItem>
+                      <SelectItem value="2000000-5000000">$2M - $5M</SelectItem>
+                      <SelectItem value="5000000+">$5M+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+              )}
             </div>
 
-            {/* Filters */}
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
-              >
-                                 <Select value={selectedCity} onValueChange={setSelectedCity}>
-                   <SelectTrigger className="h-12 rounded-full">
-                     <SelectValue placeholder="All Cities" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">All Cities</SelectItem>
-                     {uniqueCities.map(city => (
-                       <SelectItem key={city} value={city}>{city}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
+            {/* Results Count */}
+            <div className="mb-8">
+              <p className="text-gray-600 font-manrope">
+                Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'property' : 'properties'}
+              </p>
+            </div>
 
-                 <Select value={selectedType} onValueChange={setSelectedType}>
-                   <SelectTrigger className="h-12 rounded-full">
-                     <SelectValue placeholder="All Types" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">All Types</SelectItem>
-                     {uniqueTypes.map(type => (
-                       <SelectItem key={type} value={type}>{type}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-
-                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                   <SelectTrigger className="h-12 rounded-full">
-                     <SelectValue placeholder="All Status" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">All Status</SelectItem>
-                     {uniqueStatuses.map(status => (
-                       <SelectItem key={status} value={status}>{getStatusText(status)}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-
-                 <Select value={priceRange} onValueChange={setPriceRange}>
-                   <SelectTrigger className="h-12 rounded-full">
-                     <SelectValue placeholder="Price Range" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">All Prices</SelectItem>
-                     <SelectItem value="0-500000">Under $500K</SelectItem>
-                     <SelectItem value="500000-1000000">$500K - $1M</SelectItem>
-                     <SelectItem value="1000000-2000000">$1M - $2M</SelectItem>
-                     <SelectItem value="2000000-5000000">$2M - $5M</SelectItem>
-                     <SelectItem value="5000000">$5M+</SelectItem>
-                   </SelectContent>
-                 </Select>
-
-                                 <Button
-                   onClick={() => {
-                     setSearchQuery("")
-                     setSelectedCity("all")
-                     setSelectedType("all")
-                     setSelectedStatus("all")
-                     setPriceRange("all")
-                   }}
-                   variant="outline"
-                   className="h-12 rounded-full"
-                 >
-                   Clear All
-                 </Button>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Properties Grid */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-7xl mx-auto">
+            {/* Properties Grid */}
             {filteredProperties.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProperties.map((property, index) => (
@@ -332,73 +351,68 @@ export default function PropertyShowcasePage() {
                     key={property.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
-                    <Card className="overflow-hidden hover:shadow-xl shadow-lg rounded-3xl transition-shadow duration-300 group">
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        <Image
-                          src={property.heroImage || property.mediaUrls?.[0] || "/placeholder.svg"}
-                          alt={property.address || 'Property'}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute top-4 left-4">
-                          <Badge className={`${getStatusColor(property.status)} px-3 py-1 text-xs font-semibold`}>
+                    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative h-64">
+                        {property.heroImage || (property.mediaUrls && property.mediaUrls[0]) ? (
+                          <Image
+                            src={property.heroImage || property.mediaUrls![0]}
+                            alt={property.address}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <MapPin className="h-12 w-12 text-gray-400" />
+                          </div>
+                        )}
+                        
+                        {/* Status Badge */}
+                        <div className="absolute top-4 right-4">
+                          <Badge className={`${getStatusColor(property.status)} border`}>
                             {getStatusText(property.status)}
                           </Badge>
                         </div>
-                        {property.youtubeVideo && (
-                          <div className="absolute top-4 right-4">
-                            <Badge className="bg-black/70 text-white px-3 py-1 text-xs">
-                              Video Tour
-                            </Badge>
-                          </div>
-                        )}
                       </div>
                       
                       <CardContent className="p-6">
-                        <div className="mb-4">
-                          <div className="text-2xl font-medium text-[#aa9578] mb-2">
-                            {property.status === 'not_available' ? 'Not Available' : 
-                             property.price ? formatPrice(property.price) : 'Price upon request'}
-                          </div>
-                          <h3 className="font-tenor-sans text-xl text-gray-900 mb-2 line-clamp-2">
-                            {property.address}
-                          </h3>
-                          <div className="flex items-center text-gray-600 mb-4">
-                            <MapPin className="h-4 w-4 mr-1" />
-                            <span className="text-sm">{property.city}, {property.province}</span>
+                        <div className="mb-2">
+                          <span className="text-2xl font-semibold text-[#473729] font-tenor-sans">
+                            {property.status === 'not_available' ? 'NOT AVAILABLE' : formatPrice(property.price)}
+                          </span>
+                        </div>
+                        
+                        <h3 className="font-semibold text-lg mb-2 font-tenor-sans">{property.address}</h3>
+                        <p className="text-gray-600 mb-4 font-manrope">{property.city}, {property.province}</p>
+                        
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                          <span className="flex items-center gap-1">
+                            <span className="font-medium">{getPropertyTypeText(property.propertyType)}</span>
+                          </span>
+                          <div className="flex items-center gap-4">
+                            {property.bedrooms && (
+                              <span className="flex items-center gap-1">
+                                <Bed className="h-4 w-4" />
+                                {property.bedrooms}
+                              </span>
+                            )}
+                            {property.bathrooms && (
+                              <span className="flex items-center gap-1">
+                                <Bath className="h-4 w-4" />
+                                {property.bathrooms}
+                              </span>
+                            )}
+                            {property.squareFeet && (
+                              <span className="flex items-center gap-1">
+                                <Square className="h-4 w-4" />
+                                {property.squareFeet?.toLocaleString()} sq ft
+                              </span>
+                            )}
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-between text-gray-600 mb-6">
-                          {property.bedrooms && (
-                            <div className="flex items-center">
-                              <Bed className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{property.bedrooms}</span>
-                            </div>
-                          )}
-                          {property.bathrooms && (
-                            <div className="flex items-center">
-                              <Bath className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{property.bathrooms}</span>
-                            </div>
-                          )}
-                          {property.squareFeet && (
-                            <div className="flex items-center">
-                              <Square className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{property.squareFeet?.toLocaleString()} sq ft</span>
-                            </div>
-                          )}
-                          {property.more && typeof property.more === 'object' && (property.more as Record<string, any>).tps && (
-                            <div className="flex items-center">
-                              <Car className="h-4 w-4 mr-1" />
-                              <span className="text-sm">{(property.more as Record<string, any>).tps}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <Link href={`/listings/${generateSlug(property)}`}>
+                        
+                        <Link href={`/listings/${createAddressSlug(property.address || '')}-${property.id.slice(-8)}`}>
                           <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full">
                             View Details
                           </Button>
@@ -413,18 +427,20 @@ export default function PropertyShowcasePage() {
                 <div className="text-gray-500 text-lg mb-4">
                   No properties found matching your criteria
                 </div>
-                                 <Button
-                   onClick={() => {
-                     setSearchQuery("")
-                     setSelectedCity("all")
-                     setSelectedType("all")
-                     setSelectedStatus("all")
-                     setPriceRange("all")
-                   }}
-                   className="bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full"
-                 >
-                   Clear Filters
-                 </Button>
+                <Button
+                  onClick={() => {
+                    setSearchQuery("")
+                    setSelectedCity("all")
+                    setSelectedType("all")
+                    setSelectedStatus("all")
+                    setPriceRange("all")
+                    setBedrooms("all")
+                    setBathrooms("all")
+                  }}
+                  className="bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full"
+                >
+                  Clear Filters
+                </Button>
               </div>
             )}
           </div>

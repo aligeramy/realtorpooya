@@ -3,16 +3,108 @@
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath } from "lucide-react"
+import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath, SlidersHorizontal, Plus } from "lucide-react"
 import TopNavMenu from "./top-nav-menu"
 import ResponsiveLogo from "./responsive-logo"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+
+// Hero-specific Search Filters Component
+function HeroSearchFilters({ onApplyFilter, activeFilters }: { onApplyFilter: (key: string, value: any) => void, activeFilters: any }) {
+  const handleFilterChange = (key: string, value: string) => {
+    // Convert "any" to undefined for the filter system
+    onApplyFilter(key, value === "any" ? undefined : value)
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Property Type */}
+      <div>
+        <Label className="!text-white font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Property Type</Label>
+        <Select
+          onValueChange={(value) => handleFilterChange("propertyType", value)}
+          defaultValue={activeFilters.propertyType || "any"}
+        >
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any Type</SelectItem>
+            <SelectItem value="detached">House</SelectItem>
+            <SelectItem value="condo">Condo</SelectItem>
+            <SelectItem value="townhouse">Townhouse</SelectItem>
+            <SelectItem value="lot">Land/Lot</SelectItem>
+            <SelectItem value="multi-res">Multi-Family</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Bedrooms */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md text-shadow-md font-medium mb-2 block text-md">Bedrooms</Label>
+        <Select onValueChange={(value) => handleFilterChange("bedrooms", value)} defaultValue={activeFilters.bedrooms || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Beds" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any</SelectItem>
+            <SelectItem value="1">1+</SelectItem>
+            <SelectItem value="2">2+</SelectItem>
+            <SelectItem value="3">3+</SelectItem>
+            <SelectItem value="4">4+</SelectItem>
+            <SelectItem value="5">5+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Bathrooms */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Bathrooms</Label>
+        <Select onValueChange={(value) => handleFilterChange("bathrooms", value)} defaultValue={activeFilters.bathrooms || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Baths" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any</SelectItem>
+            <SelectItem value="1">1+</SelectItem>
+            <SelectItem value="2">2+</SelectItem>
+            <SelectItem value="3">3+</SelectItem>
+            <SelectItem value="4">4+</SelectItem>
+            <SelectItem value="5">5+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Price Range</Label>
+        <Select onValueChange={(value) => handleFilterChange("priceRange", value)} defaultValue={activeFilters.priceRange || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Price" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any Price</SelectItem>
+            <SelectItem value="0-500000">Under $500K</SelectItem>
+            <SelectItem value="500000-1000000">$500K - $1M</SelectItem>
+            <SelectItem value="1000000-2000000">$1M - $2M</SelectItem>
+            <SelectItem value="2000000-5000000">$2M - $5M</SelectItem>
+            <SelectItem value="5000000+">$5M+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )
+}
 
 // Property Search Component
 function PropertySearchWithSuggestions() {
   const [searchQuery, setSearchQuery] = useState("")
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<any>({})
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Fetch featured properties when component mounts or when search is focused
@@ -68,9 +160,36 @@ function PropertySearchWithSuggestions() {
     }
   }
 
+  // Handle filter application
+  const handleApplyFilter = (key: string, value: any) => {
+    setActiveFilters((prev: any) => ({
+      ...prev,
+      [key]: value
+    }))
+  }
+
   // Handle search submit
   const handleSearch = () => {
-    window.location.href = `/property-showcase?search=${encodeURIComponent(searchQuery)}`
+    // Build query string with search and filters
+    const params = new URLSearchParams()
+    
+    if (searchQuery.trim()) {
+      params.set('search', searchQuery)
+    }
+    
+    // Add active filters to the query
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        if (Array.isArray(value) && value.length > 0) {
+          params.set(key, JSON.stringify(value))
+        } else if (!Array.isArray(value)) {
+          params.set(key, value.toString())
+        }
+      }
+    })
+
+    const queryString = params.toString()
+    window.location.href = `/property-showcase${queryString ? `?${queryString}` : ''}`
     setShowSuggestions(false)
   }
 
@@ -103,19 +222,35 @@ function PropertySearchWithSuggestions() {
 
   return (
     <div ref={searchRef} className="relative">
-      {/* Search Input */}
-      <div className="flex items-center">
-        <input
-          type="text"
-          placeholder="Search For Properties"
-          className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
-          value={searchQuery}
-          onChange={handleInputChange}
-          onFocus={handleFocus}
-        />
+      {/* Search Input with Filter Button */}
+      <div className="flex items-center gap-2">
+        {/* Filter Toggle Button */}
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`h-14 md:h-16 w-14 md:w-16 rounded-full flex items-center justify-center backdrop-blur-md border-white/30 ${
+            showFilters 
+              ? 'bg-white/90 text-gray-700 hover:bg-white' 
+              : 'bg-white/20 text-white hover:bg-white/30'
+          }`}
+        >
+          <SlidersHorizontal className="h-5 w-5" />
+        </Button>
 
+        {/* Main Search Input */}
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search For Properties"
+            className="w-full h-14 md:h-16 pl-6 pr-4 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
+            value={searchQuery}
+            onChange={handleInputChange}
+            onFocus={handleFocus}
+          />
+        </div>
+
+        {/* Search Button */}
         <button 
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
+          className="h-14 md:h-16 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
           onClick={handleSearch}
         >
           <Search className="h-4 w-4" />
@@ -225,6 +360,16 @@ function PropertySearchWithSuggestions() {
                 </div>
               </Link>
           )}
+        </div>
+      )}
+
+      {/* Filters Section */}
+      {showFilters && (
+        <div className="mt-4 p-6 rounded-3xl backdrop-blur-md bg-white/20 border border-white/30">
+          <HeroSearchFilters 
+            onApplyFilter={handleApplyFilter}
+            activeFilters={activeFilters}
+          />
         </div>
       )}
     </div>
