@@ -9,6 +9,7 @@ import ResponsiveLogo from "./responsive-logo"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Hero-specific Search Filters Component
 function HeroSearchFilters({ onApplyFilter, activeFilters }: { onApplyFilter: (key: string, value: any) => void, activeFilters: any }) {
@@ -97,6 +98,15 @@ function HeroSearchFilters({ onApplyFilter, activeFilters }: { onApplyFilter: (k
   )
 }
 
+// Debounce helper
+function debounce(fn: (...args: any[]) => void, delay: number) {
+  let timer: NodeJS.Timeout
+  return (...args: any[]) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }
+}
+
 // Property Search Component
 function PropertySearchWithSuggestions() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -106,6 +116,7 @@ function PropertySearchWithSuggestions() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeFilters, setActiveFilters] = useState<any>({})
   const searchRef = useRef<HTMLDivElement>(null)
+  const mlsSearchRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch featured properties when component mounts or when search is focused
   const fetchFeaturedProperties = async () => {
@@ -122,6 +133,32 @@ function PropertySearchWithSuggestions() {
       setIsLoading(false)
     }
   }
+
+  // Fetch MLS properties when user starts typing (debounced)
+  const fetchMLSProperties = debounce(async (query: string, currentCrmIds: Set<string>) => {
+    if (!query.trim()) return
+    try {
+      const response = await fetch(`/api/listings?search=${encodeURIComponent(query)}&limit=10`)
+      if (response.ok) {
+        let mlsProperties = await response.json()
+        // Filter out any MLS properties that have the same ID as CRM ones
+        mlsProperties = mlsProperties.filter((mls: any) => !currentCrmIds.has(mls.id))
+        // Only show relevant MLS matches (address/city/type/description)
+        setSuggestions(prev => {
+          // Only keep unique by id
+          const all = [...prev, ...mlsProperties]
+          const seen = new Set()
+          return all.filter(p => {
+            if (seen.has(p.id)) return false
+            seen.add(p.id)
+            return true
+          }).slice(0, 6)
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching MLS properties:', error)
+    }
+  }, 350)
 
   // Filter properties based on search query
   const filteredSuggestions = suggestions.filter(property => {
@@ -152,11 +189,35 @@ function PropertySearchWithSuggestions() {
     setShowSuggestions(true)
   }
 
+  // Handle input blur - reset to featured properties when focus is lost
+  const handleBlur = () => {
+    // Small delay to allow for clicks on suggestions
+    setTimeout(() => {
+      if (!searchQuery.trim()) {
+        fetchFeaturedProperties()
+      }
+    }, 200)
+  }
+
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
+    const newValue = e.target.value
+    setSearchQuery(newValue)
+    
     if (!showSuggestions) {
       setShowSuggestions(true)
+    }
+    
+    if (newValue.trim().length > 0) {
+      // Get CRM suggestions first
+      fetchFeaturedProperties()
+      // Then fetch MLS suggestions, but only after CRM suggestions are set
+      setTimeout(() => {
+        const crmIds = new Set(suggestions.map(s => s.id))
+        fetchMLSProperties(newValue, crmIds)
+      }, 100)
+    } else {
+      fetchFeaturedProperties()
     }
   }
 
@@ -217,7 +278,13 @@ function PropertySearchWithSuggestions() {
 
   // Generate property slug for URL
   const generateSlug = (property: any) => {
-    return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
+    if (property.source === 'mls') {
+      // Use MLS slug generation for MLS properties
+      return property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + property.id
+    } else {
+      // Use CRM slug generation for CRM properties
+      return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
+    }
   }
 
   return (
@@ -245,6 +312,7 @@ function PropertySearchWithSuggestions() {
             value={searchQuery}
             onChange={handleInputChange}
             onFocus={handleFocus}
+            onBlur={handleBlur}
           />
         </div>
 
@@ -262,8 +330,29 @@ function PropertySearchWithSuggestions() {
       {showSuggestions && (
         <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#fff]/70 backdrop-blur-md rounded-3xl shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
-              Loading properties...
+            <div className="p-4">
+              {/* Show 3 skeletons for loading state */}
+              <div className="flex items-center gap-4 mb-3">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mb-3">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
             </div>
           ) : filteredSuggestions.length > 0 ? (
             <>
@@ -341,7 +430,7 @@ function PropertySearchWithSuggestions() {
               >
                 <div className="p-4 text-center">
                   <span className="text-[#444] font-semibold font-tenor-sans">
-                    View All Listings →
+                    Search MLS Results →
                   </span>
                 </div>
               </Link>
@@ -355,7 +444,7 @@ function PropertySearchWithSuggestions() {
                 <div className="p-4 text-center">
                   <div className="text-[#444] font-semibold font-tenor-sans flex items-center justify-center">
                     No Results Found. 
-                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">View All Listings →</span>
+                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">Search MLS Results →</span>
                   </div>
                 </div>
               </Link>

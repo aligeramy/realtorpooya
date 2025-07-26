@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ResponsiveLogo from "@/components/responsive-logo"
 import { createAddressSlug } from "@/lib/utils"
+import { generateMLSSlug } from "@/lib/listings-transformer"
 import type { Property } from "@/types/property"
 
 export default function PropertyShowcasePage() {
@@ -28,6 +29,13 @@ export default function PropertyShowcasePage() {
   const [bedrooms, setBedrooms] = useState("all")
   const [bathrooms, setBathrooms] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
+  const [pendingSearchQuery, setPendingSearchQuery] = useState("");
+  const [pendingSelectedCity, setPendingSelectedCity] = useState("all");
+  const [pendingSelectedType, setPendingSelectedType] = useState("all");
+  const [pendingSelectedStatus, setPendingSelectedStatus] = useState("all");
+  const [pendingPriceRange, setPendingPriceRange] = useState("all");
+  const [pendingBedrooms, setPendingBedrooms] = useState("all");
+  const [pendingBathrooms, setPendingBathrooms] = useState("all");
 
       // Parse URL parameters on component mount
     useEffect(() => {
@@ -51,6 +59,27 @@ export default function PropertyShowcasePage() {
         setShowFilters(true)
       }
     }, [])
+
+  // On mount, sync pending values with actual values
+  useEffect(() => {
+    setPendingSearchQuery(searchQuery);
+    setPendingSelectedCity(selectedCity);
+    setPendingSelectedType(selectedType);
+    setPendingSelectedStatus(selectedStatus);
+    setPendingPriceRange(priceRange);
+    setPendingBedrooms(bedrooms);
+    setPendingBathrooms(bathrooms);
+  }, []);
+
+  const handleApplySearch = () => {
+    setSearchQuery(pendingSearchQuery);
+    setSelectedCity(pendingSelectedCity);
+    setSelectedType(pendingSelectedType);
+    setSelectedStatus(pendingSelectedStatus);
+    setPriceRange(pendingPriceRange);
+    setBedrooms(pendingBedrooms);
+    setBathrooms(pendingBathrooms);
+  };
 
   // Fetch all properties with filters
   useEffect(() => {
@@ -229,12 +258,20 @@ export default function PropertyShowcasePage() {
                   <Input
                     type="text"
                     placeholder="Search properties..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={pendingSearchQuery}
+                    onChange={e => setPendingSearchQuery(e.target.value)}
                     className="h-12 pl-12 rounded-full border-gray-200"
                   />
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
+                <Button
+                  onClick={handleApplySearch}
+                  variant="default"
+                  className="h-12 px-6 rounded-full border-gray-200 bg-[#473729] text-white ml-2"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
                 <Button
                   onClick={() => setShowFilters(!showFilters)}
                   variant="outline"
@@ -253,7 +290,7 @@ export default function PropertyShowcasePage() {
                   exit={{ opacity: 0, height: 0 }}
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4"
                 >
-                  <Select value={selectedCity} onValueChange={setSelectedCity}>
+                  <Select value={pendingSelectedCity} onValueChange={setPendingSelectedCity}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="All Cities" />
                     </SelectTrigger>
@@ -265,7 +302,7 @@ export default function PropertyShowcasePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={selectedType} onValueChange={setSelectedType}>
+                  <Select value={pendingSelectedType} onValueChange={setPendingSelectedType}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
@@ -279,7 +316,7 @@ export default function PropertyShowcasePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={bedrooms} onValueChange={setBedrooms}>
+                  <Select value={pendingBedrooms} onValueChange={setPendingBedrooms}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="Bedrooms" />
                     </SelectTrigger>
@@ -293,7 +330,7 @@ export default function PropertyShowcasePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={bathrooms} onValueChange={setBathrooms}>
+                  <Select value={pendingBathrooms} onValueChange={setPendingBathrooms}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="Bathrooms" />
                     </SelectTrigger>
@@ -307,7 +344,7 @@ export default function PropertyShowcasePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <Select value={pendingSelectedStatus} onValueChange={setPendingSelectedStatus}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
@@ -319,7 +356,7 @@ export default function PropertyShowcasePage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={priceRange} onValueChange={setPriceRange}>
+                  <Select value={pendingPriceRange} onValueChange={setPendingPriceRange}>
                     <SelectTrigger className="h-12 rounded-full">
                       <SelectValue placeholder="Price Range" />
                     </SelectTrigger>
@@ -412,7 +449,7 @@ export default function PropertyShowcasePage() {
                           </div>
                         </div>
                         
-                        <Link href={`/listings/${createAddressSlug(property.address || '')}-${property.id.slice(-8)}`}>
+                        <Link href={`/listings/${('source' in property && property.source === 'mls') ? generateMLSSlug(property) : createAddressSlug(property.address || '') + '-' + property.id.slice(-8)}`}>
                           <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full">
                             View Details
                           </Button>
