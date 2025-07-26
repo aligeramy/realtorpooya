@@ -20,7 +20,7 @@ import type { Property } from "@/types/property"
 export default function PropertyShowcasePage() {
   const [properties, setProperties] = useState<Property[]>([])
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCity, setSelectedCity] = useState("all")
   const [selectedType, setSelectedType] = useState("all")
@@ -36,29 +36,34 @@ export default function PropertyShowcasePage() {
   const [pendingPriceRange, setPendingPriceRange] = useState("all");
   const [pendingBedrooms, setPendingBedrooms] = useState("all");
   const [pendingBathrooms, setPendingBathrooms] = useState("all");
+  const [hasSearched, setHasSearched] = useState(false);
 
-      // Parse URL parameters on component mount
-    useEffect(() => {
-      const urlParams = new URLSearchParams(window.location.search)
-      
-      // Set initial filter values from URL parameters (from hero section)
-      const searchParam = urlParams.get('search')
-      const propertyTypeParam = urlParams.get('propertyType')
-      const bedroomsParam = urlParams.get('bedrooms')
-      const bathroomsParam = urlParams.get('bathrooms')
-      const priceRangeParam = urlParams.get('priceRange')
-      
-      if (searchParam) setSearchQuery(searchParam)
-      if (propertyTypeParam) setSelectedType(propertyTypeParam)
-      if (bedroomsParam && bedroomsParam !== 'any') setBedrooms(bedroomsParam)
-      if (bathroomsParam && bathroomsParam !== 'any') setBathrooms(bathroomsParam)
-      if (priceRangeParam && priceRangeParam !== 'any') setPriceRange(priceRangeParam)
-      
-      // Show filters if any filter parameters are present
-      if (propertyTypeParam || bedroomsParam || bathroomsParam || priceRangeParam) {
-        setShowFilters(true)
-      }
-    }, [])
+  // Parse URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    
+    // Set initial filter values from URL parameters (from hero section)
+    const searchParam = urlParams.get('search')
+    const propertyTypeParam = urlParams.get('propertyType')
+    const bedroomsParam = urlParams.get('bedrooms')
+    const bathroomsParam = urlParams.get('bathrooms')
+    const priceRangeParam = urlParams.get('priceRange')
+    
+    if (searchParam) {
+      setSearchQuery(searchParam)
+      setPendingSearchQuery(searchParam)
+      setHasSearched(true)
+    }
+    if (propertyTypeParam) setSelectedType(propertyTypeParam)
+    if (bedroomsParam && bedroomsParam !== 'any') setBedrooms(bedroomsParam)
+    if (bathroomsParam && bathroomsParam !== 'any') setBathrooms(bathroomsParam)
+    if (priceRangeParam && priceRangeParam !== 'any') setPriceRange(priceRangeParam)
+    
+    // Show filters if any filter parameters are present
+    if (propertyTypeParam || bedroomsParam || bathroomsParam || priceRangeParam) {
+      setShowFilters(true)
+    }
+  }, [])
 
   // On mount, sync pending values with actual values
   useEffect(() => {
@@ -79,32 +84,71 @@ export default function PropertyShowcasePage() {
     setPriceRange(pendingPriceRange);
     setBedrooms(pendingBedrooms);
     setBathrooms(pendingBathrooms);
+    setHasSearched(true);
   };
 
-  // Fetch all properties with filters
+  // Fetch properties only when there's a search query or filters
   useEffect(() => {
     const fetchProperties = async () => {
-      try {
-        // Build query parameters
-        const params = new URLSearchParams()
-        if (searchQuery) params.set('search', searchQuery)
-        if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
-        if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
-        if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
-        if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
-        if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
+      // Only fetch if there's a search query or any filter is applied
+      const hasSearchQuery = searchQuery.trim() !== ""
+      const hasFilters = selectedType !== 'all' || bedrooms !== 'all' || bathrooms !== 'all' || 
+                        priceRange !== 'all' || selectedCity !== 'all' || selectedStatus !== 'all'
+      
+      if (!hasSearchQuery && !hasFilters) {
+        setProperties([])
+        setFilteredProperties([])
+        return
+      }
 
-        const queryString = params.toString()
-        const url = `/api/properties${queryString ? `?${queryString}` : ''}`
-        
-        const response = await fetch(url)
-        if (response.ok) {
-          const data = await response.json()
-          setProperties(data)
-          setFilteredProperties(data)
+      setLoading(true)
+      try {
+        let url = ''
+        let data = []
+
+        // Use the new standardized search API for address searches
+        if (hasSearchQuery && searchQuery.trim() !== "") {
+          // Build query parameters for address search
+          const params = new URLSearchParams()
+          params.set('query', searchQuery)
+          if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
+          if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
+          if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
+          if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
+          if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
+
+          url = `/api/search/addresses?${params.toString()}`
+          
+          const response = await fetch(url)
+          if (response.ok) {
+            const result = await response.json()
+            if (result.success) {
+              data = result.data.results
+            }
+          }
+        } else if (hasFilters) {
+          // Fall back to general properties API for filter-only searches
+          const params = new URLSearchParams()
+          if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
+          if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
+          if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
+          if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
+          if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
+
+          url = `/api/properties?${params.toString()}`
+          
+          const response = await fetch(url)
+          if (response.ok) {
+            data = await response.json()
+          }
         }
+
+        setProperties(data)
+        setFilteredProperties(data)
       } catch (error) {
         console.error('Error fetching properties:', error)
+        setProperties([])
+        setFilteredProperties([])
       } finally {
         setLoading(false)
       }
@@ -200,7 +244,7 @@ export default function PropertyShowcasePage() {
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#aa9578] mx-auto">
           </div>
           <div className="mt-4 text-[#aa9578] font-manrope text-lg animate-fade-in-out">
-            Loading properties...
+            Searching properties...
           </div>
         </div>
       </div>
@@ -243,10 +287,10 @@ export default function PropertyShowcasePage() {
               className="text-center mb-12"
             >
               <h1 className="font-tenor-sans text-4xl md:text-5xl lg:text-6xl font-light text-[#473729] mb-6">
-                Property Showcase
+                Property Search
               </h1>
               <p className="font-manrope text-lg text-gray-600 max-w-2xl mx-auto">
-                Discover exceptional properties in Toronto and surrounding areas
+                Search for properties in Toronto and surrounding areas
               </p>
             </motion.div>
 
@@ -257,7 +301,7 @@ export default function PropertyShowcasePage() {
                 <div className="relative flex-1">
                   <Input
                     type="text"
-                    placeholder="Search properties..."
+                    placeholder="Search by address, city, or property details..."
                     value={pendingSearchQuery}
                     onChange={e => setPendingSearchQuery(e.target.value)}
                     className="h-12 pl-12 rounded-full border-gray-200"
@@ -373,15 +417,30 @@ export default function PropertyShowcasePage() {
               )}
             </div>
 
+            {/* Initial State - No Search Performed */}
+            {!hasSearched && (
+              <div className="text-center py-16">
+                <div className="text-gray-500 text-lg mb-4">
+                  Enter a search term or use filters to find properties
+                </div>
+                <p className="text-gray-400 text-sm">
+                  Search by address, city, or property details to get started
+                </p>
+              </div>
+            )}
+
             {/* Results Count */}
-            <div className="mb-8">
-              <p className="text-gray-600 font-manrope">
-                Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'property' : 'properties'}
-              </p>
-            </div>
+            {hasSearched && (
+              <div className="mb-8">
+                <p className="text-gray-600 font-manrope">
+                  Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'property' : 'properties'}
+                  {searchQuery && ` for "${searchQuery}"`}
+                </p>
+              </div>
+            )}
 
             {/* Properties Grid */}
-            {filteredProperties.length > 0 ? (
+            {hasSearched && filteredProperties.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProperties.map((property, index) => (
                   <motion.div
@@ -459,7 +518,7 @@ export default function PropertyShowcasePage() {
                   </motion.div>
                 ))}
               </div>
-            ) : (
+            ) : hasSearched ? (
               <div className="text-center py-16">
                 <div className="text-gray-500 text-lg mb-4">
                   No properties found matching your criteria
@@ -473,13 +532,14 @@ export default function PropertyShowcasePage() {
                     setPriceRange("all")
                     setBedrooms("all")
                     setBathrooms("all")
+                    setHasSearched(false)
                   }}
                   className="bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full"
                 >
-                  Clear Filters
+                  Clear Search
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

@@ -30,12 +30,17 @@ async function fetchMLSListings(searchParams: URLSearchParams) {
 
     if (search) {
       const searchLower = search.toLowerCase()
+      // Focus search on standardized address and formatted address - prioritize standardized addresses
       mlsConditions.push(
         or(
+          // Prioritize standardized formatted addresses
+          and(
+            eq(listings.addressStandardized, true),
+            like(sql`lower(${listings.formattedAddress})`, `%${searchLower}%`)
+          ),
+          // Fallback to other address fields
           like(sql`lower(${listings.unparsedAddress})`, `%${searchLower}%`),
-          like(sql`lower(${listings.formattedAddress})`, `%${searchLower}%`),
-          like(sql`lower(${listings.city})`, `%${searchLower}%`),
-          like(sql`lower(${listings.publicRemarks})`, `%${searchLower}%`)
+          like(sql`lower(${listings.city})`, `%${searchLower}%`)
         )
       )
     }
@@ -151,6 +156,11 @@ export async function GET(request: Request) {
     const propertyType = searchParams.get('propertyType')
     const priceRange = searchParams.get('priceRange')
 
+    // If no search query and no filters, return empty results
+    if (!search && !city && !minPrice && !maxPrice && !bedrooms && !bathrooms && !propertyType && !priceRange) {
+      return NextResponse.json([])
+    }
+
     // Build where conditions
     const conditions = []
 
@@ -160,17 +170,16 @@ export async function GET(request: Request) {
     if (search) {
       // Convert search to lowercase for case-insensitive search
       const searchLower = search.toLowerCase()
+      // Focus search on address and city for better precision - prioritize address matches
       conditions.push(
         or(
           like(sql`lower(${properties.address})`, `%${searchLower}%`),
           like(sql`lower(${properties.city})`, `%${searchLower}%`)
-          // Note: description is JSONB field, so we can't use LIKE on it directly
-          // We'll handle description search in a future update with proper JSONB queries
         )
       )
     }
 
-    if (city) {
+    if (city && city !== 'all') {
       conditions.push(like(properties.city, `%${city}%`))
     }
 
