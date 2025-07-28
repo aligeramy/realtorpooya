@@ -116,7 +116,6 @@ function PropertySearchWithSuggestions() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeFilters, setActiveFilters] = useState<any>({})
   const searchRef = useRef<HTMLDivElement>(null)
-  const mlsSearchRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch featured properties when component mounts or when search is focused
   const fetchFeaturedProperties = async () => {
@@ -134,31 +133,7 @@ function PropertySearchWithSuggestions() {
     }
   }
 
-  // Fetch MLS properties when user starts typing (debounced)
-  const fetchMLSProperties = debounce(async (query: string, currentCrmIds: Set<string>) => {
-    if (!query.trim()) return
-    try {
-      const response = await fetch(`/api/listings?search=${encodeURIComponent(query)}&limit=10`)
-      if (response.ok) {
-        let mlsProperties = await response.json()
-        // Filter out any MLS properties that have the same ID as CRM ones
-        mlsProperties = mlsProperties.filter((mls: any) => !currentCrmIds.has(mls.id))
-        // Only show relevant MLS matches (address/city/type/description)
-        setSuggestions(prev => {
-          // Only keep unique by id
-          const all = [...prev, ...mlsProperties]
-          const seen = new Set()
-          return all.filter(p => {
-            if (seen.has(p.id)) return false
-            seen.add(p.id)
-            return true
-          }).slice(0, 6)
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching MLS properties:', error)
-    }
-  }, 350)
+
 
   // Filter properties based on search query
   const filteredSuggestions = suggestions.filter(property => {
@@ -208,17 +183,8 @@ function PropertySearchWithSuggestions() {
       setShowSuggestions(true)
     }
     
-    if (newValue.trim().length > 0) {
-      // Get CRM suggestions first
-      fetchFeaturedProperties()
-      // Then fetch MLS suggestions, but only after CRM suggestions are set
-      setTimeout(() => {
-        const crmIds = new Set(suggestions.map(s => s.id))
-        fetchMLSProperties(newValue, crmIds)
-      }, 100)
-    } else {
-      fetchFeaturedProperties()
-    }
+    // Always fetch featured properties for suggestions
+    fetchFeaturedProperties()
   }
 
   // Handle filter application
@@ -278,13 +244,8 @@ function PropertySearchWithSuggestions() {
 
   // Generate property slug for URL
   const generateSlug = (property: any) => {
-    if (property.source === 'mls') {
-      // Use MLS slug generation for MLS properties
-      return property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + property.id
-    } else {
-      // Use CRM slug generation for CRM properties
-      return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
-    }
+    // Use CRM slug generation for all properties
+    return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
   }
 
   return (

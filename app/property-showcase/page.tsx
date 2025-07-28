@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ResponsiveLogo from "@/components/responsive-logo"
 import { createAddressSlug } from "@/lib/utils"
-import { generateMLSSlug } from "@/lib/listings-transformer"
 import type { Property } from "@/types/property"
 
 export default function PropertyShowcasePage() {
@@ -103,44 +102,24 @@ export default function PropertyShowcasePage() {
 
       setLoading(true)
       try {
-        let url = ''
+        // Use the properties API for all searches
+        const params = new URLSearchParams()
+        
+        if (searchQuery.trim() !== "") {
+          params.set('search', searchQuery)
+        }
+        if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
+        if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
+        if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
+        if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
+        if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
+
+        const url = `/api/properties?${params.toString()}`
+        
+        const response = await fetch(url)
         let data = []
-
-        // Use the new standardized search API for address searches
-        if (hasSearchQuery && searchQuery.trim() !== "") {
-          // Build query parameters for address search
-          const params = new URLSearchParams()
-          params.set('query', searchQuery)
-          if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
-          if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
-          if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
-          if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
-          if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
-
-          url = `/api/search/addresses?${params.toString()}`
-          
-          const response = await fetch(url)
-          if (response.ok) {
-            const result = await response.json()
-            if (result.success) {
-              data = result.data.results
-            }
-          }
-        } else if (hasFilters) {
-          // Fall back to general properties API for filter-only searches
-          const params = new URLSearchParams()
-          if (selectedType && selectedType !== 'all') params.set('propertyType', selectedType)
-          if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms)
-          if (bathrooms && bathrooms !== 'all') params.set('bathrooms', bathrooms)
-          if (priceRange && priceRange !== 'all') params.set('priceRange', priceRange)
-          if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity)
-
-          url = `/api/properties?${params.toString()}`
-          
-          const response = await fetch(url)
-          if (response.ok) {
-            data = await response.json()
-          }
+        if (response.ok) {
+          data = await response.json()
         }
 
         setProperties(data)
@@ -508,7 +487,7 @@ export default function PropertyShowcasePage() {
                           </div>
                         </div>
                         
-                        <Link href={`/listings/${('source' in property && property.source === 'mls') ? generateMLSSlug(property) : createAddressSlug(property.address || '') + '-' + property.id.slice(-8)}`}>
+                        <Link href={`/listings/${createAddressSlug(property.address || '') + '-' + property.id.slice(-8)}`}>
                           <Button className="w-full bg-[#aa9578] hover:bg-[#8a7a63] text-white rounded-full">
                             View Details
                           </Button>
