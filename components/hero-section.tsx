@@ -3,17 +3,120 @@
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath } from "lucide-react"
+import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath, SlidersHorizontal, Plus } from "lucide-react"
 import TopNavMenu from "./top-nav-menu"
 import ResponsiveLogo from "./responsive-logo"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
+
+// Hero-specific Search Filters Component
+function HeroSearchFilters({ onApplyFilter, activeFilters }: { onApplyFilter: (key: string, value: any) => void, activeFilters: any }) {
+  const handleFilterChange = (key: string, value: string) => {
+    // Convert "any" to undefined for the filter system
+    onApplyFilter(key, value === "any" ? undefined : value)
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Property Type */}
+      <div>
+        <Label className="!text-white font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Property Type</Label>
+        <Select
+          onValueChange={(value) => handleFilterChange("propertyType", value)}
+          defaultValue={activeFilters.propertyType || "any"}
+        >
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any Type</SelectItem>
+            <SelectItem value="detached">House</SelectItem>
+            <SelectItem value="condo">Condo</SelectItem>
+            <SelectItem value="townhouse">Townhouse</SelectItem>
+            <SelectItem value="lot">Land/Lot</SelectItem>
+            <SelectItem value="multi-res">Multi-Family</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Bedrooms */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md text-shadow-md font-medium mb-2 block text-md">Bedrooms</Label>
+        <Select onValueChange={(value) => handleFilterChange("bedrooms", value)} defaultValue={activeFilters.bedrooms || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Beds" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any</SelectItem>
+            <SelectItem value="1">1+</SelectItem>
+            <SelectItem value="2">2+</SelectItem>
+            <SelectItem value="3">3+</SelectItem>
+            <SelectItem value="4">4+</SelectItem>
+            <SelectItem value="5">5+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Bathrooms */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Bathrooms</Label>
+        <Select onValueChange={(value) => handleFilterChange("bathrooms", value)} defaultValue={activeFilters.bathrooms || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Baths" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any</SelectItem>
+            <SelectItem value="1">1+</SelectItem>
+            <SelectItem value="2">2+</SelectItem>
+            <SelectItem value="3">3+</SelectItem>
+            <SelectItem value="4">4+</SelectItem>
+            <SelectItem value="5">5+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <Label className="!text-white/90 font-tenor-sans text-shadow-md font-medium mb-2 block text-md">Price Range</Label>
+        <Select onValueChange={(value) => handleFilterChange("priceRange", value)} defaultValue={activeFilters.priceRange || "any"}>
+          <SelectTrigger className="w-full h-12 rounded-full border-white/30 bg-white/90 backdrop-blur-sm">
+            <SelectValue placeholder="Any Price" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any Price</SelectItem>
+            <SelectItem value="0-500000">Under $500K</SelectItem>
+            <SelectItem value="500000-1000000">$500K - $1M</SelectItem>
+            <SelectItem value="1000000-2000000">$1M - $2M</SelectItem>
+            <SelectItem value="2000000-5000000">$2M - $5M</SelectItem>
+            <SelectItem value="5000000+">$5M+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )
+}
+
+// Debounce helper
+function debounce(fn: (...args: any[]) => void, delay: number) {
+  let timer: NodeJS.Timeout
+  return (...args: any[]) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }
+}
 
 // Property Search Component
 function PropertySearchWithSuggestions() {
   const [searchQuery, setSearchQuery] = useState("")
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<any>({})
   const searchRef = useRef<HTMLDivElement>(null)
+  const mlsSearchRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch featured properties when component mounts or when search is focused
   const fetchFeaturedProperties = async () => {
@@ -30,6 +133,32 @@ function PropertySearchWithSuggestions() {
       setIsLoading(false)
     }
   }
+
+  // Fetch MLS properties when user starts typing (debounced)
+  const fetchMLSProperties = debounce(async (query: string, currentCrmIds: Set<string>) => {
+    if (!query.trim()) return
+    try {
+      const response = await fetch(`/api/listings?search=${encodeURIComponent(query)}&limit=10`)
+      if (response.ok) {
+        let mlsProperties = await response.json()
+        // Filter out any MLS properties that have the same ID as CRM ones
+        mlsProperties = mlsProperties.filter((mls: any) => !currentCrmIds.has(mls.id))
+        // Only show relevant MLS matches (address/city/type/description)
+        setSuggestions(prev => {
+          // Only keep unique by id
+          const all = [...prev, ...mlsProperties]
+          const seen = new Set()
+          return all.filter(p => {
+            if (seen.has(p.id)) return false
+            seen.add(p.id)
+            return true
+          }).slice(0, 6)
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching MLS properties:', error)
+    }
+  }, 350)
 
   // Filter properties based on search query
   const filteredSuggestions = suggestions.filter(property => {
@@ -60,17 +189,68 @@ function PropertySearchWithSuggestions() {
     setShowSuggestions(true)
   }
 
+  // Handle input blur - reset to featured properties when focus is lost
+  const handleBlur = () => {
+    // Small delay to allow for clicks on suggestions
+    setTimeout(() => {
+      if (!searchQuery.trim()) {
+        fetchFeaturedProperties()
+      }
+    }, 200)
+  }
+
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
+    const newValue = e.target.value
+    setSearchQuery(newValue)
+    
     if (!showSuggestions) {
       setShowSuggestions(true)
     }
+    
+    if (newValue.trim().length > 0) {
+      // Get CRM suggestions first
+      fetchFeaturedProperties()
+      // Then fetch MLS suggestions, but only after CRM suggestions are set
+      setTimeout(() => {
+        const crmIds = new Set(suggestions.map(s => s.id))
+        fetchMLSProperties(newValue, crmIds)
+      }, 100)
+    } else {
+      fetchFeaturedProperties()
+    }
+  }
+
+  // Handle filter application
+  const handleApplyFilter = (key: string, value: any) => {
+    setActiveFilters((prev: any) => ({
+      ...prev,
+      [key]: value
+    }))
   }
 
   // Handle search submit
   const handleSearch = () => {
-    window.location.href = `/property-showcase?search=${encodeURIComponent(searchQuery)}`
+    // Build query string with search and filters
+    const params = new URLSearchParams()
+    
+    if (searchQuery.trim()) {
+      params.set('search', searchQuery)
+    }
+    
+    // Add active filters to the query
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        if (Array.isArray(value) && value.length > 0) {
+          params.set(key, JSON.stringify(value))
+        } else if (!Array.isArray(value)) {
+          params.set(key, value.toString())
+        }
+      }
+    })
+
+    const queryString = params.toString()
+    window.location.href = `/property-showcase${queryString ? `?${queryString}` : ''}`
     setShowSuggestions(false)
   }
 
@@ -98,24 +278,47 @@ function PropertySearchWithSuggestions() {
 
   // Generate property slug for URL
   const generateSlug = (property: any) => {
-    return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
+    if (property.source === 'mls') {
+      // Use MLS slug generation for MLS properties
+      return property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + property.id
+    } else {
+      // Use CRM slug generation for CRM properties
+      return `${property.address?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${property.id?.slice(-8)}`
+    }
   }
 
   return (
     <div ref={searchRef} className="relative">
-      {/* Search Input */}
-      <div className="flex items-center">
-        <input
-          type="text"
-          placeholder="Search For Properties"
-          className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
-          value={searchQuery}
-          onChange={handleInputChange}
-          onFocus={handleFocus}
-        />
+      {/* Search Input with Filter Button */}
+      <div className="flex items-center gap-2">
+        {/* Filter Toggle Button */}
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`h-14 md:h-16 w-14 md:w-16 rounded-full flex items-center justify-center backdrop-blur-md border-white/30 ${
+            showFilters 
+              ? 'bg-white/90 text-gray-700 hover:bg-white' 
+              : 'bg-white/20 text-white hover:bg-white/30'
+          }`}
+        >
+          <SlidersHorizontal className="h-5 w-5" />
+        </Button>
 
+        {/* Main Search Input */}
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search For Properties"
+            className="w-full h-14 md:h-16 pl-6 pr-4 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
+            value={searchQuery}
+            onChange={handleInputChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
+        </div>
+
+        {/* Search Button */}
         <button 
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
+          className="h-14 md:h-16 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
           onClick={handleSearch}
         >
           <Search className="h-4 w-4" />
@@ -127,8 +330,29 @@ function PropertySearchWithSuggestions() {
       {showSuggestions && (
         <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#fff]/70 backdrop-blur-md rounded-3xl shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
-              Loading properties...
+            <div className="p-4">
+              {/* Show 3 skeletons for loading state */}
+              <div className="flex items-center gap-4 mb-3">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mb-3">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
             </div>
           ) : filteredSuggestions.length > 0 ? (
             <>
@@ -206,7 +430,7 @@ function PropertySearchWithSuggestions() {
               >
                 <div className="p-4 text-center">
                   <span className="text-[#444] font-semibold font-tenor-sans">
-                    View All Listings →
+                    Search MLS Results →
                   </span>
                 </div>
               </Link>
@@ -220,11 +444,21 @@ function PropertySearchWithSuggestions() {
                 <div className="p-4 text-center">
                   <div className="text-[#444] font-semibold font-tenor-sans flex items-center justify-center">
                     No Results Found. 
-                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">View All Listings →</span>
+                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">Search MLS Results →</span>
                   </div>
                 </div>
               </Link>
           )}
+        </div>
+      )}
+
+      {/* Filters Section */}
+      {showFilters && (
+        <div className="mt-4 p-6 rounded-3xl backdrop-blur-md bg-white/20 border border-white/30">
+          <HeroSearchFilters 
+            onApplyFilter={handleApplyFilter}
+            activeFilters={activeFilters}
+          />
         </div>
       )}
     </div>
