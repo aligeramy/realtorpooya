@@ -2,16 +2,26 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { properties, propertyImages } from '@/lib/db/schema'
 import { eq, like, and, or, desc, gte, lte, ne } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
+    
+    // Get filter parameters (support both hero section and existing parameters)
     const search = searchParams.get('search')
     const city = searchParams.get('city')
     const minPrice = searchParams.get('minPrice')
     const maxPrice = searchParams.get('maxPrice')
     const bedrooms = searchParams.get('bedrooms')
+    const bathrooms = searchParams.get('bathrooms')
     const propertyType = searchParams.get('propertyType')
+    const priceRange = searchParams.get('priceRange')
+
+    // If no search query and no filters, return empty results
+    if (!search && !city && !minPrice && !maxPrice && !bedrooms && !bathrooms && !propertyType && !priceRange) {
+      return NextResponse.json([])
+    }
 
     // Build where conditions
     const conditions = []
@@ -20,19 +30,35 @@ export async function GET(request: Request) {
     conditions.push(ne(properties.status, 'archived'))
 
     if (search) {
+      // Convert search to lowercase for case-insensitive search
+      const searchLower = search.toLowerCase()
+      // Focus search on address and city for better precision - prioritize address matches
       conditions.push(
         or(
-          like(properties.address, `%${search}%`),
-          like(properties.city, `%${search}%`),
-          like(properties.description, `%${search}%`)
+          like(sql`lower(${properties.address})`, `%${searchLower}%`),
+          like(sql`lower(${properties.city})`, `%${searchLower}%`)
         )
       )
     }
 
-    if (city) {
+    if (city && city !== 'all') {
       conditions.push(like(properties.city, `%${city}%`))
     }
 
+    // Handle price range from hero section filters
+    if (priceRange && priceRange !== '' && priceRange !== 'any' && priceRange !== 'all') {
+      if (priceRange.includes('-')) {
+        const [min, max] = priceRange.split('-').map(Number)
+        if (min) conditions.push(gte(properties.price, min))
+        if (max) conditions.push(lte(properties.price, max))
+      } else if (priceRange.endsWith('+')) {
+        // Handle "5000000+" format
+        const min = parseInt(priceRange.replace('+', ''))
+        conditions.push(gte(properties.price, min))
+      }
+    }
+
+    // Handle individual price filters (for backward compatibility)
     if (minPrice) {
       conditions.push(gte(properties.price, parseInt(minPrice)))
     }
@@ -41,44 +67,71 @@ export async function GET(request: Request) {
       conditions.push(lte(properties.price, parseInt(maxPrice)))
     }
 
-    if (bedrooms) {
-      conditions.push(eq(properties.bedrooms, bedrooms))
+    // Handle bedrooms filter - database uses text field to support "3+1", "4+x" format
+    if (bedrooms && bedrooms !== '' && bedrooms !== 'any' && bedrooms !== 'all') {
+      const bedroomNum = parseInt(bedrooms)
+      // Match properties that have >= the specified number of bedrooms
+      // This handles formats like "3", "3+1", "4+1", etc.
+      conditions.push(
+        or(
+          // Exact match or starts with number
+          like(properties.bedrooms, `${bedroomNum}%`),
+          // Higher numbers
+          like(properties.bedrooms, `${bedroomNum + 1}%`),
+          like(properties.bedrooms, `${bedroomNum + 2}%`),
+          like(properties.bedrooms, `${bedroomNum + 3}%`),
+          like(properties.bedrooms, `${bedroomNum + 4}%`),
+          like(properties.bedrooms, `${bedroomNum + 5}%`),
+          like(properties.bedrooms, `${bedroomNum + 6}%`),
+          like(properties.bedrooms, `${bedroomNum + 7}%`),
+          like(properties.bedrooms, `${bedroomNum + 8}%`),
+          like(properties.bedrooms, `${bedroomNum + 9}%`)
+        )
+      )
     }
 
-    if (propertyType) {
-      // Map frontend property types to CRM enum values
-      const typeMap: Record<string, 'detached' | 'condo' | 'townhouse' | 'lot' | 'multi-res'> = {
-        'house': 'detached',
-        'condo': 'condo',
-        'townhouse': 'townhouse',
-        'land': 'lot',
-        'multi-family': 'multi-res'
-      }
-      const mappedType = typeMap[propertyType.toLowerCase()]
-      if (mappedType) {
-        conditions.push(eq(properties.propertyType, mappedType))
-      }
+    // Handle bathrooms filter - database uses integer field
+    if (bathrooms && bathrooms !== '' && bathrooms !== 'any' && bathrooms !== 'all') {
+      conditions.push(gte(properties.bathrooms, parseInt(bathrooms)))
     }
 
-    // Build the query with conditional where
-    const allProperties = await db
+    // Handle property type filter - use exact database enum values
+    if (propertyType && propertyType !== '' && propertyType !== 'any' && propertyType !== 'all') {
+      // Database uses: 'detached', 'condo', 'townhouse', 'lot', 'multi-res'
+      // These now match our hero section filter values
+      conditions.push(eq(properties.propertyType, propertyType as 'detached' | 'condo' | 'townhouse' | 'lot' | 'multi-res'))
+    }
+
+    // Fetch from CRM database only
+    const crmPropertiesResult = await db
       .select()
       .from(properties)
       .leftJoin(propertyImages, eq(properties.id, propertyImages.propertyId))
-      .where(and(...conditions))
-      .orderBy(desc(properties.displayOrder), desc(properties.createdAt))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(properties.listingDate))
 
-    // Group images by property
+    // Process CRM properties
     const propertiesMap = new Map()
     
-    for (const row of allProperties) {
+    for (const row of crmPropertiesResult) {
       const property = row.properties
       const image = row.property_images
       
       if (!propertiesMap.has(property.id)) {
         propertiesMap.set(property.id, {
           ...property,
-          images: []
+          source: 'crm',
+          images: [],
+          // Keep original fields for backward compatibility
+          media_urls: property.mediaUrls,
+          hero_image: property.heroImage,
+          youtube_video: property.youtubeVideo,
+          square_feet: property.squareFeet,
+          year_built: property.yearBuilt,
+          property_type: property.propertyType,
+          postal_code: property.postalCode,
+          listing_date: property.listingDate?.toISOString(),
+          created_at: property.createdAt?.toISOString(),
         })
       }
       
@@ -87,9 +140,16 @@ export async function GET(request: Request) {
       }
     }
 
-    const result = Array.from(propertiesMap.values())
+    const results = Array.from(propertiesMap.values())
 
-    return NextResponse.json(result)
+    // Sort by listing date (newest first)
+    results.sort((a, b) => {
+      const dateA = new Date(a.listingDate || a.listing_date || 0)
+      const dateB = new Date(b.listingDate || b.listing_date || 0)
+      return dateB.getTime() - dateA.getTime()
+    })
+
+    return NextResponse.json(results)
   } catch (error) {
     console.error('Error fetching properties:', error)
     return NextResponse.json(

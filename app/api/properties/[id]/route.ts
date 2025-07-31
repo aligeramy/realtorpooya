@@ -6,26 +6,34 @@ import { createAddressSlug, findPropertyBySlug } from '@/lib/utils'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id: originalId } = await params
+    let id = originalId
     let propertyData = null
 
-    // First try to get by UUID (for direct ID access)
+    console.log('Looking for property with ID/slug:', originalId)
+
+    // First try to get by UUID from CRM database
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    
+    console.log('Is UUID?', isUUID)
     
     if (isUUID) {
       const [result] = await db
         .select()
         .from(properties)
         .where(eq(properties.id, id))
-      propertyData = result
+      
+      if (result) {
+        propertyData = result
+        console.log('Found CRM property')
+      }
     }
 
-    // If not found by UUID or not a UUID, try to find by slug
+    // If not found, try to find by slug in CRM database
     if (!propertyData) {
-      // Get all non-archived properties and search by slug
       const allProperties = await db
         .select()
         .from(properties)
@@ -41,16 +49,17 @@ export async function GET(
       )
     }
 
-    // Get images
+    // Get images for CRM property
     const images = await db
       .select()
       .from(propertyImages)
       .where(eq(propertyImages.propertyId, propertyData.id))
       .orderBy(propertyImages.displayOrder)
 
-    // Combine all data
+    // Combine all data for CRM property
     const property = {
       ...propertyData,
+      source: 'crm',
       images,
       // Convert CRM fields to frontend format for backward compatibility
       media_urls: propertyData.mediaUrls,

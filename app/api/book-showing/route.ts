@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { properties, propertyImages } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
 // Email template functions for showing requests
-function createShowingNotificationEmailHTML({ name, email, phone, preferredDate, preferredTime, propertyId, message, submittedAt }: {
+function createShowingNotificationEmailHTML({ name, email, phone, preferredDate, preferredTime, propertyId, propertyDetails, message, submittedAt }: {
   name: string
   email: string
   phone: string
   preferredDate: string
   preferredTime: string
   propertyId: string
+  propertyDetails?: any
   message: string
   submittedAt: string
 }) {
@@ -28,6 +32,7 @@ function createShowingNotificationEmailHTML({ name, email, phone, preferredDate,
     .title { color: #473729; font-size: 28px; font-weight: 700; margin-bottom: 20px; text-align: center; }
     .info-section { background: #f3ecdf; border-radius: 12px; padding: 25px; margin: 25px 0; }
     .showing-section { background: #fff; border: 2px solid #aa9578; border-radius: 12px; padding: 25px; margin: 25px 0; }
+    .property-section { background: #fff; border: 2px solid #e9e0cc; border-radius: 12px; padding: 25px; margin: 25px 0; }
     .info-row { display: flex; margin-bottom: 15px; align-items: flex-start; }
     .info-label { font-weight: 600; color: #aa9578; min-width: 120px; margin-right: 15px; }
     .info-value { color: #473729; flex: 1; }
@@ -37,6 +42,7 @@ function createShowingNotificationEmailHTML({ name, email, phone, preferredDate,
     .footer { background: #473729; color: white; padding: 30px; text-align: center; }
     .timestamp { color: #8a7a63; font-size: 14px; text-align: center; margin-top: 20px; }
     .priority { background: #aa9578; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 20px; }
+    .property-image { max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px; }
     @media (max-width: 480px) {
       .content { padding: 20px; }
       .info-row { flex-direction: column; }
@@ -72,6 +78,43 @@ function createShowingNotificationEmailHTML({ name, email, phone, preferredDate,
           <div class="info-value">${phone}</div>
         </div>
       </div>
+      
+      ${propertyDetails ? `
+      <div class="property-section">
+        <h3 style="color: #aa9578; margin-bottom: 20px; text-align: center;">🏠 Property Details</h3>
+        <div class="info-row">
+          <div class="info-label">Address:</div>
+          <div class="info-value" style="font-weight: 600;">${propertyDetails.address}, ${propertyDetails.city}, ${propertyDetails.province}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Price:</div>
+          <div class="info-value" style="font-weight: 600;">$${propertyDetails.price.toLocaleString()}</div>
+        </div>
+        ${propertyDetails.bedrooms ? `
+        <div class="info-row">
+          <div class="info-label">Bedrooms:</div>
+          <div class="info-value">${propertyDetails.bedrooms}</div>
+        </div>
+        ` : ''}
+        ${propertyDetails.bathrooms ? `
+        <div class="info-row">
+          <div class="info-label">Bathrooms:</div>
+          <div class="info-value">${propertyDetails.bathrooms}</div>
+        </div>
+        ` : ''}
+        ${propertyDetails.squareFeet ? `
+        <div class="info-row">
+          <div class="info-label">Square Feet:</div>
+          <div class="info-value">${propertyDetails.squareFeet.toLocaleString()}</div>
+        </div>
+        ` : ''}
+        ${propertyDetails.heroImage ? `
+        <div style="text-align: center; margin-top: 15px;">
+          <img src="${propertyDetails.heroImage}" alt="Property Image" class="property-image" style="max-width: 300px;" />
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
       
       <div class="showing-section">
         <h3 style="color: #aa9578; margin-bottom: 20px; text-align: center;">📅 Showing Details</h3>
@@ -236,12 +279,41 @@ export async function POST(request: Request) {
       )
     }
 
+    // Fetch property details if propertyId is provided
+    let propertyDetails = null
+    if (propertyId && propertyId !== 'Not specified') {
+      try {
+        const propertyResult = await db
+          .select()
+          .from(properties)
+          .leftJoin(propertyImages, eq(properties.id, propertyImages.propertyId))
+          .where(eq(properties.id, propertyId))
+          .limit(1)
+
+        if (propertyResult.length > 0) {
+          const property = propertyResult[0].properties
+          const images = propertyResult
+            .map(row => row.property_images)
+            .filter(img => img !== null)
+
+          propertyDetails = {
+            ...property,
+            images: images
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching property details:', error)
+        // Continue without property details
+      }
+    }
+
     // Log the showing request
     console.log('Showing request received:', {
       name,
       email,
       phone,
       propertyId,
+      propertyDetails,
       preferredDate,
       preferredTime,
       message,
@@ -249,7 +321,7 @@ export async function POST(request: Request) {
     })
 
     // Format the email content with HTML template
-    const emailSubject = `New Property Showing Request from ${name}`
+    const emailSubject = `New Property Showing Request from ${name}${propertyDetails ? ` - ${propertyDetails.address}` : ''}`
     const emailContent = createShowingNotificationEmailHTML({
       name,
       email,
@@ -257,6 +329,7 @@ export async function POST(request: Request) {
       preferredDate: preferredDate || 'Not specified',
       preferredTime: preferredTime || 'Not specified',
       propertyId: propertyId || 'Not specified',
+      propertyDetails,
       message: message || 'No additional message',
       submittedAt: new Date().toLocaleString()
     })

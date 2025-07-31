@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -240,9 +240,18 @@ function extractFeatures(property: Property): string[] {
 
 export default function PropertyPage({ params }: PageProps) {
   const router = useRouter()
-  const { id: slug } = use(params)
+  const [slug, setSlug] = useState<string>("")
   const [property, setProperty] = useState<Property | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Get slug from params
+  useEffect(() => {
+    const getSlug = async () => {
+      const { id } = await params
+      setSlug(id)
+    }
+    getSlug()
+  }, [params])
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -253,24 +262,14 @@ export default function PropertyPage({ params }: PageProps) {
 
   // Fetch property data from API
   useEffect(() => {
+    if (!slug) return // Don't fetch until we have the slug
+    
     const fetchProperty = async () => {
       try {
-        // First try to find by slug in database
-        const response = await fetch(`/api/properties`)
+        // Try individual property API first (handles both CRM and MLS)
+        const response = await fetch(`/api/properties/${slug}`)
         if (response.ok) {
-          const allProperties = await response.json()
-          const foundProperty = findPropertyBySlug(allProperties, slug)
-          if (foundProperty) {
-            setProperty(foundProperty)
-            setLoading(false)
-            return
-          }
-        }
-
-        // If not found in database, try individual property API (for backward compatibility)
-        const individualResponse = await fetch(`/api/properties/${slug}`)
-        if (individualResponse.ok) {
-          const propertyData = await individualResponse.json()
+          const propertyData = await response.json()
           setProperty(propertyData)
           setLoading(false)
           return
@@ -574,7 +573,7 @@ export default function PropertyPage({ params }: PageProps) {
                       Property Sold
                     </Button>
                   ) : (
-                    <BookShowingButton fullWidth size="xl" className="mb-4" propertyId={use(params).id} />
+                    <BookShowingButton fullWidth size="xl" className="mb-4" propertyId={slug} />
                   )}
 
                   <Link href="/contact">
