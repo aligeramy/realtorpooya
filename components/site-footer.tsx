@@ -167,7 +167,7 @@ export default function SiteFooter() {
             <div className="flex items-center space-x-4">
                 <Image
                   src="/images/lepage.png"
-                  alt="Royal LePage Your Community Realty"
+                  alt="Remax Community Realty"
                   width={150}
                   height={50}
                   className="h-auto"

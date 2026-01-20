@@ -94,7 +94,7 @@ function createNotificationEmailHTML({ name, email, phone, message, propertyId, 
     </div>
     
     <div style="background: white; padding: 20px; text-align: center;">
-      <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
+      <img src="https://realtorpooya.ca/images/lepage.png" alt="Remax Your Community Realty" style="max-height: 40px; height: auto;" />
     </div>
   </div>
 </body>
@@ -185,7 +185,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
     </div>
     
     <div style="background: white; padding: 20px; text-align: center;">
-      <img src="https://realtorpooya.ca/images/lepage.png" alt="Royal LePage Your Community Realty" style="max-height: 40px; height: auto;" />
+      <img src="https://realtorpooya.ca/images/lepage.png" alt="Remax Your Community Realty" style="max-height: 40px; height: auto;" />
     </div>
   </div>
 </body>
