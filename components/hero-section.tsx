@@ -171,7 +171,7 @@ function PropertySearchWithSuggestions() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search For Properties"
+          placeholder="Search by address, unit number, city, or MLS number..."
           className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50"
           value={searchQuery}
           onChange={handleInputChange}

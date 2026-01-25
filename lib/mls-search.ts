@@ -39,6 +39,10 @@ export interface MLSProperty {
   bathroomsTotalInteger: number
   livingArea?: number
   propertyType: string
+  propertySubType?: string // New: Detailed property classification (e.g., "Condo Apartment", "Townhouse")
+  streetNumber?: string // New: Street number component
+  streetName?: string // New: Street name component
+  unitNumber?: string // New: Unit/apartment number
   city: string
   postalCode: string
   latitude: number
@@ -110,11 +114,27 @@ export async function searchMLSProperties(
  * Map MLS property to custom property format
  */
 export function mapMLSToCustomProperty(mlsProperty: MLSProperty): any {
+  // Build address string - prefer formattedAddress, but ensure unit number is included
+  let address = mlsProperty.formattedAddress?.split(',')[0] || mlsProperty.formattedAddress || ''
+  
+  // If unit number exists but isn't in the address, append it
+  if (mlsProperty.unitNumber && address && !address.toLowerCase().includes(mlsProperty.unitNumber.toLowerCase())) {
+    // Check if address already has "Unit" or similar
+    const hasUnitKeyword = /\b(unit|apt|apartment|#)\b/i.test(address)
+    if (!hasUnitKeyword) {
+      address = `${address} Unit ${mlsProperty.unitNumber}`
+    }
+  }
+  
   return {
     id: mlsProperty.id,
     // Use listingKey as a unique identifier for MLS properties
     mlsListingKey: mlsProperty.listingKey,
-    address: mlsProperty.formattedAddress.split(',')[0] || mlsProperty.formattedAddress,
+    address,
+    // Include new address components for better search and display
+    streetNumber: mlsProperty.streetNumber,
+    streetName: mlsProperty.streetName,
+    unitNumber: mlsProperty.unitNumber,
     city: mlsProperty.city,
     province: 'ON', // Default to Ontario, could be extracted from formattedAddress
     postalCode: mlsProperty.postalCode,
@@ -123,6 +143,7 @@ export function mapMLSToCustomProperty(mlsProperty: MLSProperty): any {
     bathrooms: mlsProperty.bathroomsTotalInteger,
     squareFeet: mlsProperty.livingArea,
     propertyType: mapMLSPropertyType(mlsProperty.propertyType),
+    propertySubType: mlsProperty.propertySubType, // New: Include detailed property sub-type
     status: mapMLSStatus(mlsProperty.standardStatus),
     heroImage: mlsProperty.imageUrl,
     mediaUrls: mlsProperty.hasImages && mlsProperty.imageUrl ? [mlsProperty.imageUrl] : [],

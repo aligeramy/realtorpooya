@@ -47,7 +47,7 @@ export function PropertySearch({
   value,
   onChange,
   onSelect,
-  placeholder = "Search properties by address, city, postal code, or MLS number...",
+  placeholder = "Search by address, unit number, city, postal code, or MLS number...",
   className,
   debounceMs = 300,
 }: PropertySearchProps) {
@@ -78,16 +78,25 @@ export function PropertySearch({
         const data = await response.json()
         
         // Transform to suggestions format
-        const transformed: SearchSuggestion[] = data.map((prop: any) => ({
-          id: prop.id,
-          address: prop.address || prop.formattedAddress || '',
-          city: prop.city || '',
-          price: prop.price || prop.listPrice,
-          bedrooms: prop.bedrooms || prop.bedroomsTotal,
-          bathrooms: prop.bathrooms || prop.bathroomsTotalInteger,
-          propertyType: prop.propertyType || '',
-          source: prop.source || 'custom',
-        }))
+        const transformed: SearchSuggestion[] = data.map((prop: any) => {
+          // Build address string with unit number if available
+          let address = prop.address || prop.formattedAddress || ''
+          if (prop.unitNumber && !address.includes(prop.unitNumber)) {
+            // Add unit number to address if not already included
+            address = `${address}${address ? ' ' : ''}Unit ${prop.unitNumber}`
+          }
+          
+          return {
+            id: prop.id,
+            address,
+            city: prop.city || '',
+            price: prop.price || prop.listPrice,
+            bedrooms: prop.bedrooms || prop.bedroomsTotal,
+            bathrooms: prop.bathrooms || prop.bathroomsTotalInteger,
+            propertyType: prop.propertyType || prop.propertySubType || '',
+            source: prop.source || 'custom',
+          }
+        })
 
         setSuggestions(transformed)
       }
