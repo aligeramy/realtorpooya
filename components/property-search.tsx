@@ -26,66 +26,66 @@ interface PropertySearchProps {
   debounceMs?: number
 }
 
-// Debounce hook
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
-
 export function PropertySearch({
   value,
   onChange,
   onSelect,
   placeholder = "Search by address, unit number, city, postal code, or MLS number...",
   className,
-  debounceMs = 300,
+  debounceMs = 500,
 }: PropertySearchProps) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
+  const [localValue, setLocalValue] = useState(value)
+
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const debouncedQuery = useDebounce(value, debounceMs)
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Sync local value with prop value (for controlled component behavior)
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
 
   // Fetch search suggestions
   const fetchSuggestions = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSuggestions([])
+      setIsLoading(false)
       return
     }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController()
 
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
-      params.append('q', query) // Use 'q' for MLS full-text search
-      params.append('search', query) // Also include 'search' for custom properties
-      params.append('limit', '8') // Limit suggestions to 8
+      params.append('q', query)
+      params.append('limit', '8')
 
-      const response = await fetch(`/api/properties?${params.toString()}`)
+      const response = await fetch(`/api/properties?${params.toString()}`, {
+        signal: abortControllerRef.current.signal
+      })
+
       if (response.ok) {
         const data = await response.json()
-        
+
         // Transform to suggestions format
         const transformed: SearchSuggestion[] = data.map((prop: any) => {
           // Build address string with unit number if available
           let address = prop.address || prop.formattedAddress || ''
           if (prop.unitNumber && !address.includes(prop.unitNumber)) {
-            // Add unit number to address if not already included
-            address = `${address}${address ? ' ' : ''}Unit ${prop.unitNumber}`
+            address = `Unit ${prop.unitNumber} - ${address}`
           }
-          
+
           return {
             id: prop.id,
             address,
@@ -100,61 +100,86 @@ export function PropertySearch({
 
         setSuggestions(transformed)
       }
-    } catch (error) {
-      console.error('Error fetching suggestions:', error)
-      setSuggestions([])
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error fetching suggestions:', error)
+        setSuggestions([])
+      }
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  // Fetch suggestions when debounced query changes
+  // Debounce suggestion fetching
   useEffect(() => {
-    if (debouncedQuery && debouncedQuery.length >= 2) {
-      setShowSuggestions(true)
-      fetchSuggestions(debouncedQuery)
-    } else {
-      setSuggestions([])
-      if (!debouncedQuery || debouncedQuery.length === 0) {
-        setShowSuggestions(false)
+    const timer = setTimeout(() => {
+      if (localValue && localValue.length >= 2 && showSuggestions) {
+        fetchSuggestions(localValue)
+      } else {
+        setSuggestions([])
+        setIsLoading(false)
+      }
+    }, debounceMs)
+
+    return () => {
+      clearTimeout(timer)
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
       }
     }
-  }, [debouncedQuery, fetchSuggestions])
+  }, [localValue, showSuggestions, debounceMs, fetchSuggestions])
 
   // Handle input change
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
-    onChange(newValue)
+    setLocalValue(newValue)
+    onChange(newValue) // Immediately notify parent
     setShowSuggestions(true)
     setHighlightedIndex(-1)
+
+    if (newValue.length >= 2) {
+      setIsLoading(true)
+    }
   }, [onChange])
 
   // Handle suggestion select
   const handleSelectSuggestion = useCallback((suggestion: SearchSuggestion) => {
+    setLocalValue(suggestion.address)
     onChange(suggestion.address)
     setShowSuggestions(false)
+    setSuggestions([])
+    setHighlightedIndex(-1)
+
     if (onSelect) {
       onSelect(suggestion)
     }
+
     inputRef.current?.blur()
   }, [onChange, onSelect])
 
-  // Handle focus - memoized to prevent unnecessary re-renders
+  // Handle focus
   const handleFocus = useCallback(() => {
-    if (value.length >= 2) {
+    if (localValue.length >= 2) {
       setShowSuggestions(true)
-      // Fetch suggestions if we have a query but no suggestions yet
-      if (suggestions.length === 0 && debouncedQuery.length >= 2) {
-        fetchSuggestions(debouncedQuery)
+      if (suggestions.length === 0) {
+        setIsLoading(true)
+        fetchSuggestions(localValue)
       }
     }
-  }, [value.length, suggestions.length, debouncedQuery, fetchSuggestions])
+  }, [localValue, suggestions.length, fetchSuggestions])
+
+  // Handle blur - delay to allow click on suggestions
+  const handleBlur = useCallback(() => {
+    setTimeout(() => {
+      setShowSuggestions(false)
+    }, 200)
+  }, [])
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || suggestions.length === 0) {
-      if (e.key === 'Enter' && value.trim()) {
-        e.preventDefault() // Prevent form submission
+      if (e.key === 'Enter') {
+        e.preventDefault()
         setShowSuggestions(false)
         inputRef.current?.blur()
       }
@@ -164,7 +189,7 @@ export function PropertySearch({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setHighlightedIndex((prev) => 
+        setHighlightedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         )
         break
@@ -173,10 +198,10 @@ export function PropertySearch({
         setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1))
         break
       case 'Enter':
-        e.preventDefault() // Prevent form submission
+        e.preventDefault()
         if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
           handleSelectSuggestion(suggestions[highlightedIndex])
-        } else if (value.trim()) {
+        } else {
           setShowSuggestions(false)
           inputRef.current?.blur()
         }
@@ -187,7 +212,7 @@ export function PropertySearch({
         inputRef.current?.blur()
         break
     }
-  }, [showSuggestions, suggestions, highlightedIndex, value, handleSelectSuggestion])
+  }, [showSuggestions, suggestions, highlightedIndex, handleSelectSuggestion])
 
   // Handle click outside
   useEffect(() => {
@@ -201,7 +226,17 @@ export function PropertySearch({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Format price helper
+  // Clear input
+  const handleClear = useCallback(() => {
+    setLocalValue('')
+    onChange('')
+    setSuggestions([])
+    setShowSuggestions(false)
+    setHighlightedIndex(-1)
+    inputRef.current?.focus()
+  }, [onChange])
+
+  // Format price
   const formatPrice = useCallback((price?: number) => {
     if (!price) return null
     return new Intl.NumberFormat('en-CA', {
@@ -219,6 +254,7 @@ export function PropertySearch({
         key={suggestion.id}
         type="button"
         onClick={() => handleSelectSuggestion(suggestion)}
+        onMouseEnter={() => setHighlightedIndex(index)}
         className={cn(
           "w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors",
           "border-b border-gray-100 last:border-b-0",
@@ -249,8 +285,8 @@ export function PropertySearch({
                 {formatPrice(suggestion.price)}
               </span>
             )}
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={cn(
                 "text-xs",
                 suggestion.source === 'mls' && "border-blue-200 text-blue-700"
@@ -268,52 +304,50 @@ export function PropertySearch({
     <div ref={searchRef} className={cn("relative w-full", className)}>
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
         <Input
           ref={inputRef}
           type="text"
           placeholder={placeholder}
-          value={value}
+          value={localValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
-          className="pl-10 pr-10 h-12 rounded-full border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
+          onBlur={handleBlur}
+          className="pl-12 pr-12 h-12 rounded-full border-gray-300 focus:border-[#aa9578] focus:ring-[#aa9578] text-base"
+          autoComplete="off"
         />
-        {value && (
+        {localValue && (
           <button
             type="button"
-            onClick={() => {
-              onChange('')
-              setShowSuggestions(false)
-              inputRef.current?.focus()
-            }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={handleClear}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10"
           >
             <X className="h-4 w-4" />
           </button>
         )}
-        {isLoading && (
-          <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+        {isLoading && !localValue && (
+          <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
             <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
           </div>
         )}
       </div>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && value.length >= 2 && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto">
+      {showSuggestions && localValue.length >= 2 && (
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 max-h-96 overflow-y-auto">
           {isLoading && suggestions.length === 0 ? (
             <div className="px-4 py-8 text-center text-gray-500">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-              <p className="text-sm">Searching...</p>
+              <p className="text-sm">Searching properties...</p>
             </div>
           ) : suggestions.length > 0 ? (
             <div className="py-2">
               {suggestionItems}
             </div>
-          ) : debouncedQuery.length >= 2 && !isLoading ? (
+          ) : !isLoading ? (
             <div className="px-4 py-8 text-center text-gray-500">
-              <p className="text-sm">No properties found</p>
+              <p className="text-sm font-medium">No properties found</p>
               <p className="text-xs text-gray-400 mt-1">Try a different search term</p>
             </div>
           ) : null}
