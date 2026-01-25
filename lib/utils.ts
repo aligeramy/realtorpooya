@@ -23,21 +23,46 @@ export function slugToAddressPattern(slug: string): string {
     .trim()
 }
 
-// Find property by address slug
+// Find property by address slug (supports format: address-slug-id-suffix)
 export function findPropertyBySlug(properties: any[], slug: string): any | null {
-  const addressPattern = slugToAddressPattern(slug)
+  // Extract ID suffix if present (last 8 hex characters after last hyphen)
+  // Format: "23-hollywood-ave-507209fa" -> address: "23-hollywood-ave", idSuffix: "507209fa"
+  // Format: "523-parliament-st-1-7596735f" -> address: "523-parliament-st-1", idSuffix: "7596735f"
+  const parts = slug.split('-')
+  let addressSlug = slug
+  let idSuffix: string | null = null
   
-  // First try exact match after slug conversion
-  let property = properties.find(p => 
-    createAddressSlug(p.address) === slug
-  )
+  // Check if last part is an 8-character hex string (UUID suffix)
+  const lastPart = parts[parts.length - 1]
+  if (lastPart && lastPart.length === 8 && /^[0-9a-f]{8}$/i.test(lastPart)) {
+    idSuffix = lastPart.toLowerCase()
+    addressSlug = parts.slice(0, -1).join('-')
+  }
   
-  // If no exact match, try fuzzy matching
+  // First try exact match with ID suffix (most reliable and fastest)
+  if (idSuffix) {
+    const property = properties.find(p => {
+      if (!p.id) return false
+      const propertyAddressSlug = createAddressSlug(p.address || '')
+      const propertyIdSuffix = p.id.slice(-8).toLowerCase()
+      return propertyAddressSlug === addressSlug && propertyIdSuffix === idSuffix
+    })
+    if (property) return property
+  }
+  
+  // Try exact address slug match (without ID suffix)
+  let property = properties.find(p => {
+    const propertySlug = createAddressSlug(p.address || '')
+    return propertySlug === slug || propertySlug === addressSlug
+  })
+  
+  // If no exact match, try fuzzy matching (fallback)
   if (!property) {
     property = properties.find(p => {
-      const propertySlug = createAddressSlug(p.address)
+      const propertySlug = createAddressSlug(p.address || '')
       const normalizedSlug = slug.replace(/-/g, '').toLowerCase()
       const normalizedPropertySlug = propertySlug.replace(/-/g, '').toLowerCase()
+      // Check if slug is contained in property slug or vice versa
       return normalizedPropertySlug.includes(normalizedSlug) || 
              normalizedSlug.includes(normalizedPropertySlug)
     })

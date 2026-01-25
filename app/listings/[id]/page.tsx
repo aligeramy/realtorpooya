@@ -12,6 +12,7 @@ import PropertyFeatures from "@/components/property-features"
 import TopNavMenu from "@/components/top-nav-menu"
 import BookShowingButton from "@/components/book-showing-button"
 import VideoPlayer from "@/components/video-player"
+import { PropertyContactForm } from "@/components/property-contact-form"
 import type { Property } from "@/types/property"
 import { createAddressSlug, findPropertyBySlug } from "@/lib/utils"
 import ResponsiveLogo from "@/components/responsive-logo"
@@ -241,6 +242,7 @@ function extractFeatures(property: Property): string[] {
 export default function PropertyPage({ params }: PageProps) {
   const router = useRouter()
   const { id: slug } = use(params)
+  const propertyId = slug // Store for use in BookShowingButton
   const [property, setProperty] = useState<Property | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -255,7 +257,16 @@ export default function PropertyPage({ params }: PageProps) {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        // First try to find by slug in database
+        // Try individual property API first (supports both custom and MLS properties)
+        const individualResponse = await fetch(`/api/properties/${slug}`)
+        if (individualResponse.ok) {
+          const propertyData = await individualResponse.json()
+          setProperty(propertyData)
+          setLoading(false)
+          return
+        }
+
+        // Fallback: try to find by slug in all properties
         const response = await fetch(`/api/properties`)
         if (response.ok) {
           const allProperties = await response.json()
@@ -265,15 +276,6 @@ export default function PropertyPage({ params }: PageProps) {
             setLoading(false)
             return
           }
-        }
-
-        // If not found in database, try individual property API (for backward compatibility)
-        const individualResponse = await fetch(`/api/properties/${slug}`)
-        if (individualResponse.ok) {
-          const propertyData = await individualResponse.json()
-          setProperty(propertyData)
-          setLoading(false)
-          return
         }
 
         // Property not found
@@ -316,12 +318,15 @@ export default function PropertyPage({ params }: PageProps) {
   }
 
   // Format price with commas
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("en-US", {
+  const formatPrice = (price: number | string | null | undefined) => {
+    if (!price) return "Price upon request"
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price
+    if (isNaN(numPrice)) return "Price upon request"
+    return new Intl.NumberFormat("en-CA", {
       style: "currency",
-      currency: "USD",
+      currency: "CAD",
       maximumFractionDigits: 0,
-    })
+    }).format(numPrice)
   }
 
   return (
@@ -409,12 +414,17 @@ export default function PropertyPage({ params }: PageProps) {
                   {/* Property Gallery with Back Button */}
       <div className="relative">
         <PropertyImageGallery
-          images={property.mediaUrls && property.mediaUrls.length > 0 ? 
-            property.mediaUrls : 
-            property.heroImage ? [property.heroImage] : []
+          images={
+            (property.mediaUrls && property.mediaUrls.length > 0) 
+              ? property.mediaUrls 
+              : (property.media_urls && property.media_urls.length > 0)
+                ? property.media_urls
+                : property.heroImage || property.hero_image
+                  ? [property.heroImage || property.hero_image]
+                  : []
           }
-          videoUrl={property.youtubeVideo || undefined}
-          heroImage={property.heroImage || undefined}
+          videoUrl={property.youtubeVideo || property.youtube_video || undefined}
+          heroImage={property.heroImage || property.hero_image || undefined}
         />
 
         {/* Back button - Simplified to just an icon button */}
@@ -440,7 +450,7 @@ export default function PropertyPage({ params }: PageProps) {
                 <div className="flex items-center text-[#aa9578]">
                   <MapPin className="h-5 w-5 mr-2" />
                   <span className="text-lg">
-                    {property.city}, {property.province} {property.postalCode}
+                    {property.city}, {property.province || property.stateOrProvince || 'ON'} {property.postalCode || property.postal_code}
                   </span>
                 </div>
               </div>
@@ -468,7 +478,9 @@ export default function PropertyPage({ params }: PageProps) {
               </div>
               <div className="flex flex-col items-center p-2 sm:p-0">
                 <Square className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
-                <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.squareFeet?.toLocaleString() || 'N/A'}</span>
+                <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">
+                  {(property.squareFeet || property.square_feet || property.livingArea)?.toLocaleString() || 'N/A'}
+                </span>
                 <span className="text-xs sm:text-sm text-gray-600 text-center">SQ FT</span>
               </div>
               {/* Total Parking Space - only show if tps exists in more JSONB */}
@@ -481,7 +493,9 @@ export default function PropertyPage({ params }: PageProps) {
               ) : (
                 <div className="flex flex-col items-center p-2 sm:p-0">
                   <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-[#aa9578] mb-1 sm:mb-2" />
-                  <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">{property.yearBuilt || '2024'}</span>
+                  <span className="text-2xl sm:text-3xl font-tenor-sans font-semibold text-[#473729] mb-1">
+                    {property.yearBuilt || property.year_built || 'N/A'}
+                  </span>
                   <span className="text-xs sm:text-sm text-gray-600 text-center">BUILT</span>
                 </div>
               )}
@@ -574,13 +588,13 @@ export default function PropertyPage({ params }: PageProps) {
                       Property Sold
                     </Button>
                   ) : (
-                    <BookShowingButton fullWidth size="xl" className="mb-4" propertyId={use(params).id} />
+                    <BookShowingButton fullWidth size="xl" className="mb-4" propertyId={propertyId} />
                   )}
 
                   <Link href="/contact">
                     <Button
                       variant="outline"
-                      className="w-full border-[#aa9578] text-[#aa9578] hover:bg-[#f3ecdf] rounded-full py-6 font-manrope text-lg flex items-center justify-center"
+                      className="w-full border-[#aa9578] text-[#aa9578] hover:bg-[#f3ecdf] rounded-full py-6 font-manrope text-lg flex items-center justify-center mb-4"
                     >
                       <Phone className="h-5 w-5 mr-2" />
                       Contact Agent
@@ -588,7 +602,12 @@ export default function PropertyPage({ params }: PageProps) {
                   </Link>
                 </div>
 
-                <div className="p-6 bg-[#f3ecdf]">
+                {/* Contact Form */}
+                <div className="p-6 border-t border-gray-100">
+                  <PropertyContactForm property={property} />
+                </div>
+
+                <div className="p-6 bg-[#f3ecdf] border-t border-gray-100">
                   <h4 className="font-tenor-sans text-xl text-[#473729] mb-4">Agent Information</h4>
                   <div className="flex items-center">
                     <div className="w-16 h-16 rounded-full bg-gray-200 mr-4 overflow-hidden relative">

@@ -1,11 +1,28 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath } from "lucide-react"
+import { Facebook, Instagram, Linkedin, Phone, Search, MapPin, Bed, Bath, Loader2, X } from "lucide-react"
 import TopNavMenu from "./top-nav-menu"
 import ResponsiveLogo from "./responsive-logo"
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 // Property Search Component
 function PropertySearchWithSuggestions() {
@@ -13,65 +30,111 @@ function PropertySearchWithSuggestions() {
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const searchRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const debouncedQuery = useDebounce(searchQuery, 300)
 
-  // Fetch featured properties when component mounts or when search is focused
-  const fetchFeaturedProperties = async () => {
+  // Fetch search suggestions from API
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSuggestions([])
+      return
+    }
+
     setIsLoading(true)
     try {
-      const response = await fetch('/api/properties/featured')
+      const params = new URLSearchParams()
+      params.append('q', query) // Use 'q' for MLS full-text search
+      params.append('search', query) // Also include 'search' for custom properties
+      params.append('limit', '6') // Limit suggestions to 6 for home page
+
+      const response = await fetch(`/api/properties?${params.toString()}`)
       if (response.ok) {
-        const properties = await response.json()
-        setSuggestions(properties.slice(0, 6)) // Show max 6 suggestions
+        const data = await response.json()
+        setSuggestions(data.slice(0, 6)) // Show max 6 suggestions
       }
     } catch (error) {
-      console.error('Error fetching properties:', error)
+      console.error('Error fetching suggestions:', error)
+      setSuggestions([])
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  // Filter properties based on search query
-  const filteredSuggestions = suggestions.filter(property => {
-    if (!searchQuery.trim()) return true
-    
-    const query = searchQuery.toLowerCase()
-    
-    // Handle description field which can be a JSON object or string
-    const descriptionText = typeof property.description === 'string' 
-      ? property.description 
-      : typeof property.description === 'object' && property.description
-        ? JSON.stringify(property.description)
-        : ''
-    
-    return (
-      property.address?.toLowerCase().includes(query) ||
-      property.city?.toLowerCase().includes(query) ||
-      property.propertyType?.toLowerCase().includes(query) ||
-      descriptionText.toLowerCase().includes(query)
-    )
-  })
+  // Fetch suggestions when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery && debouncedQuery.length >= 2) {
+      setShowSuggestions(true)
+      fetchSuggestions(debouncedQuery)
+    } else {
+      setSuggestions([])
+      if (!debouncedQuery || debouncedQuery.length === 0) {
+        setShowSuggestions(false)
+      }
+    }
+  }, [debouncedQuery, fetchSuggestions])
 
   // Handle input focus
   const handleFocus = () => {
-    if (suggestions.length === 0) {
-      fetchFeaturedProperties()
+    if (searchQuery.length >= 2) {
+      setShowSuggestions(true)
+      if (suggestions.length === 0 && debouncedQuery.length >= 2) {
+        fetchSuggestions(debouncedQuery)
+      }
     }
-    setShowSuggestions(true)
   }
 
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-    if (!showSuggestions) {
-      setShowSuggestions(true)
-    }
+    const newValue = e.target.value
+    setSearchQuery(newValue)
+    setShowSuggestions(true)
+    setHighlightedIndex(-1)
   }
 
   // Handle search submit
   const handleSearch = () => {
-    window.location.href = `/property-showcase?search=${encodeURIComponent(searchQuery)}`
-    setShowSuggestions(false)
+    if (searchQuery.trim()) {
+      window.location.href = `/property-showcase?search=${encodeURIComponent(searchQuery)}`
+      setShowSuggestions(false)
+    }
+  }
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === 'Enter' && searchQuery.trim()) {
+        handleSearch()
+      }
+      return
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setHighlightedIndex((prev) => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        )
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1))
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+          const property = suggestions[highlightedIndex]
+          window.location.href = `/listings/${generateSlug(property)}`
+        } else if (searchQuery.trim()) {
+          handleSearch()
+        }
+        break
+      case 'Escape':
+        setShowSuggestions(false)
+        inputRef.current?.blur()
+        break
+    }
   }
 
   // Handle click outside to close suggestions
@@ -104,15 +167,37 @@ function PropertySearchWithSuggestions() {
   return (
     <div ref={searchRef} className="relative">
       {/* Search Input */}
-      <div className="flex items-center">
+      <div className="flex items-center relative">
         <input
+          ref={inputRef}
           type="text"
           placeholder="Search For Properties"
-          className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70"
+          className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50"
           value={searchQuery}
           onChange={handleInputChange}
           onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
         />
+
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('')
+              setShowSuggestions(false)
+              inputRef.current?.focus()
+            }}
+            className="absolute right-24 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+
+        {isLoading && (
+          <div className="absolute right-24 top-1/2 transform -translate-y-1/2">
+            <Loader2 className="h-4 w-4 animate-spin text-white/70" />
+          </div>
+        )}
 
         <button 
           className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 text-gray-700 hover:bg-white rounded-full px-6 py-2 font-manrope tracking-tight flex items-center gap-2"
@@ -124,19 +209,22 @@ function PropertySearchWithSuggestions() {
       </div>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#fff]/70 backdrop-blur-md rounded-3xl shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto">
-          {isLoading ? (
+      {showSuggestions && searchQuery.length >= 2 && (
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#fff]/95 backdrop-blur-md rounded-3xl shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto">
+          {isLoading && suggestions.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              Loading properties...
+              <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+              <p className="text-sm">Searching...</p>
             </div>
-          ) : filteredSuggestions.length > 0 ? (
+          ) : suggestions.length > 0 ? (
             <>
-              {filteredSuggestions.map((property) => (
+              {suggestions.map((property, index) => (
                 <Link
                   key={property.id}
                   href={`/listings/${generateSlug(property)}`}
-                  className="block hover:bg-gray-50 transition-colors border-b border-gray-600/20 last:border-b-0"
+                  className={`block hover:bg-gray-50 transition-colors border-b border-gray-600/20 last:border-b-0 ${
+                    highlightedIndex === index ? 'bg-gray-50' : ''
+                  }`}
                   onClick={() => setShowSuggestions(false)}
                 >
                   <div className="flex items-center gap-4 p-4 border-b border-gray-100 last:border-b-0">
@@ -167,7 +255,7 @@ function PropertySearchWithSuggestions() {
                       <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-gray-900">
-                            {property.status === 'not_available' ? 'NOT AVAILABLE' : formatPrice(property.price)}
+                            {property.status === 'not_available' ? 'NOT AVAILABLE' : formatPrice(property.price || property.listPrice)}
                           </span>
                           {property.status === 'sold' && (
                             <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
@@ -179,17 +267,22 @@ function PropertySearchWithSuggestions() {
                               NOT AVAILABLE
                             </span>
                           )}
+                          {property.source === 'mls' && (
+                            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                              MLS
+                            </span>
+                          )}
                         </div>
-                        {property.bedrooms && (
+                        {(property.bedrooms || property.bedroomsTotal) && (
                           <span className="flex items-center gap-1">
                             <Bed className="h-3 w-3" />
-                            {property.bedrooms}
+                            {property.bedrooms || property.bedroomsTotal}
                           </span>
                         )}
-                        {property.bathrooms && (
+                        {(property.bathrooms || property.bathroomsTotalInteger) && (
                           <span className="flex items-center gap-1">
                             <Bath className="h-3 w-3" />
-                            {property.bathrooms}
+                            {property.bathrooms || property.bathroomsTotalInteger}
                           </span>
                         )}
                       </div>
@@ -211,20 +304,22 @@ function PropertySearchWithSuggestions() {
                 </div>
               </Link>
             </>
-          ) : (
+          ) : debouncedQuery.length >= 2 && !isLoading ? (
             <Link
-                href="/property-showcase"
-                className="block bg-[#000]/20 backdrop-blur-md hover:bg-[#eae7e1] transition-colors shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto"
-                onClick={() => setShowSuggestions(false)}
-              >
-                <div className="p-4 text-center">
-                  <div className="text-[#444] font-semibold font-tenor-sans flex items-center justify-center">
-                    No Results Found. 
-                    <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2 ml-2">View All Listings →</span>
-                  </div>
+              href="/property-showcase"
+              className="block bg-[#000]/20 backdrop-blur-md hover:bg-[#eae7e1] transition-colors shadow-2xl border border-[#fff]/30 overflow-hidden z-50 max-h-96 overflow-y-auto"
+              onClick={() => setShowSuggestions(false)}
+            >
+              <div className="p-4 text-center">
+                <div className="text-[#444] font-semibold font-tenor-sans flex items-center justify-center">
+                  <span className="text-sm">No properties found for &quot;{debouncedQuery}&quot;</span>
                 </div>
-              </Link>
-          )}
+                <div className="mt-2">
+                  <span className="text-[#444] text-xs font-semibold hover:bg-black/10 transition-colors font-tenor-sans border border-black/20 rounded-md py-1 px-2">View All Listings →</span>
+                </div>
+              </div>
+            </Link>
+          ) : null}
         </div>
       )}
     </div>
