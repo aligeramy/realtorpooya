@@ -2,8 +2,13 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import * as schema from './schema'
 
+const connectionString = process.env.DATABASE_URL
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required')
+}
+
 const pool = new Pool({
-  connectionString: "postgres://postgres.ktbfuijzvgbzfoodraza:wb7P51mATjWuK8t1@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
+  connectionString,
   ssl: { rejectUnauthorized: false }
 })
 
