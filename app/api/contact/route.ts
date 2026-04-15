@@ -332,6 +332,75 @@ export async function POST(request: Request) {
       response.message = 'Contact request received successfully. If you don\'t hear back within 24 hours, please call 416-553-7707 directly.'
     }
 
+    // === CRM bridge: write to clients + clientProperties + tasks ===
+    try {
+      const { db } = await import('@/lib/db');
+      const { clients, clientProperties, tasks } = await import('@/lib/db/schema');
+      const { eq } = await import('drizzle-orm');
+
+      const emailLower = (email as string).trim().toLowerCase();
+      const existing = await db.query.clients.findFirst({
+        where: eq(clients.email, emailLower),
+        columns: { id: true, fullName: true, phone: true, notes: true },
+      });
+
+      let clientId: string;
+      if (!existing) {
+        const [created] = await db
+          .insert(clients)
+          .values({
+            fullName: name,
+            email: emailLower,
+            phone: phone ?? null,
+            clientType: 'buyer',
+            stage: 'new lead',
+            source: 'website_contact',
+            notes: message ? `${new Date().toISOString().slice(0, 10)} website inquiry: ${message}` : null,
+          })
+          .returning({ id: clients.id });
+        clientId = created.id;
+      } else {
+        clientId = existing.id;
+        const updates: Record<string, unknown> = {};
+        if ((!existing.fullName || existing.fullName.trim() === '') && name) updates.fullName = name;
+        if ((!existing.phone || existing.phone.trim() === '') && phone) updates.phone = phone;
+        if (message) {
+          const noteLine = `${new Date().toISOString().slice(0, 10)} website inquiry: ${message}`;
+          updates.notes =
+            existing.notes && existing.notes.trim() !== '' ? `${existing.notes}\n${noteLine}` : noteLine;
+        }
+        if (Object.keys(updates).length > 0) {
+          await db.update(clients).set(updates).where(eq(clients.id, clientId));
+        }
+      }
+
+      if (propertyId) {
+        await db
+          .insert(clientProperties)
+          .values({
+            clientId,
+            propertyId,
+            relationshipType: 'website_inquiry',
+          })
+          .onConflictDoNothing();
+      }
+
+      const defaultAgentId = process.env.DEFAULT_AGENT_ID;
+      if (defaultAgentId) {
+        await db.insert(tasks).values({
+          title: `Respond to website inquiry from ${name}`,
+          createdBy: defaultAgentId,
+          clientId,
+          dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          priority: 'medium',
+          status: 'pending',
+        });
+      }
+    } catch (err) {
+      console.error('Contact form CRM bridge failed:', err);
+      // Do NOT fail the request — the user already got their auto-reply.
+    }
+
     return NextResponse.json(response)
   } catch (error) {
     console.error('Error processing contact request:', error)

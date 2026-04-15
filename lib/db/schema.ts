@@ -48,6 +48,9 @@ export const clients = pgTable('clients', {
   avatar_url: text('avatar_url'),
   avatar_color: text('avatar_color'),
   agentId: uuid('agent_id').references(() => agents.id),
+  notes: text('notes'),
+  source: text('source'),
+  marketingConsentAt: timestamp('marketing_consent_at', { withTimezone: true }),
 });
 
 export const properties = pgTable('properties', {
