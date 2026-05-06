@@ -286,12 +286,13 @@ function ContactForm() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number</Label>
+                        <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number *</Label>
                         <div className="relative">
                           <Input
                             id="phone"
                             name="phone"
                             type="tel"
+                            required
                             value={formData.phone}
                             onChange={handleInputChange}
                             className="h-14 pl-12 rounded-xl border-gray-200 bg-gray-50 hover:bg-white transition-colors"

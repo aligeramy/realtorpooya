@@ -127,12 +127,13 @@ Property Details:
 
           <div>
             <Label htmlFor="phone" className="text-gray-700 font-medium">
-              Phone
+              Phone *
             </Label>
             <Input
               id="phone"
               name="phone"
               type="tel"
+              required
               value={formData.phone}
               onChange={handleInputChange}
               className="mt-1 h-11 rounded-lg border-gray-200 focus:border-[#aa9578] focus:ring-[#aa9578]"
