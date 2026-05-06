@@ -196,7 +196,7 @@ function createAutoReplyEmailHTML({ name }: { name: string }) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, phone, message, propertyId } = body
+    const { name, email, phone, message, propertyId, inquiryType, preferredContact, timeline } = body
 
     // Validate required fields
     if (!name || !email || !message) {
@@ -344,6 +344,30 @@ export async function POST(request: Request) {
         columns: { id: true, fullName: true, phone: true, notes: true },
       });
 
+      const inquiryTypeStr = typeof inquiryType === 'string' ? inquiryType.toLowerCase() : '';
+      const mappedClientType: 'buyer' | 'seller' | 'investor' | 'tenant' | 'landlord' =
+        inquiryTypeStr.includes('sell') ? 'seller'
+        : inquiryTypeStr.includes('invest') ? 'investor'
+        : inquiryTypeStr.includes('rent') || inquiryTypeStr.includes('tenant') ? 'tenant'
+        : 'buyer';
+
+      const preferredContactStr = typeof preferredContact === 'string' ? preferredContact.toLowerCase() : '';
+      const mappedChannel: 'call' | 'sms' | 'email' | 'whatsapp' | null =
+        preferredContactStr === 'phone' || preferredContactStr === 'call' ? 'call'
+        : preferredContactStr === 'sms' || preferredContactStr === 'text' ? 'sms'
+        : preferredContactStr === 'email' ? 'email'
+        : preferredContactStr === 'whatsapp' ? 'whatsapp'
+        : null;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const noteParts: string[] = [];
+      if (message) noteParts.push(`message: ${message}`);
+      if (inquiryType) noteParts.push(`inquiryType: ${inquiryType}`);
+      if (timeline) noteParts.push(`timeline: ${timeline}`);
+      if (preferredContact) noteParts.push(`preferredContact: ${preferredContact}`);
+      if (propertyId) noteParts.push(`propertyId: ${propertyId}`);
+      const noteLine = noteParts.length > 0 ? `${today} website inquiry — ${noteParts.join(' | ')}` : null;
+
       let clientId: string;
       if (!existing) {
         const [created] = await db
@@ -352,10 +376,12 @@ export async function POST(request: Request) {
             fullName: name,
             email: emailLower,
             phone: phone ?? null,
-            clientType: 'buyer',
+            clientType: mappedClientType,
             stage: 'new lead',
             source: 'website_contact',
-            notes: message ? `${new Date().toISOString().slice(0, 10)} website inquiry: ${message}` : null,
+            leadSource: 'website',
+            preferredChannel: mappedChannel,
+            notes: noteLine,
           })
           .returning({ id: clients.id });
         clientId = created.id;
@@ -364,8 +390,8 @@ export async function POST(request: Request) {
         const updates: Record<string, unknown> = {};
         if ((!existing.fullName || existing.fullName.trim() === '') && name) updates.fullName = name;
         if ((!existing.phone || existing.phone.trim() === '') && phone) updates.phone = phone;
-        if (message) {
-          const noteLine = `${new Date().toISOString().slice(0, 10)} website inquiry: ${message}`;
+        if (mappedChannel) updates.preferredChannel = mappedChannel;
+        if (noteLine) {
           updates.notes =
             existing.notes && existing.notes.trim() !== '' ? `${existing.notes}\n${noteLine}` : noteLine;
         }
