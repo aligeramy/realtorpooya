@@ -216,6 +216,33 @@ export const blog_posts = pgTable('blog_posts', {
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
+// ── Landing Page Builder (read-only mirror) ───────────────────────────
+// These tables are OWNED by the CRM project (crm/lib/db/schema/schema.ts),
+// which authors all DDL/migrations. This file only MIRRORS the definitions
+// so the public site can READ them. Never run drizzle `push`/`migrate` from
+// this project against these tables.
+export const pageStatusEnum = pgEnum('page_status', ['draft', 'published', 'archived']);
+export const pageSourceEnum = pgEnum('page_source', ['property', 'custom', 'hybrid']);
+
+export const landingPages = pgTable('landing_pages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
+  title: text('title').notNull(),
+  status: pageStatusEnum('status').notNull().default('draft'),
+  propertyId: uuid('property_id').references(() => properties.id),
+  dataSource: pageSourceEnum('data_source').notNull().default('property'),
+  draftDocument: jsonb('draft_document'),
+  publishedDocument: jsonb('published_document'),
+  media: jsonb('media'),
+  agentOwnerId: uuid('agent_owner_id').references(() => agents.id),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export type LandingPage = typeof landingPages.$inferSelect;
+export type NewLandingPage = typeof landingPages.$inferInsert;
+
 // TypeScript types
 export type Client = typeof clients.$inferSelect;
 export type NewClient = typeof clients.$inferInsert;
