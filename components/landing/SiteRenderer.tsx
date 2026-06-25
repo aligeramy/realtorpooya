@@ -41,6 +41,7 @@ export function SiteRenderer(p: SiteRendererProps) {
     >
       {fonts ? <link rel="stylesheet" href={fonts} /> : null}
       <div
+        id="top"
         className="lp-root"
         style={{ ...(vars as React.CSSProperties), background: 'var(--lp-bg)', color: 'var(--lp-text)', fontFamily: 'var(--lp-body-font)' }}
       >

@@ -23,7 +23,7 @@ export default function AgentBlock({ props }: { props: AgentProps; block?: Block
   const sub = [title, brokerage].filter(Boolean).join(' · ')
 
   const linkStyle: React.CSSProperties = {
-    color: 'var(--lp-text)',
+    color: '#f3efe6',
     textDecoration: 'none',
     fontFamily: 'var(--lp-body-font)',
     fontSize: 'clamp(15px, 1.5vw, 17px)',
@@ -42,6 +42,7 @@ export default function AgentBlock({ props }: { props: AgentProps; block?: Block
           gridTemplateColumns: photo ? 'minmax(220px, 360px) 1fr' : '1fr',
           gap: 'clamp(32px, 5vw, 72px)',
           alignItems: 'center',
+          color: '#f3efe6',
         }}
       >
         {photo && (

@@ -36,7 +36,7 @@ export default function HeroBlock({ props }: { props: HeroProps; block?: Block }
             </h1>
           ) : null}
           {props.subheadline ? (
-            <p style={{ fontFamily: 'var(--lp-body-font)', fontSize: 'clamp(16px, 2vw, 21px)', opacity: 0.9, marginTop: 22, maxWidth: 600, marginLeft: align === 'center' ? 'auto' : 0, marginRight: align === 'center' ? 'auto' : 0 }}>
+            <p style={{ fontFamily: 'var(--lp-body-font)', fontStyle: 'italic', fontSize: 'clamp(16px, 1.8vw, 21px)', lineHeight: 1.6, opacity: 0.92, marginTop: 22, maxWidth: 560, marginLeft: align === 'center' ? 'auto' : 0, marginRight: align === 'center' ? 'auto' : 0 }}>
               {props.subheadline}
             </p>
           ) : null}

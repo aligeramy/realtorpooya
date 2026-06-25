@@ -67,17 +67,18 @@ export function CtaButtonView({ button, size = 'md', fullWidth }: { button?: Cta
   const ctx = useRenderContext()
   if (!button || !button.label) return null
 
-  const pad = size === 'lg' ? '16px 34px' : size === 'sm' ? '9px 18px' : '13px 28px'
+  const pad = size === 'lg' ? '17px 40px' : size === 'sm' ? '10px 20px' : '14px 30px'
   const isOutline = button.style === 'outline' || button.style === 'ghost'
   const isSecondary = button.style === 'secondary'
 
   const style: React.CSSProperties = {
     display: 'inline-block', cursor: 'pointer', border: isOutline ? '1px solid var(--lp-accent)' : 'none',
-    padding: pad, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
+    padding: pad, fontSize: size === 'lg' ? 13 : 12, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
     borderRadius: 'var(--lp-radius)', textDecoration: 'none', fontFamily: 'var(--lp-body-font)',
     background: isOutline ? 'transparent' : isSecondary ? 'var(--lp-primary)' : 'var(--lp-accent)',
-    color: isOutline ? 'var(--lp-accent)' : isSecondary ? 'var(--lp-text)' : '#1a1410',
+    color: isOutline ? 'var(--lp-accent)' : isSecondary ? '#ffffff' : '#ffffff',
     width: fullWidth ? '100%' : undefined, textAlign: 'center',
+    transition: 'opacity .2s ease, transform .2s ease',
   }
 
   const handleClick = (e: React.MouseEvent) => {

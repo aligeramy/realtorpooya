@@ -9,7 +9,7 @@ export default function FooterBlock({ props }: { props: FooterProps; block?: Blo
   const agent = props.showAgent ? ctx.agent : null
 
   const linkStyle: React.CSSProperties = {
-    color: 'var(--lp-text)',
+    color: '#f3efe6',
     opacity: 0.72,
     textDecoration: 'none',
     fontSize: 14,
@@ -28,7 +28,7 @@ export default function FooterBlock({ props }: { props: FooterProps; block?: Blo
       style={{
         background: 'var(--lp-primary)',
         borderTop: '1px solid rgba(255,255,255,0.1)',
-        color: 'var(--lp-text)',
+        color: '#f3efe6',
         fontFamily: 'var(--lp-body-font)',
         paddingTop: 'clamp(40px, 5vw, 72px)',
         paddingBottom: 'clamp(28px, 3vw, 40px)',

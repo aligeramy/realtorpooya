@@ -158,6 +158,7 @@ export interface CtaProps {
   backgroundImage?: string
   align?: 'left' | 'center' | 'right'
   textColor?: string
+  anchorId?: string           // DOM id so nav links can scroll to this section
 }
 
 export interface GalleryProps {
@@ -167,6 +168,7 @@ export interface GalleryProps {
   columns?: 2 | 3 | 4
   showCaptions?: boolean
   enableLightbox?: boolean
+  anchorId?: string
 }
 
 export interface StatItem {
@@ -399,12 +401,17 @@ export interface LandingPageRecord {
   published: SiteDocument | null
 }
 
-export const DEFAULT_THEME: Required<Pick<PageTheme, 'primaryColor' | 'accentColor' | 'headingFont' | 'bodyFont' | 'maxWidth'>> = {
-  primaryColor: '#473729',
-  accentColor: '#aa9578',
-  headingFont: 'tenor-sans',
-  bodyFont: 'manrope',
-  maxWidth: 1400,
+// Default look: the "7 Dale" editorial-luxury palette — cream page, near-black
+// hero/footer bands, warm gold accent, Cinzel display headings + Montserrat body.
+export const DEFAULT_THEME: PageTheme = {
+  primaryColor: '#161616',
+  accentColor: '#9c8456',
+  backgroundColor: '#f6f2ea',
+  textColor: '#2c2c2c',
+  headingFont: 'cinzel',
+  bodyFont: 'montserrat',
+  maxWidth: 1180,
+  radius: 0,
 }
 
 export const DEFAULT_REGISTRATION: RegistrationConfig = {

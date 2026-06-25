@@ -69,7 +69,7 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
     aspectRatio: '4 / 3',
     objectFit: 'cover',
     borderRadius: 'var(--lp-radius)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: '1px solid rgba(0,0,0,0.06)',
   }
 
   const captionStyle: React.CSSProperties = {
@@ -109,9 +109,9 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
   }
 
   return (
-    <Section background="var(--lp-primary)">
+    <Section id={props.anchorId} background="#ffffff">
       {props.heading ? (
-        <Heading level={2} style={{ marginBottom: 'clamp(28px, 4vw, 48px)' }}>
+        <Heading level={2} style={{ marginBottom: 'clamp(28px, 4vw, 48px)', textAlign: 'center' }}>
           {props.heading}
         </Heading>
       ) : null}
@@ -129,7 +129,7 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
         >
           {images.map((img, i) => (
             <div key={i} style={{ flex: '0 0 auto', width: 'min(78vw, 460px)', scrollSnapAlign: 'start' }}>
-              {renderFigure(img, i)}
+              <Reveal index={i} disabled={ctx.editor}>{renderFigure(img, i)}</Reveal>
             </div>
           ))}
         </div>
@@ -142,7 +142,7 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
             alignItems: 'start',
           }}
         >
-          {images.map((img, i) => renderFigure(img, i))}
+          {images.map((img, i) => <Reveal key={i} index={i} disabled={ctx.editor}>{renderFigure(img, i)}</Reveal>)}
         </div>
       )}
 
@@ -207,6 +207,28 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
         </div>
       ) : null}
     </Section>
+  )
+}
+
+/** Fades + slides each item up as it scrolls into view, with a staggered cascade. */
+function Reveal({ index, disabled, children }: { index: number; disabled?: boolean; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [shown, setShown] = React.useState(false)
+  React.useEffect(() => {
+    if (disabled) { setShown(true); return }
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') { setShown(true); return }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { setShown(true); io.disconnect() } })
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [disabled])
+  const delay = (index % 4) * 85
+  return (
+    <div ref={ref} style={{ opacity: shown ? 1 : 0, transform: shown ? 'none' : 'translateY(30px)', transition: `opacity .8s cubic-bezier(.22,.61,.36,1) ${delay}ms, transform .8s cubic-bezier(.22,.61,.36,1) ${delay}ms`, willChange: 'opacity, transform' }}>
+      {children}
+    </div>
   )
 }
 
