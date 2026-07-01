@@ -53,7 +53,7 @@ export function LeadForm({ config, propertyId, source, compact, onSuccess }: Lea
 
   if (status === 'success') {
     return (
-      <div className="lp-leadform-success" style={{ padding: '24px 0', color: 'var(--lp-text)' }}>
+      <div className="lp-leadform-success" style={{ padding: '24px 0', color: '#f3efe6' }}>
         <p style={{ fontSize: 18, fontFamily: 'var(--lp-heading-font)' }}>
           {cfg.successMessage || 'Thank you! We will be in touch shortly.'}
         </p>
@@ -69,7 +69,7 @@ export function LeadForm({ config, propertyId, source, compact, onSuccess }: Lea
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, opacity: 0.8 }
 
   return (
-    <form onSubmit={submit} className="lp-leadform" style={{ display: 'grid', gap: 14, color: 'var(--lp-text)' }}>
+    <form onSubmit={submit} className="lp-leadform" style={{ display: 'grid', gap: 14, color: '#f3efe6' }}>
       {(cfg.showFirstName !== false || cfg.showLastName !== false) && (
         <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : '1fr 1fr', gap: 12 }}>
           {cfg.showFirstName !== false && (

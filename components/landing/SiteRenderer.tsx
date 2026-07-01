@@ -38,6 +38,7 @@ export function SiteRenderer(p: SiteRendererProps) {
       pageSlug={p.pageSlug}
       pageTitle={p.pageTitle}
       googleMapsKey={p.googleMapsKey}
+      themeVars={vars as React.CSSProperties}
     >
       {fonts ? <link rel="stylesheet" href={fonts} /> : null}
       <div

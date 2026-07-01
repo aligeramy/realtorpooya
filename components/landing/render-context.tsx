@@ -63,6 +63,7 @@ export interface LandingProviderProps {
   pageSlug?: string
   pageTitle?: string
   googleMapsKey?: string
+  themeVars?: React.CSSProperties   // --lp-* vars so the (portaled-sibling) modal can resolve them
   children: React.ReactNode
 }
 
@@ -94,7 +95,7 @@ export function LandingProvider(props: LandingProviderProps) {
   return (
     <Ctx.Provider value={value}>
       {props.children}
-      <RegisterModal open={open} source={source} onClose={() => setOpen(false)} />
+      <RegisterModal open={open} source={source} onClose={() => setOpen(false)} themeVars={props.themeVars} />
     </Ctx.Provider>
   )
 }

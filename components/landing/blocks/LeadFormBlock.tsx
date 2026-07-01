@@ -39,7 +39,7 @@ export default function LeadFormBlock({ props }: { props: LeadFormProps; block?:
   const sectionStyle: React.CSSProperties = {
     position: 'relative',
     background: hasImage ? undefined : 'var(--lp-primary)',
-    color: 'var(--lp-text)',
+    color: '#f3efe6',
     overflow: 'hidden',
     paddingTop: 'clamp(56px, 8vw, 120px)',
     paddingBottom: 'clamp(56px, 8vw, 120px)',

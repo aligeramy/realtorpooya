@@ -8,9 +8,10 @@ export interface RegisterModalProps {
   open: boolean
   source?: string
   onClose: () => void
+  themeVars?: React.CSSProperties
 }
 
-export function RegisterModal({ open, source, onClose }: RegisterModalProps) {
+export function RegisterModal({ open, source, onClose, themeVars }: RegisterModalProps) {
   const ctx = useRenderContext()
   const cfg = ctx.registration
 
@@ -30,6 +31,7 @@ export function RegisterModal({ open, source, onClose }: RegisterModalProps) {
       aria-modal="true"
       onMouseDown={onClose}
       style={{
+        ...(themeVars || {}),
         position: 'fixed', inset: 0, zIndex: 9999, display: 'flex',
         alignItems: 'center', justifyContent: 'center', padding: 16,
         background: 'rgba(8,6,4,0.72)', backdropFilter: 'blur(4px)',
@@ -39,20 +41,20 @@ export function RegisterModal({ open, source, onClose }: RegisterModalProps) {
         onMouseDown={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 460, maxHeight: '92vh', overflowY: 'auto',
-          background: 'var(--lp-primary)', color: 'var(--lp-text)',
-          border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'calc(var(--lp-radius) * 2)',
+          background: 'var(--lp-primary, #161616)', color: '#f3efe6',
+          border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'calc(var(--lp-radius, 0px) + 4px)',
           padding: '32px 28px', boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
-          fontFamily: 'var(--lp-body-font)',
+          fontFamily: 'var(--lp-body-font, system-ui, sans-serif)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-          <h3 style={{ fontFamily: 'var(--lp-heading-font)', fontSize: 26, margin: 0, letterSpacing: '0.02em' }}>
+          <h3 style={{ fontFamily: 'var(--lp-heading-font, serif)', fontSize: 26, margin: 0, letterSpacing: '0.02em', color: '#f6f2ea' }}>
             {cfg.heading || 'Register Here'}
           </h3>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: 'inherit', fontSize: 26, cursor: 'pointer', lineHeight: 1, opacity: 0.7 }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', color: '#f3efe6', fontSize: 26, cursor: 'pointer', lineHeight: 1, opacity: 0.7 }}>×</button>
         </div>
         {cfg.subtext && <p style={{ opacity: 0.85, fontSize: 15, marginTop: 0, marginBottom: cfg.note ? 6 : 18 }}>{cfg.subtext}</p>}
-        {cfg.note && <p style={{ color: 'var(--lp-accent)', fontSize: 14, fontWeight: 600, marginTop: 0, marginBottom: 18 }}>{cfg.note}</p>}
+        {cfg.note && <p style={{ color: 'var(--lp-accent, #9c8456)', fontSize: 14, fontWeight: 600, marginTop: 0, marginBottom: 18 }}>{cfg.note}</p>}
         <LeadForm source={source || 'register-popup'} />
       </div>
     </div>
