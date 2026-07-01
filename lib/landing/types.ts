@@ -19,6 +19,8 @@ export type SectionType =
   | 'navbar'
   | 'hero'
   | 'cta'
+  | 'split'
+  | 'feature_columns'
   | 'gallery'
   | 'stats'
   | 'description'
@@ -161,6 +163,36 @@ export interface CtaProps {
   anchorId?: string           // DOM id so nav links can scroll to this section
 }
 
+/** Image on one side, text on the other (side pickable). */
+export interface SplitProps {
+  eyebrow?: string
+  heading?: string
+  body?: string
+  buttons?: CtaButton[]
+  image?: string
+  imageSide?: 'left' | 'right'
+  background?: string
+  anchorId?: string
+}
+
+export interface FeatureItem {
+  image?: string
+  title?: string
+  text?: string
+}
+
+/** Top heading + N columns; each column has an optional image, optional title, and text. */
+export interface FeatureColumnsProps {
+  eyebrow?: string
+  heading?: string
+  align?: 'left' | 'center'
+  columns?: 2 | 3 | 4
+  items?: FeatureItem[]
+  buttons?: CtaButton[]
+  background?: string
+  anchorId?: string
+}
+
 export interface GalleryProps {
   heading?: string
   images: ImageItem[]         // property-sourced and/or uploaded — all just public URLs
@@ -255,8 +287,17 @@ export interface LeadFormProps {
 }
 
 export interface FooterProps {
+  layout?: 'centered' | 'columns'
   showAgent?: boolean
-  logo?: string
+  // agent overrides (fall back to the page agent when empty)
+  agentName?: string
+  agentTitle?: string
+  brokerage?: string
+  phone?: string
+  email?: string
+  brokerageLogo?: string      // e.g. Sotheby's / brokerage logo image
+  logo?: string               // brand/property logo
+  tagline?: string
   links?: LinkItem[]
   fineprint?: string
   background?: string
@@ -332,6 +373,8 @@ export interface BlockPropsMap {
   navbar: NavbarProps
   hero: HeroProps
   cta: CtaProps
+  split: SplitProps
+  feature_columns: FeatureColumnsProps
   gallery: GalleryProps
   stats: StatsProps
   description: DescriptionProps

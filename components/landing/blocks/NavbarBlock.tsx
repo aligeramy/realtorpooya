@@ -46,7 +46,10 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
   return (
     <header
       style={{
-        position: sticky ? 'sticky' : 'relative', top: 0, zIndex: 50, background: bg,
+        // Transparent navbars OVERLAY the hero (fixed) so the white text sits on the
+        // dark hero, not on the cream page background above it.
+        position: transparent ? 'fixed' : (sticky ? 'sticky' : 'relative'),
+        top: 0, left: 0, right: 0, zIndex: 50, background: bg,
         transition: 'background .3s ease, border-color .3s ease',
         borderBottom: solid ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
       }}

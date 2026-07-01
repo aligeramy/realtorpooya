@@ -5,6 +5,8 @@ import type { BlockType } from '@/lib/landing/types'
 import NavbarBlock from './blocks/NavbarBlock'
 import HeroBlock from './blocks/HeroBlock'
 import CtaBlock from './blocks/CtaBlock'
+import SplitBlock from './blocks/SplitBlock'
+import FeatureColumnsBlock from './blocks/FeatureColumnsBlock'
 import GalleryBlock from './blocks/GalleryBlock'
 import StatsBlock from './blocks/StatsBlock'
 import DescriptionBlock from './blocks/DescriptionBlock'
@@ -28,6 +30,8 @@ export const BLOCK_REGISTRY: Record<BlockType, React.ComponentType<any>> = {
   navbar: NavbarBlock,
   hero: HeroBlock,
   cta: CtaBlock,
+  split: SplitBlock,
+  feature_columns: FeatureColumnsBlock,
   gallery: GalleryBlock,
   stats: StatsBlock,
   description: DescriptionBlock,
