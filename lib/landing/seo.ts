@@ -26,6 +26,18 @@ export function seoPropertyFromRow(p: any): SeoProperty | null {
   }
 }
 
+/** Best OG image from the document itself (hero bg, split image, gallery, image element). */
+export function ogImageFromDoc(doc: SiteDocument | null): string | undefined {
+  for (const b of doc?.blocks || []) {
+    const p: any = b.props || {}
+    if ((b.type === 'hero' || b.type === 'cta') && p.backgroundImage) return p.backgroundImage
+    if (b.type === 'split' && p.image) return p.image
+    if (b.type === 'gallery' && Array.isArray(p.images) && p.images[0]?.url) return p.images[0].url
+    if (b.type === 'image' && p.url) return p.url
+  }
+  return undefined
+}
+
 export interface PageMetaInput {
   title: string
   slug: string
@@ -51,7 +63,7 @@ export function buildPageMetadata(input: PageMetaInput): Metadata {
   }
   if (!description) description = `${title} — book a private tour.`
 
-  const ogImage = seo.ogImage || prop?.images?.[0] || undefined
+  const ogImage = seo.ogImage || prop?.images?.[0] || ogImageFromDoc(input.doc) || undefined
   const canonical = input.customDomain ? `https://${input.customDomain}` : `${SITE}/properties/${input.slug}`
 
   return {
