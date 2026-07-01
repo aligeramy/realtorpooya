@@ -25,7 +25,10 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
     return () => { window.removeEventListener('scroll', onScroll); mq.removeEventListener('change', onMq) }
   }, [ctx.editor])
 
-  const solid = !transparent || scrolled
+  // In the editor, render solid + in-flow so the bar stays inside the canvas
+  // (a fixed/sticky bar would escape the canvas and bleed over the editor chrome).
+  const inEditor = ctx.editor
+  const solid = inEditor || !transparent || scrolled
   const bg = solid ? (props.background || 'var(--lp-primary)') : 'transparent'
   const editorPrevent = ctx.editor ? (e: React.MouseEvent) => e.preventDefault() : undefined
 
@@ -47,9 +50,10 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
     <header
       style={{
         // Transparent navbars OVERLAY the hero (fixed) so the white text sits on the
-        // dark hero, not on the cream page background above it.
-        position: transparent ? 'fixed' : (sticky ? 'sticky' : 'relative'),
-        top: 0, left: 0, right: 0, zIndex: 50, background: bg,
+        // dark hero, not on the cream page background above it. In the editor we use
+        // normal flow so the bar can't escape the canvas into the editor chrome.
+        position: inEditor ? 'relative' : (transparent ? 'fixed' : (sticky ? 'sticky' : 'relative')),
+        top: 0, left: 0, right: 0, zIndex: inEditor ? 1 : 50, background: bg,
         transition: 'background .3s ease, border-color .3s ease',
         borderBottom: solid ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
       }}
