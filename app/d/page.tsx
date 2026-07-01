@@ -6,6 +6,7 @@ import { db } from '@/lib/db'
 import { landingPages, properties, propertyImages, agents } from '@/lib/db/schema'
 import { SiteRenderer } from '@/components/landing/SiteRenderer'
 import { resolveProperty } from '@/lib/landing/resolve'
+import { buildPageMetadata, seoPropertyFromRow } from '@/lib/landing/seo'
 import type { SiteDocument } from '@/lib/landing/types'
 
 export const dynamic = 'force-dynamic'
@@ -25,13 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await loadByDomain(await hostDomain())
   if (!page || page.status !== 'published') return { title: 'Not found' }
   const doc = (page.publishedDocument || page.draftDocument) as SiteDocument | null
-  const seo = doc?.seo || {}
-  return {
-    title: seo.metaTitle || page.title,
-    description: seo.metaDescription || '',
-    robots: seo.noindex ? { index: false, follow: false } : undefined,
-    openGraph: { title: seo.metaTitle || page.title, description: seo.metaDescription || '', images: seo.ogImage ? [{ url: seo.ogImage }] : undefined, type: 'website' },
+  let seoProp = null
+  if (page.propertyId) {
+    const property = await db.query.properties.findFirst({ where: eq(properties.id, page.propertyId), columns: { address: true, city: true, province: true, bedrooms: true, bathrooms: true, squareFeet: true, heroImage: true, mediaUrls: true } })
+    seoProp = seoPropertyFromRow(property)
   }
+  return buildPageMetadata({ title: page.title, slug: page.slug, customDomain: page.customDomain, doc, property: seoProp })
 }
 
 export default async function CustomDomainPage() {
