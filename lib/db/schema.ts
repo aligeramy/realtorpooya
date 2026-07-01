@@ -234,6 +234,8 @@ export const landingPages = pgTable('landing_pages', {
   draftDocument: jsonb('draft_document'),
   publishedDocument: jsonb('published_document'),
   media: jsonb('media'),
+  customDomain: text('custom_domain').unique(),
+  domainData: jsonb('domain_data'),
   agentOwnerId: uuid('agent_owner_id').references(() => agents.id),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
