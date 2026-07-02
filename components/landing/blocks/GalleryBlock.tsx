@@ -109,7 +109,7 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
   }
 
   return (
-    <Section id={props.anchorId} background="#ffffff">
+    <Section id={props.anchorId} blockType="gallery" background="#ffffff">
       {props.heading ? (
         <Heading level={2} style={{ marginBottom: 'clamp(28px, 4vw, 48px)', textAlign: 'center' }}>
           {props.heading}

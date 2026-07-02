@@ -11,11 +11,15 @@ function smartScrollTo(href?: string): boolean {
   if (!href || !href.startsWith('#') || typeof document === 'undefined') return false
   const raw = href.slice(1)
   if (!raw || raw.toLowerCase() === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return true }
+  const lower = raw.toLowerCase()
   let el = document.getElementById(raw) as HTMLElement | null
   if (!el) {
-    const lower = raw.toLowerCase()
     el = (Array.from(document.querySelectorAll('[id]')) as HTMLElement[]).find((n) => n.id.toLowerCase() === lower) || null
   }
+  // Fallback: the intended section has no matching id (e.g. an empty gallery holds
+  // the anchor while the populated one doesn't) — jump to the first rendered block
+  // of that kind (data-block-type set by the block renderer, e.g. "gallery").
+  if (!el) el = document.querySelector(`[data-block-type="${lower}"]`) as HTMLElement | null
   if (!el) return false
   const y = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })

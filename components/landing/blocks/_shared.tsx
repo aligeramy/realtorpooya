@@ -13,7 +13,7 @@ export function Container({ children, style, narrow }: { children: React.ReactNo
 }
 
 export function Section({
-  id, children, background, style, padded = true, narrow,
+  id, children, background, style, padded = true, narrow, blockType,
 }: {
   id?: string
   children: React.ReactNode
@@ -21,10 +21,12 @@ export function Section({
   style?: React.CSSProperties
   padded?: boolean
   narrow?: boolean
+  blockType?: string
 }) {
   return (
     <section
       id={id}
+      data-block-type={blockType}
       style={{
         position: 'relative',
         background: background || 'transparent',
