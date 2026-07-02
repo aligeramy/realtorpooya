@@ -147,6 +147,13 @@ export interface HeroProps {
   align?: 'left' | 'center' | 'right'
   height?: 'screen' | 'large' | 'medium'
   textColor?: string
+  // Per-text overrides (px sizes / colors); fall back to theme defaults when unset.
+  eyebrowColor?: string
+  eyebrowSize?: number
+  headlineColor?: string
+  headlineSize?: number
+  subheadlineColor?: string
+  subheadlineSize?: number
   buttons?: CtaButton[]       // e.g. [{ label: 'Get Pricing & Plans', action: 'register' }]
 }
 

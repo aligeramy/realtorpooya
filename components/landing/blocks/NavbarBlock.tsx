@@ -4,6 +4,25 @@ import type { Block, NavbarProps } from '@/lib/landing/types'
 import { useRenderContext } from '../render-context'
 import { CtaButtonView } from './_shared'
 
+const NAV_OFFSET = 78 // height of the fixed/sticky navbar so targets aren't hidden under it
+
+/** Scroll to an in-page anchor robustly: case-insensitive id match + smooth + navbar offset. */
+function smartScrollTo(href?: string): boolean {
+  if (!href || !href.startsWith('#') || typeof document === 'undefined') return false
+  const raw = href.slice(1)
+  if (!raw || raw.toLowerCase() === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return true }
+  let el = document.getElementById(raw) as HTMLElement | null
+  if (!el) {
+    const lower = raw.toLowerCase()
+    el = (Array.from(document.querySelectorAll('[id]')) as HTMLElement[]).find((n) => n.id.toLowerCase() === lower) || null
+  }
+  if (!el) return false
+  const y = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
+  try { history.replaceState(null, '', href) } catch { /* ignore */ }
+  return true
+}
+
 export default function NavbarBlock({ props }: { props: NavbarProps; block?: Block }) {
   const ctx = useRenderContext()
   const links = props.links || []
@@ -30,7 +49,11 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
   const inEditor = ctx.editor
   const solid = inEditor || !transparent || scrolled
   const bg = solid ? (props.background || 'var(--lp-primary)') : 'transparent'
-  const editorPrevent = ctx.editor ? (e: React.MouseEvent) => e.preventDefault() : undefined
+  const onNavClick = (href?: string, closeMenu?: boolean) => (e: React.MouseEvent) => {
+    if (ctx.editor) { e.preventDefault(); return }
+    if (href && href.startsWith('#')) { e.preventDefault(); smartScrollTo(href) }
+    if (closeMenu) setOpen(false)
+  }
 
   const Logo = props.logo ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -62,14 +85,14 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
         <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0))' }} />
       )}
       <div style={{ position: 'relative', width: '100%', maxWidth: 'var(--lp-max-width)', margin: '0 auto', padding: '0 24px', minHeight: 72, display: 'flex', alignItems: 'center', gap: 24 }}>
-        <a href="#top" onClick={editorPrevent} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', marginRight: 'auto' }}>{Logo}</a>
+        <a href="#top" onClick={onNavClick('#top')} style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', marginRight: 'auto' }}>{Logo}</a>
 
         {!isMobile && (
           <>
             {links.length > 0 && (
               <nav style={{ display: 'flex', alignItems: 'center', gap: 'clamp(18px, 2.4vw, 34px)' }}>
                 {links.map((l, i) => (
-                  <a key={`${l.href}-${i}`} href={l.href} onClick={editorPrevent} style={linkStyle}
+                  <a key={`${l.href}-${i}`} href={l.href} onClick={onNavClick(l.href)} style={linkStyle}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--lp-accent)')}
                     onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}>
                     {l.label}
@@ -96,7 +119,7 @@ export default function NavbarBlock({ props }: { props: NavbarProps; block?: Blo
           </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 26, alignItems: 'center', justifyContent: 'center', flex: 1 }}>
             {links.map((l, i) => (
-              <a key={`${l.href}-${i}`} href={l.href} onClick={() => setOpen(false)} style={{ ...linkStyle, fontSize: 16 }}>{l.label}</a>
+              <a key={`${l.href}-${i}`} href={l.href} onClick={onNavClick(l.href, true)} style={{ ...linkStyle, fontSize: 16 }}>{l.label}</a>
             ))}
             {props.button && <div onClick={() => setOpen(false)}><CtaButtonView button={props.button} size="lg" /></div>}
           </nav>

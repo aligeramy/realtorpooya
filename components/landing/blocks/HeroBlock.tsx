@@ -2,7 +2,7 @@
 import React from 'react'
 import type { Block, HeroProps } from '@/lib/landing/types'
 import { useRenderContext } from '../render-context'
-import { ButtonRow, Container, Eyebrow } from './_shared'
+import { ButtonRow, Container } from './_shared'
 
 export default function HeroBlock({ props }: { props: HeroProps; block?: Block }) {
   const ctx = useRenderContext()
@@ -29,14 +29,18 @@ export default function HeroBlock({ props }: { props: HeroProps; block?: Block }
       <div style={{ position: 'absolute', inset: 0, background: `rgba(10,8,6,${props.overlayOpacity ?? 0.45})` }} />
       <Container style={{ position: 'relative', zIndex: 1, paddingTop: 96, paddingBottom: 96 }}>
         <div style={{ maxWidth: 760, marginLeft: align === 'center' ? 'auto' : 0, marginRight: align === 'center' ? 'auto' : 0, textAlign: align }}>
-          {props.eyebrow ? <Eyebrow>{props.eyebrow}</Eyebrow> : null}
+          {props.eyebrow ? (
+            <div style={{ fontSize: props.eyebrowSize ? `${props.eyebrowSize}px` : 13, letterSpacing: '0.22em', textTransform: 'uppercase', color: props.eyebrowColor || 'var(--lp-accent)', marginBottom: 16, fontFamily: 'var(--lp-body-font)' }}>
+              {props.eyebrow}
+            </div>
+          ) : null}
           {props.headline ? (
-            <h1 style={{ fontFamily: 'var(--lp-heading-font)', fontWeight: 400, fontSize: 'clamp(42px, 8vw, 96px)', lineHeight: 1.02, margin: 0, letterSpacing: '0.02em' }}>
+            <h1 style={{ fontFamily: 'var(--lp-heading-font)', fontWeight: 400, fontSize: props.headlineSize ? `${props.headlineSize}px` : 'clamp(42px, 8vw, 96px)', lineHeight: 1.02, margin: 0, letterSpacing: '0.02em', color: props.headlineColor || undefined }}>
               {props.headline}
             </h1>
           ) : null}
           {props.subheadline ? (
-            <p style={{ fontFamily: 'var(--lp-body-font)', fontStyle: 'italic', fontSize: 'clamp(16px, 1.8vw, 21px)', lineHeight: 1.6, opacity: 0.92, marginTop: 22, maxWidth: 560, marginLeft: align === 'center' ? 'auto' : 0, marginRight: align === 'center' ? 'auto' : 0 }}>
+            <p style={{ fontFamily: 'var(--lp-body-font)', fontStyle: 'italic', fontSize: props.subheadlineSize ? `${props.subheadlineSize}px` : 'clamp(16px, 1.8vw, 21px)', lineHeight: 1.6, color: props.subheadlineColor || undefined, opacity: props.subheadlineColor ? 1 : 0.92, marginTop: 22, maxWidth: 560, marginLeft: align === 'center' ? 'auto' : 0, marginRight: align === 'center' ? 'auto' : 0 }}>
               {props.subheadline}
             </p>
           ) : null}
