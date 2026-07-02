@@ -6,11 +6,29 @@ import { CtaButtonView } from './_shared'
 
 const NAV_OFFSET = 78 // height of the fixed/sticky navbar so targets aren't hidden under it
 
+/** Manual rAF smooth-scroll — native `behavior:'smooth'` is unreliable on some pages. */
+function animateScrollTo(y: number) {
+  if (typeof window === 'undefined') return
+  const start = window.scrollY
+  const dist = y - start
+  if (typeof requestAnimationFrame === 'undefined' || Math.abs(dist) < 2) { window.scrollTo(0, y); return }
+  const dur = Math.min(750, Math.max(320, Math.abs(dist) * 0.5))
+  const ease = (p: number) => 1 - Math.pow(1 - p, 3)
+  let t0: number | null = null
+  const step = (t: number) => {
+    if (t0 === null) t0 = t
+    const p = Math.min(1, (t - t0) / dur)
+    window.scrollTo(0, Math.round(start + dist * ease(p)))
+    if (p < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
+
 /** Scroll to an in-page anchor robustly: case-insensitive id match + smooth + navbar offset. */
 function smartScrollTo(href?: string): boolean {
   if (!href || !href.startsWith('#') || typeof document === 'undefined') return false
   const raw = href.slice(1)
-  if (!raw || raw.toLowerCase() === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return true }
+  if (!raw || raw.toLowerCase() === 'top') { animateScrollTo(0); return true }
   const lower = raw.toLowerCase()
   let el = document.getElementById(raw) as HTMLElement | null
   if (!el) {
@@ -22,7 +40,7 @@ function smartScrollTo(href?: string): boolean {
   if (!el) el = document.querySelector(`[data-block-type="${lower}"]`) as HTMLElement | null
   if (!el) return false
   const y = el.getBoundingClientRect().top + window.scrollY - NAV_OFFSET
-  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
+  animateScrollTo(Math.max(0, y))
   try { history.replaceState(null, '', href) } catch { /* ignore */ }
   return true
 }
