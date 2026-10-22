@@ -41,12 +41,14 @@ export default function AboutAgent() {
             viewport={{ once: true }}
             className="order-1 lg:order-2 relative"
           >
-            <div className="relative h-[500px] md:h-[600px] w-full rounded-2xl overflow-hidden shadow-xl">
+            {/* Sized by the photo's own aspect ratio so the headshot is never cropped */}
+            <div className="relative mx-auto w-full max-w-[520px] lg:max-w-[560px] aspect-[801/1009] rounded-2xl overflow-hidden shadow-xl">
               <Image
                 src="/images/pooya-profile.jpg"
                 alt="Pooya Pirayeshakbari"
+                sizes="(max-width: 1024px) 520px, 560px"
                 fill
-                className="object-cover object-top"
+                className="object-cover"
                 priority
               />
 

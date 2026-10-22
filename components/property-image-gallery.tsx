@@ -13,7 +13,13 @@ interface PropertyImageGalleryProps {
   heroImage?: string
 }
 
+function getYouTubeId(url: string): string {
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#/]+)/)
+  return match ? match[1] : ""
+}
+
 export default function PropertyImageGallery({ images, videoUrl, heroImage }: PropertyImageGalleryProps) {
+  const videoId = videoUrl ? getYouTubeId(videoUrl) : ""
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showFullGallery, setShowFullGallery] = useState(false)
   const [fullScreenImage, setFullScreenImage] = useState<string | null>(null)
@@ -122,6 +128,8 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
               <Image
                 src={getBackgroundImage(currentIndex)}
                 alt="Property Background"
+                sizes="320px"
+                quality={30}
                 fill
                 priority
                 className="object-cover blur-sm scale-110"
@@ -135,6 +143,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                 <Image
                   src={validImages[currentIndex] || "/placeholder.svg"}
                   alt="Property"
+                  sizes="100vw"
                   fill
                   priority
                   className="object-contain w-full h-full"
@@ -145,7 +154,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
         </AnimatePresence>
 
         {/* Video Button - Positioned with pointer-events-none to not interfere with navigation */}
-        {videoUrl && currentIndex === 0 && (
+        {videoId && currentIndex === 0 && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <Dialog>
               <DialogTrigger asChild>
@@ -157,7 +166,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                 <DialogTitle className="sr-only">Property Video Tour</DialogTitle>
                 <div className="aspect-video w-full">
                   <iframe
-                    src={`https://www.youtube.com/embed/${videoUrl.split("v=")[1]}?autoplay=1`}
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
                     title="Property Video Tour"
                     className="w-full h-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -216,6 +225,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                   <Image
                     src={image || "/placeholder.svg"}
                     alt={`Property thumbnail ${index + 1}`}
+                    sizes="128px"
                     fill
                     className="object-cover rounded-lg"
                   />
@@ -263,6 +273,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                   <Image
                     src={validImages[currentIndex] || "/placeholder.svg"}
                     alt={`Property image ${currentIndex + 1}`}
+                    sizes="100vw"
                     fill
                     className="object-contain cursor-pointer"
                     onClick={(e) => {
@@ -329,6 +340,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
                     <Image
                       src={image || "/placeholder.svg"}
                       alt={`Thumbnail ${index + 1}`}
+                      sizes="96px"
                       fill
                       className="object-cover rounded-lg"
                     />
@@ -362,6 +374,7 @@ export default function PropertyImageGallery({ images, videoUrl, heroImage }: Pr
               <Image
                 src={fullScreenImage || "/placeholder.svg"}
                 alt="Full screen property image"
+                sizes="100vw"
                 fill
                 className="object-contain"
               />

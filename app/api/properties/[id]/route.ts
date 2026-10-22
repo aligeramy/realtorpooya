@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { properties, propertyImages } from '@/lib/db/schema'
-import { eq, ne } from 'drizzle-orm'
-import { createAddressSlug, findPropertyBySlug } from '@/lib/utils'
-import { getMLSPropertyById, getMLSPropertyMedia, searchMLSProperties, mapMLSToCustomProperty } from '@/lib/mls-search'
+import { loadListing } from '@/lib/listing/load'
+import { MLS_SEARCH_ENABLED, getMLSPropertyById, getMLSPropertyMedia, searchMLSProperties, mapMLSToCustomProperty } from '@/lib/mls-search'
 
 export async function GET(
   request: Request,
@@ -11,68 +8,42 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    let propertyData = null
 
-    // First try to get by UUID (for direct ID access)
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-    
-    if (isUUID) {
-      const [result] = await db
-        .select()
-        .from(properties)
-        .where(eq(properties.id, id))
-      propertyData = result
+    // CRM listings (by UUID or public slug) come from the shared loader that
+    // also powers the listing pages, so the payload shape stays identical.
+    const listing = await loadListing(id)
+    if (listing) {
+      return NextResponse.json(listing)
     }
 
-    // If not found by UUID or not a UUID, try to find by slug
-    if (!propertyData) {
-      // Get all non-archived properties and search by slug
-      const allPropertiesRows = await db
-        .select()
-        .from(properties)
-        .where(ne(properties.status, 'archived'))
-
-      // Extract unique properties (in case of duplicates)
-      const propertiesMap = new Map()
-      for (const row of allPropertiesRows) {
-        if (!propertiesMap.has(row.id)) {
-          propertiesMap.set(row.id, row)
-        }
-      }
-      const allProperties = Array.from(propertiesMap.values())
-
-      propertyData = findPropertyBySlug(allProperties, id)
-    }
-
-    // If still not found, try MLS API
+    // Not a CRM listing: try the MLS API (skipped while MLS search is disabled;
+    // the site then only serves properties added manually in the CRM)
     let mlsProperty = null
     let mlsMedia: string[] = []
-    if (!propertyData) {
-      // Extract address from slug if it's a slug format
+    if (MLS_SEARCH_ENABLED) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       const parts = id.split('-')
       const lastPart = parts[parts.length - 1]
       const isSlugFormat = lastPart && lastPart.length === 8 && /^[0-9a-f]{8}$/i.test(lastPart)
-      
+
       if (isSlugFormat) {
         // It's a slug format - search MLS by address
         const addressSlug = parts.slice(0, -1).join('-')
         const addressPattern = addressSlug.replace(/-/g, ' ')
-        
+
         try {
-          // Search MLS properties by address
           const mlsResults = await searchMLSProperties({
             q: addressPattern,
             limit: 50,
             transactionType: 'for_sale'
           })
-          
+
           if (mlsResults && mlsResults.data) {
-            // Find property matching the ID suffix
             const targetIdSuffix = lastPart.toLowerCase()
             mlsProperty = mlsResults.data
               .map(mapMLSToCustomProperty)
               .find((p: any) => p.id && p.id.slice(-8).toLowerCase() === targetIdSuffix)
-            
+
             if (mlsProperty) {
               mlsMedia = await getMLSPropertyMedia(mlsProperty.id)
             }
@@ -81,7 +52,6 @@ export async function GET(
           console.error('MLS search by address failed:', error)
         }
       } else {
-        // Try direct MLS lookup by ID (UUID or MLS listing key)
         const looksLikeMLSId = isUUID || /^[CE]\d+$/i.test(id)
         if (looksLikeMLSId) {
           try {
@@ -96,59 +66,34 @@ export async function GET(
       }
     }
 
-    if (!propertyData && !mlsProperty) {
+    if (!mlsProperty) {
       return NextResponse.json(
         { error: 'Property not found' },
         { status: 404 }
       )
     }
 
-    // Use MLS property if custom property not found
-    const finalProperty = propertyData || mlsProperty
-
-    // Get images (only for custom properties)
-    let images: any[] = []
-    if (propertyData) {
-      images = await db
-        .select()
-        .from(propertyImages)
-        .where(eq(propertyImages.propertyId, propertyData.id))
-        .orderBy(propertyImages.displayOrder)
-    }
-
-    // Combine all data
+    const media = mlsMedia.length > 0 ? mlsMedia : mlsProperty.heroImage ? [mlsProperty.heroImage] : []
     const property = {
-      ...finalProperty,
-      images: propertyData ? images : [],
-      // Use MLS media if available
-      mediaUrls: propertyData 
-        ? propertyData.mediaUrls 
-        : mlsMedia.length > 0 
-          ? mlsMedia 
-          : finalProperty.heroImage 
-            ? [finalProperty.heroImage] 
-            : [],
-      // Convert CRM fields to frontend format for backward compatibility
-      media_urls: propertyData 
-        ? propertyData.mediaUrls 
-        : mlsMedia.length > 0 
-          ? mlsMedia 
-          : finalProperty.heroImage 
-            ? [finalProperty.heroImage] 
-            : [],
-      hero_image: finalProperty.heroImage || (mlsMedia.length > 0 ? mlsMedia[0] : null),
-      youtube_video: finalProperty.youtubeVideo,
-      square_feet: finalProperty.squareFeet || finalProperty.livingArea,
-      year_built: finalProperty.yearBuilt,
-      property_type: finalProperty.propertyType,
-      postal_code: finalProperty.postalCode,
-      listing_date: finalProperty.listingDate instanceof Date 
-        ? finalProperty.listingDate.toISOString() 
-        : finalProperty.listingDate,
-      created_at: finalProperty.createdAt instanceof Date 
-        ? finalProperty.createdAt.toISOString() 
-        : finalProperty.createdAt,
-      source: propertyData ? 'custom' : 'mls',
+      ...mlsProperty,
+      images: [],
+      floorPlans: [],
+      floor_plans: [],
+      mediaUrls: media,
+      media_urls: media,
+      hero_image: mlsProperty.heroImage || (mlsMedia.length > 0 ? mlsMedia[0] : null),
+      youtube_video: mlsProperty.youtubeVideo,
+      square_feet: mlsProperty.squareFeet || mlsProperty.livingArea,
+      year_built: mlsProperty.yearBuilt,
+      property_type: mlsProperty.propertyType,
+      postal_code: mlsProperty.postalCode,
+      listing_date: mlsProperty.listingDate instanceof Date
+        ? mlsProperty.listingDate.toISOString()
+        : mlsProperty.listingDate,
+      created_at: mlsProperty.createdAt instanceof Date
+        ? mlsProperty.createdAt.toISOString()
+        : mlsProperty.createdAt,
+      source: 'mls',
     }
 
     return NextResponse.json(property)

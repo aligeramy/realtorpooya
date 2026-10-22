@@ -22,7 +22,7 @@ const config = {
       fontFamily: {
         montserrat: ["var(--font-montserrat)"],
         manrope: ["var(--font-manrope)"],
-        "tenor-sans": ["Tenor Sans", "sans-serif"],
+        "tenor-sans": ["var(--font-tenor-sans)", "Tenor Sans", "sans-serif"],
         playfair: ["var(--font-playfair)"],
       },
       colors: {

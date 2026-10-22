@@ -8,8 +8,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import type { Property } from "@/types/property"
 
+// Only the fields the email summary uses, so both the DB row and the
+// server-rendered listing payload (string dates) can be passed in.
+type ContactFormProperty = Pick<
+  Property,
+  'id' | 'address' | 'city' | 'price' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'propertyType' | 'mlsId'
+> & { mlsListingKey?: string | null }
+
 interface PropertyContactFormProps {
-  property: Property
+  property: ContactFormProperty
   className?: string
 }
 

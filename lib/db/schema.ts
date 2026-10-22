@@ -81,6 +81,8 @@ export const properties = pgTable('properties', {
   tags: text('tags').array(),
   heroImage: text('hero_image'), // Optional hero image URL
   youtubeVideo: text('youtube_video'), // Optional YouTube video URL
+  matterportUrl: text('matterport_url'), // Optional Matterport 3D tour URL
+  floorPlans: jsonb('floor_plans'), // [{ url, label?, kind?: 'image' | 'pdf' }] shown on the listing page
   more: jsonb('more'), // Optional JSONB for custom fields
   displayOrder: integer('display_order').default(0), // Order field for reordering properties on website
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

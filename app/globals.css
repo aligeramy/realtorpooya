@@ -85,7 +85,7 @@
 }
 
 .font-tenor-sans {
-  font-family: "Tenor Sans", sans-serif;
+  font-family: var(--font-tenor-sans), "Tenor Sans", sans-serif;
 }
 
 .font-playfair {
