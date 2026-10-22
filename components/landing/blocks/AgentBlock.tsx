@@ -59,7 +59,7 @@ export default function AgentBlock({ props }: { props: AgentProps; block?: Block
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy" decoding="async"
               src={photo}
               alt={name || 'Agent'}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}

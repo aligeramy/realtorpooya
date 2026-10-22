@@ -272,7 +272,7 @@ export async function POST(request: Request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca',
+          from: process.env.EMAIL_FROM || 'sold@realtorpooya.ca',
           to: [process.env.EMAIL_TO || 'sold@realtorpooya.ca'],
           subject: emailSubject,
           html: emailContent,
@@ -304,7 +304,7 @@ export async function POST(request: Request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: `Pooya Pirayeshakbari <${process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca'}>`,
+          from: `Pooya Pirayeshakbari <${process.env.EMAIL_FROM || 'sold@realtorpooya.ca'}>`,
           to: [email],
           subject: 'Property Showing Request Received - Pooya Pirayeshakbari Real Estate',
           html: autoReplyContent,

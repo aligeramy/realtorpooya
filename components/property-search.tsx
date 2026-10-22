@@ -30,7 +30,7 @@ export function PropertySearch({
   value,
   onChange,
   onSelect,
-  placeholder = "Search by address, unit number, city, postal code, or MLS number...",
+  placeholder = "Search by address, unit number, city, or postal code...",
   className,
   debounceMs = 500,
 }: PropertySearchProps) {

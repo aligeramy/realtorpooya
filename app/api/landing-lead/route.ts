@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
     // === Emails (best-effort): notify admin + confirm to registrant ===
     if (process.env.RESEND_API_KEY) {
-      const from = process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca'
+      const from = process.env.EMAIL_FROM || 'sold@realtorpooya.ca'
       const admin = process.env.EMAIL_TO || 'sold@realtorpooya.ca'
       const pageLabel = pageTitle || pageSlug || '—'
       const send = (payload: Record<string, unknown>) =>

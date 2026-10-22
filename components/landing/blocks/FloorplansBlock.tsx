@@ -120,7 +120,7 @@ export default function FloorplansBlock({ props }: { props: FloorplansProps; blo
             >
               {plans[activeIndex].image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <img loading="lazy" decoding="async"
                   alt={plans[activeIndex].label || `Floor plan ${activeIndex + 1}`}
                   src={plans[activeIndex].image}
                   style={{
@@ -197,7 +197,7 @@ export default function FloorplansBlock({ props }: { props: FloorplansProps; blo
               >
                 {plan.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <img loading="lazy" decoding="async"
                     alt={plan.label || `Floor plan ${i + 1}`}
                     src={plan.image}
                     style={{

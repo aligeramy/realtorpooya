@@ -32,6 +32,7 @@ export interface PropertyWithDetails extends Property {
   media_urls?: string[]
   hero_image?: string
   youtube_video?: string
+  matterport_url?: string
   square_feet?: number
   year_built?: number
   property_type?: string

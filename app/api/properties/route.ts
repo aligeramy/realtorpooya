@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { properties, propertyImages } from '@/lib/db/schema'
 import { eq, like, and, or, desc, gte, lte, ne, sql, ilike } from 'drizzle-orm'
-import { searchMLSProperties, mapMLSToCustomProperty } from '@/lib/mls-search'
+import { MLS_SEARCH_ENABLED, searchMLSProperties, mapMLSToCustomProperty } from '@/lib/mls-search'
 
 export async function GET(request: Request) {
   try {
@@ -65,7 +65,8 @@ export async function GET(request: Request) {
       }
     }
 
-    // Fetch custom properties and MLS properties in parallel
+    // Fetch custom properties, plus MLS properties when the MLS search is enabled.
+    // MLS search is off by default, so the site only lists CRM properties.
     const [customPropertiesResult, mlsSearchResult] = await Promise.allSettled([
       // Fetch custom properties from database
       db
@@ -76,17 +77,19 @@ export async function GET(request: Request) {
         .orderBy(desc(properties.displayOrder), desc(properties.createdAt)),
       
       // Fetch MLS properties from search API
-      searchMLSProperties({
-        q: search || undefined,
-        city: city || undefined,
-        minPrice: minPrice ? parseInt(minPrice) : undefined,
-        maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
-        bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
-        propertyType: propertyType ? mapPropertyTypeToMLS(propertyType) : undefined,
-        transactionType: 'for_sale', // Only show for sale properties
-        limit: limit || 50, // Use provided limit or default to 50
-        sortBy: 'newest',
-      }),
+      MLS_SEARCH_ENABLED
+        ? searchMLSProperties({
+            q: search || undefined,
+            city: city || undefined,
+            minPrice: minPrice ? parseInt(minPrice) : undefined,
+            maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
+            bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
+            propertyType: propertyType ? mapPropertyTypeToMLS(propertyType) : undefined,
+            transactionType: 'for_sale', // Only show for sale properties
+            limit: limit || 50, // Use provided limit or default to 50
+            sortBy: 'newest',
+          })
+        : Promise.resolve(null),
     ])
 
     // Process custom properties
@@ -122,7 +125,7 @@ export async function GET(request: Request) {
         const mappedProperty = mapMLSToCustomProperty(mlsProperty)
         mlsProperties.push(mappedProperty)
       }
-    } else {
+    } else if (MLS_SEARCH_ENABLED) {
       console.error('Error fetching MLS properties:', mlsSearchResult.status === 'rejected' ? mlsSearchResult.reason : 'No data')
     }
 

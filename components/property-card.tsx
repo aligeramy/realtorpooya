@@ -50,6 +50,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
               "/placeholder.svg?height=400&width=600&query=luxury home"
             }
             alt={propertyAddress}
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />

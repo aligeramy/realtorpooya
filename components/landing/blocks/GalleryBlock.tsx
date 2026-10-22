@@ -193,7 +193,7 @@ export default function GalleryBlock({ props }: { props: GalleryProps; block?: B
 
           <figure onClick={(e) => e.stopPropagation()} style={{ margin: 0, maxWidth: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy" decoding="async"
               src={images[selected].url}
               alt={images[selected].alt || images[selected].caption || ''}
               style={{ maxWidth: '100%', maxHeight: '82vh', objectFit: 'contain', borderRadius: 'var(--lp-radius)' }}

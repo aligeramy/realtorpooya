@@ -103,6 +103,7 @@ export default function BlogSection() {
                     <Image
                       src={post.hero_image || "/placeholder.svg"}
                       alt={post.title}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                       fill
                       className={`object-cover transition-transform duration-700 ${
                         hoveredPost === post.id ? "scale-105" : "scale-100"

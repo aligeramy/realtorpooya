@@ -57,7 +57,7 @@ export default function FullScreenMenu({ onClose }: FullScreenMenuProps) {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="hidden md:block md:w-1/2 h-full relative"
       >
-        <Image src="/images/menu-bg.jpg" alt="Interior" fill className="object-cover" />
+        <Image src="/images/menu-bg.jpg" alt="Interior" fill sizes="50vw" className="object-cover" />
       </motion.div>
 
       {/* Right Side - Menu */}

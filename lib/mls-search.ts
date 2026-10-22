@@ -6,6 +6,13 @@
 const MLS_SEARCH_BASE_URL = 'https://search.realtorpooya.com/api/v1'
 const MLS_API_KEY = process.env.MLS_SEARCH_API_KEY || '627894f6c365c83c6a3082809c4b95b960cf97121e303007ee27cea1686a6643'
 
+/**
+ * MLS search is disabled site-wide: the public site only shows properties that
+ * were added manually in the CRM. Every helper below short-circuits while this
+ * is false. Set MLS_SEARCH_ENABLED=true in the environment to turn it back on.
+ */
+export const MLS_SEARCH_ENABLED = process.env.MLS_SEARCH_ENABLED === 'true'
+
 export interface MLSSearchParams {
   q?: string
   city?: string
@@ -76,6 +83,8 @@ export interface MLSSearchResponse {
 export async function searchMLSProperties(
   params: MLSSearchParams
 ): Promise<MLSSearchResponse | null> {
+  if (!MLS_SEARCH_ENABLED) return null
+
   try {
     const searchParams = new URLSearchParams()
     
@@ -201,6 +210,8 @@ function mapMLSStatus(mlsStatus: string): string {
  * Get MLS property details by ID or listing key
  */
 export async function getMLSPropertyById(id: string): Promise<any | null> {
+  if (!MLS_SEARCH_ENABLED) return null
+
   try {
     const url = `${MLS_SEARCH_BASE_URL}/properties/${encodeURIComponent(id)}`
     
@@ -240,6 +251,8 @@ export async function getMLSPropertyById(id: string): Promise<any | null> {
  * Get MLS property media by ID or listing key
  */
 export async function getMLSPropertyMedia(id: string): Promise<string[]> {
+  if (!MLS_SEARCH_ENABLED) return []
+
   try {
     const url = `${MLS_SEARCH_BASE_URL}/properties/${encodeURIComponent(id)}/media`
     

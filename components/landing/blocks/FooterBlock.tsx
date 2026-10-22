@@ -45,10 +45,10 @@ export default function FooterBlock({ props }: { props: FooterProps; block?: Blo
             {email ? <a href={ctx.editor ? undefined : `mailto:${email}`} onClick={editorPrevent} style={{ ...linkStyle, opacity: 0.85 }}>{email}</a> : null}
             {props.brokerageLogo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={props.brokerageLogo} alt={brokerage || 'Brokerage'} style={{ height: 54, width: 'auto', objectFit: 'contain', marginTop: 20, opacity: 0.95 }} />
+              <img loading="lazy" decoding="async" src={props.brokerageLogo} alt={brokerage || 'Brokerage'} style={{ height: 54, width: 'auto', objectFit: 'contain', marginTop: 20, opacity: 0.95 }} />
             ) : props.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={props.logo} alt="" style={{ height: 44, width: 'auto', objectFit: 'contain', marginTop: 20 }} />
+              <img loading="lazy" decoding="async" src={props.logo} alt="" style={{ height: 44, width: 'auto', objectFit: 'contain', marginTop: 20 }} />
             ) : null}
             {props.links && props.links.length > 0 ? (
               <nav style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center', marginTop: 22 }}>
@@ -70,7 +70,7 @@ export default function FooterBlock({ props }: { props: FooterProps; block?: Blo
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 200 }}>
             {props.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={props.logo} alt="" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+              <img loading="lazy" decoding="async" src={props.logo} alt="" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             ) : (
               <div style={{ fontFamily: 'var(--lp-heading-font)', fontSize: 'clamp(22px, 2.6vw, 30px)', letterSpacing: '0.02em' }}>{ctx.pageTitle || ctx.property?.address || 'Residences'}</div>
             )}

@@ -99,7 +99,7 @@ export default function LeadFormBlock({ props }: { props: LeadFormProps; block?:
       {hasImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <img loading="lazy" decoding="async"
             alt=""
             src={props.backgroundImage}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}

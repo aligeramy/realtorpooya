@@ -1,18 +1,23 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { properties, propertyImages } from '@/lib/db/schema'
-import { eq, ne, asc } from 'drizzle-orm'
+import { eq, ne, asc, sql } from 'drizzle-orm'
 
 export async function GET(request: Request) {
   try {
     // Get non-archived properties for the website (following the database documentation pattern)
-    // Reversed order: show oldest properties first
+    // Available listings (active / coming soon / conditional) come before sold, leased
+    // and not-available ones so buyers see what's on the market on page 1.
     const featuredProperties = await db
       .select()
       .from(properties)
       .leftJoin(propertyImages, eq(properties.id, propertyImages.propertyId))
       .where(ne(properties.status, 'archived'))
-      .orderBy(asc(properties.displayOrder), asc(properties.createdAt))
+      .orderBy(
+        sql`case when ${properties.status} in ('active', 'coming_soon', 'conditional') then 0 else 1 end`,
+        asc(properties.displayOrder),
+        asc(properties.createdAt)
+      )
 
     // Group images by property
     const propertiesMap = new Map()

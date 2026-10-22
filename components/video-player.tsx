@@ -17,7 +17,7 @@ export default function VideoPlayer({ videoUrl, posterImage }: VideoPlayerProps)
   }
 
   const getVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#/]+)/)
     return match ? match[1] : ''
   }
 
@@ -34,6 +34,7 @@ export default function VideoPlayer({ videoUrl, posterImage }: VideoPlayerProps)
           <Image
             src={posterImage}
             alt="Video thumbnail"
+            sizes="(max-width: 1024px) 100vw, 66vw"
             fill
             className="object-contain"
           />

@@ -14,6 +14,7 @@ import AmenitiesBlock from './blocks/AmenitiesBlock'
 import FloorplansBlock from './blocks/FloorplansBlock'
 import MapBlock from './blocks/MapBlock'
 import VideoBlock from './blocks/VideoBlock'
+import MatterportBlock from './blocks/MatterportBlock'
 import AgentBlock from './blocks/AgentBlock'
 import LeadFormBlock from './blocks/LeadFormBlock'
 import FooterBlock from './blocks/FooterBlock'
@@ -39,6 +40,7 @@ export const BLOCK_REGISTRY: Record<BlockType, React.ComponentType<any>> = {
   floorplans: FloorplansBlock,
   map: MapBlock,
   video: VideoBlock,
+  matterport: MatterportBlock,
   agent: AgentBlock,
   lead_form: LeadFormBlock,
   footer: FooterBlock,

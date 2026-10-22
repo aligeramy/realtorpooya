@@ -218,6 +218,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <Image
                   src={post.hero_image}
                   alt={post.title}
+                  sizes="(max-width: 1280px) 100vw, 1200px"
                   fill
                   className="object-cover"
                 />

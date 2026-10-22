@@ -232,7 +232,7 @@ export async function POST(request: Request) {
     
     console.log('=== ATTEMPTING TO SEND NOTIFICATION EMAIL TO REALTOR ===')
     console.log('To:', process.env.EMAIL_TO || 'sold@realtorpooya.ca')
-    console.log('From:', process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca')
+    console.log('From:', process.env.EMAIL_FROM || 'sold@realtorpooya.ca')
     console.log('Has RESEND_API_KEY:', !!process.env.RESEND_API_KEY)
     console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0)
     
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
     } else {
       try {
         const emailPayload = {
-          from: process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca',
+          from: process.env.EMAIL_FROM || 'sold@realtorpooya.ca',
           to: [process.env.EMAIL_TO || 'sold@realtorpooya.ca'],
           subject: emailSubject,
           html: emailContent,
@@ -299,7 +299,7 @@ export async function POST(request: Request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `Pooya Pirayeshakbari <${process.env.EMAIL_FROM || 'noreply@mail.realtorpooya.ca'}>`,
+            from: `Pooya Pirayeshakbari <${process.env.EMAIL_FROM || 'sold@realtorpooya.ca'}>`,
             to: [email],
             subject: 'Message Received - Pooya Pirayeshakbari Real Estate',
             html: autoReplyContent,

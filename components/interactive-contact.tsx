@@ -509,6 +509,7 @@ export default function InteractiveContact() {
                                   <Image
                                     src={getPropertyImage(property)}
                                     alt={getPropertyTitle(property)}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                                     fill
                                     className="object-cover"
                                   />

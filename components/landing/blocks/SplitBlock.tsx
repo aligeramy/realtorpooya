@@ -23,7 +23,7 @@ export default function SplitBlock({ props }: { props: SplitProps; block?: Block
         {img ? (
           <div style={{ order: imageRight ? 2 : 1 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt={props.heading || ''} src={img} style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', borderRadius: 'var(--lp-radius)', boxShadow: '0 30px 70px rgba(0,0,0,0.18)', display: 'block' }} />
+            <img loading="lazy" decoding="async" alt={props.heading || ''} src={img} style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', borderRadius: 'var(--lp-radius)', boxShadow: '0 30px 70px rgba(0,0,0,0.18)', display: 'block' }} />
           </div>
         ) : ctx.editor ? (
           <div style={{ order: imageRight ? 2 : 1, aspectRatio: '4 / 3', border: '1px dashed rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontFamily: 'var(--lp-body-font)', fontSize: 13 }}>Image</div>

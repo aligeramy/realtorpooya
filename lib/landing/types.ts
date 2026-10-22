@@ -28,6 +28,7 @@ export type SectionType =
   | 'floorplans'
   | 'map'
   | 'video'
+  | 'matterport'
   | 'agent'
   | 'lead_form'
   | 'footer'
@@ -265,6 +266,14 @@ export interface VideoProps {
   poster?: string
 }
 
+export interface MatterportProps {
+  heading?: string
+  url?: string                 // full share URL (https://my.matterport.com/show/?m=<id>) or bare model id
+  aspect?: '16:9' | '4:3' | '21:9'
+  autoplay?: boolean           // start the tour immediately (&play=1)
+  hideBranding?: boolean       // hide Matterport branding (&brand=0)
+}
+
 export interface AgentProps {
   source?: 'agent' | 'custom'
   agentId?: string | null
@@ -389,6 +398,7 @@ export interface BlockPropsMap {
   floorplans: FloorplansProps
   map: MapProps
   video: VideoProps
+  matterport: MatterportProps
   agent: AgentProps
   lead_form: LeadFormProps
   footer: FooterProps

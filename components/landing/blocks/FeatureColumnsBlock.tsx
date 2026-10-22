@@ -28,7 +28,7 @@ export default function FeatureColumnsBlock({ props, block }: { props: FeatureCo
           <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 14, textAlign: align, alignItems: align === 'center' ? 'center' : 'flex-start' }}>
             {it.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img alt={it.title || ''} src={it.image} style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', borderRadius: 'var(--lp-radius)', display: 'block', marginBottom: 6 }} />
+              <img loading="lazy" decoding="async" alt={it.title || ''} src={it.image} style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', borderRadius: 'var(--lp-radius)', display: 'block', marginBottom: 6 }} />
             ) : null}
             {it.title ? (
               <h3 style={{ fontFamily: 'var(--lp-heading-font)', fontWeight: 400, fontSize: 'clamp(20px, 2.2vw, 27px)', letterSpacing: '0.02em', margin: 0, color: 'var(--lp-text)' }}>{it.title}</h3>

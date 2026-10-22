@@ -1,3 +1,8 @@
+allowBuilds:
+  esbuild: true
+  # sharp performs the actual image resizing/encoding for next/image.
+  # Its build script must run or optimization silently falls back.
+  sharp: true
 ignoredBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'

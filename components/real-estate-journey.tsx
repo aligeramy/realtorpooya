@@ -192,6 +192,7 @@ export default function RealEstateJourney() {
                     <Image
                       src={step.image || "/placeholder.svg"}
                       alt={step.title}
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                       fill
                       className="object-cover"
                       priority={index === 0}

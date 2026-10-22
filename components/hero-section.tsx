@@ -171,7 +171,7 @@ function PropertySearchWithSuggestions() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search by address, unit number, city, or MLS number..."
+          placeholder="Search by address, unit number, or city..."
           className="w-full h-14 md:h-16 pl-6 pr-32 rounded-full text-base font-manrope backdrop-blur-md bg-white/20 border-white/30 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/50"
           value={searchQuery}
           onChange={handleInputChange}
@@ -234,6 +234,7 @@ function PropertySearchWithSuggestions() {
                         <Image
                           src={property.heroImage || property.mediaUrls[0]}
                           alt={property.address || 'Property'}
+                          sizes="64px"
                           fill
                           className="object-cover"
                         />
@@ -360,6 +361,7 @@ export default function HeroSection() {
         <Image
           src="/images/luxury-home.jpg"
           alt="Luxury Home in Toronto"
+          sizes="100vw"
           fill
           priority
           className={`object-cover object-left-bottom transition-opacity duration-1000 ${

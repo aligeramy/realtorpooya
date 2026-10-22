@@ -20,7 +20,7 @@ export default function CtaBlock({ props }: { props: CtaProps; block?: Block }) 
       {hasImage && (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="" src={props.backgroundImage} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+          <img loading="lazy" decoding="async" alt="" src={props.backgroundImage} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.7))', zIndex: 1 }} />
         </>
       )}

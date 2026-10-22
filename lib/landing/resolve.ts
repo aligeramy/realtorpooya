@@ -18,6 +18,7 @@ export interface ResolvedProperty {
   lat: number | null
   lng: number | null
   youtubeVideo: string
+  matterportUrl: string
 }
 
 export interface RawProperty {
@@ -34,6 +35,7 @@ export interface RawProperty {
   mediaUrls?: string[] | null
   heroImage?: string | null
   youtubeVideo?: string | null
+  matterportUrl?: string | null
   geo?: string | null
 }
 
@@ -77,5 +79,6 @@ export function resolveProperty(
     lat: geo.lat,
     lng: geo.lng,
     youtubeVideo: property?.youtubeVideo || '',
+    matterportUrl: property?.matterportUrl || '',
   }
 }

@@ -251,7 +251,7 @@ function PropertyShowcaseContent() {
                 <PropertySearch
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="Search by address, unit number, city, postal code, or MLS..."
+                  placeholder="Search by address, unit number, city, or postal code..."
                   className="w-full"
                   debounceMs={0}
                   onSelect={(suggestion) => {
@@ -385,6 +385,7 @@ function PropertyShowcaseContent() {
                           <Image
                             src={property.heroImage || property.mediaUrls?.[0] || "/placeholder.svg"}
                             alt={property.address || 'Property'}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                           />
