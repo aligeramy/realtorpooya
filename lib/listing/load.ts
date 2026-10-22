@@ -10,13 +10,21 @@ export type FloorPlanItem = { url: string; label?: string; kind: 'image' | 'pdf'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const SUFFIX_RE = /^[0-9a-f]{8}$/i
 
-/** Accepts the stored JSON (array of strings or {url,label,kind}) and returns clean items. */
+function isHttpsUrl(url: string): boolean {
+  try {
+    return new URL(url).protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/** Accepts the stored JSON (array of strings or {url,label,kind}) and returns clean items; only https URLs survive since they are rendered into href/src. */
 export function normalizeFloorPlans(raw: unknown): FloorPlanItem[] {
   if (!Array.isArray(raw)) return []
   const items: FloorPlanItem[] = []
   for (const entry of raw) {
     const url = typeof entry === 'string' ? entry : entry && typeof entry.url === 'string' ? entry.url : ''
-    if (!url) continue
+    if (!url || !isHttpsUrl(url)) continue
     const label = typeof entry === 'object' && entry && typeof entry.label === 'string' ? entry.label.trim() : ''
     const explicit = typeof entry === 'object' && entry ? entry.kind : undefined
     const kind: FloorPlanItem['kind'] =
