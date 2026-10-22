@@ -115,6 +115,24 @@ export interface RegistrationConfig {
   propertyId?: string | null     // associates the lead with a property
 }
 
+/**
+ * The automated confirmation email a registrant receives right after signing
+ * up on this page. Edited per page in the CRM (Page Settings → Email). The
+ * subject, headline and body accept merge tags such as {{firstName}} and
+ * {{pageTitle}} — see AUTO_REPLY_MERGE_TAGS in ./auto-reply.ts.
+ */
+export interface AutoReplyConfig {
+  enabled?: boolean              // default true — set false to send no confirmation
+  subject?: string               // "Thank you for registering — {{pageTitle}}"
+  headline?: string              // "Thank You for Registering!"
+  bodyHtml?: string              // sanitized HTML body (merge tags allowed)
+  buttonLabel?: string           // optional call-to-action button
+  buttonUrl?: string             // https:// link for the button
+  showContactBox?: boolean       // "Need to reach us sooner?" phone/email box, default true
+  fromName?: string              // display name on the From header, default agent name
+  replyTo?: string               // where replies go, default the lead notification address
+}
+
 export interface CustomData {
   // Per-page overrides used when data_source is 'custom' or 'hybrid'.
   address?: string
@@ -441,6 +459,7 @@ export interface SiteDocument {
   blocks: Block[]             // ordered top-level blocks (sections + elements)
   theme: PageTheme
   registration: RegistrationConfig
+  autoReply?: AutoReplyConfig // registrant confirmation email (defaults apply when unset)
   seo?: PageSeo
   customData?: CustomData     // overrides for property fields (custom/hybrid pages)
   templateKey?: string        // which full template this page started from

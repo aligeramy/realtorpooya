@@ -1,37 +1,29 @@
 import { NextResponse } from 'next/server'
+import { eq } from 'drizzle-orm'
+import { db } from '@/lib/db'
+import { clients, clientProperties, tasks, landingPages, properties } from '@/lib/db/schema'
+import type { SiteDocument } from '@/lib/landing/types'
+import {
+  renderEmailShell, renderAutoReplyEmail, resolveAutoReply, isEmailAddress, escapeHtml,
+  DEFAULT_EMAIL_BRAND, type AutoReplyVars,
+} from '@/lib/landing/auto-reply'
 
-const BRAND = '#473729'
-const ACCENT = '#aa9578'
-const LOGO = 'https://realtorpooya.ca/icon.png'
-const AGENT_PHOTO = 'https://realtorpooya.ca/images/agent-pooya.jpg'
+export const dynamic = 'force-dynamic'
 
-function shell(inner: string): string {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
-  <body style="margin:0;padding:0;background:#f9f6f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:${BRAND};line-height:1.6;">
-    <div style="max-width:600px;margin:0 auto;background:#fff;">
-      <div style="background:linear-gradient(135deg,${ACCENT} 0%,#8a7a63 100%);padding:32px;text-align:center;">
-        <img src="${LOGO}" alt="Realtor Pooya" style="max-height:46px;height:auto;"/>
-      </div>
-      ${inner}
-      <div style="background:${BRAND};color:#fff;padding:28px;text-align:center;">
-        <img src="${AGENT_PHOTO}" alt="Pooya Pirayeshakbari" style="width:70px;height:70px;border-radius:50%;object-fit:cover;margin-bottom:12px;"/>
-        <div style="font-weight:600;font-size:17px;">Pooya Pirayeshakbari</div>
-        <div style="color:rgba(255,255,255,.85);font-size:13px;">Luxury Real Estate Specialist</div>
-        <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:6px;">416-553-7707 · sold@realtorpooya.ca</div>
-      </div>
-    </div>
-  </body></html>`
-}
+const SITE_BASE = 'https://realtorpooya.com'
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function row(label: string, value: string): string {
-  return `<tr><td style="padding:6px 0;color:${ACCENT};font-weight:600;width:130px;vertical-align:top;">${label}</td><td style="padding:6px 0;color:${BRAND};">${value}</td></tr>`
+  const b = DEFAULT_EMAIL_BRAND
+  return `<tr><td style="padding:6px 0;color:${b.accentColor};font-weight:600;width:130px;vertical-align:top;">${label}</td><td style="padding:6px 0;color:${b.primaryColor};">${escapeHtml(value)}</td></tr>`
 }
 
 function adminEmailHTML(d: { fullName: string; email: string; phone: string; priceRange: string; role: string; page: string }): string {
-  return shell(`
+  const b = DEFAULT_EMAIL_BRAND
+  return renderEmailShell(`
     <div style="padding:36px 32px;">
       <h1 style="font-size:24px;text-align:center;margin:0 0 8px;">New Registration</h1>
-      <p style="text-align:center;color:${ACCENT};margin:0 0 24px;font-size:14px;">A new lead registered from a property page.</p>
+      <p style="text-align:center;color:${b.accentColor};margin:0 0 24px;font-size:14px;">A new lead registered from a property page.</p>
       <div style="background:#f3ecdf;border-radius:12px;padding:22px;">
         <table style="width:100%;border-collapse:collapse;font-size:15px;">
           ${row('Name', d.fullName)}
@@ -42,42 +34,59 @@ function adminEmailHTML(d: { fullName: string; email: string; phone: string; pri
           ${row('Page', d.page || '—')}
         </table>
       </div>
-    </div>`)
-}
-
-function userEmailHTML(d: { firstName: string }): string {
-  return shell(`
-    <div style="padding:36px 32px;">
-      <h1 style="font-size:24px;text-align:center;margin:0 0 18px;">Thank You for Registering!</h1>
-      <p style="font-size:16px;margin:0 0 16px;">Dear ${d.firstName || 'there'},</p>
-      <p style="font-size:15px;margin:0 0 18px;">Thank you for your interest. Your registration has been received — Pooya will personally reach out shortly with floor plans, pricing, and to help arrange your private tour.</p>
-      <div style="background:#f3ecdf;border-radius:12px;padding:22px;text-align:center;">
-        <p style="color:${ACCENT};font-weight:600;margin:0 0 8px;font-size:15px;">Need to reach us sooner?</p>
-        <p style="margin:0;color:${BRAND};font-size:15px;">Call or text <b>416-553-7707</b><br/>Email <b>sold@realtorpooya.ca</b></p>
-      </div>
-    </div>`)
+    </div>`, b, `New registration: ${d.fullName}`)
 }
 
 // Lead capture for landing-page "Register Here" forms. Writes a lead into the
 // shared CRM `clients` table (deduped by email), links the property, emails the
-// realtor (admin) AND sends the registrant a branded confirmation. Mirrors /api/contact.
+// lead alert to the page's configured address AND sends the registrant the
+// page's own confirmation email (Page Settings → Email in the CRM editor).
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const {
-      firstName = '', lastName = '', email, phone = '',
-      priceRange = '', role = '', propertyId = null,
+      firstName = '', lastName = '', email: rawEmail, phone = '',
+      priceRange = '', role = '', propertyId: rawPropertyId = null,
       pageSlug = '', pageTitle = '', source = 'register',
     } = body || {}
 
-    const fullName = `${firstName} ${lastName}`.trim() || firstName || 'Website Lead'
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+    const email = typeof rawEmail === 'string' ? rawEmail.trim() : ''
+    if (!isEmailAddress(email)) {
+      return NextResponse.json({ error: 'A valid email is required' }, { status: 400 })
     }
+    const fullName = `${firstName} ${lastName}`.trim() || firstName || 'Website Lead'
+    const emailLower = email.toLowerCase()
+
+    // === Page config: which email to send, and where lead alerts go ===
+    const pageRow = typeof pageSlug === 'string' && pageSlug
+      ? await db.query.landingPages.findFirst({
+          where: eq(landingPages.slug, pageSlug),
+          columns: { id: true, slug: true, title: true, customDomain: true, propertyId: true, publishedDocument: true, draftDocument: true },
+        }).catch((err) => { console.error('landing-lead page lookup failed:', err); return null })
+      : null
+    const doc = ((pageRow?.publishedDocument ?? pageRow?.draftDocument) as SiteDocument | null) || null
+    const autoReply = resolveAutoReply(doc?.autoReply)
+    const configuredAlert = doc?.registration?.recipientEmail
+    const alertTo = isEmailAddress(configuredAlert) ? configuredAlert.trim() : (process.env.EMAIL_TO || 'sold@realtorpooya.ca')
+
+    const propertyId: string | null =
+      typeof rawPropertyId === 'string' && UUID_RE.test(rawPropertyId) ? rawPropertyId : (pageRow?.propertyId ?? null)
+    const propertyRow = propertyId
+      ? await db.query.properties.findFirst({ where: eq(properties.id, propertyId), columns: { address: true, city: true, price: true } })
+          .catch(() => null)
+      : null
+    const propertyAddress = propertyRow ? [propertyRow.address, propertyRow.city].filter(Boolean).join(', ') : ''
+    const propertyPrice = propertyRow?.price != null && Number.isFinite(Number(propertyRow.price))
+      ? '$' + Number(propertyRow.price).toLocaleString('en-US') : ''
+
+    const resolvedTitle = pageRow?.title || (typeof pageTitle === 'string' ? pageTitle : '') || propertyAddress || 'Realtor Pooya'
+    const pageUrl = pageRow
+      ? (pageRow.customDomain ? `https://${pageRow.customDomain}` : `${SITE_BASE}/properties/${pageRow.slug}`)
+      : (pageSlug ? `${SITE_BASE}/properties/${pageSlug}` : SITE_BASE)
 
     const today = new Date().toISOString().slice(0, 10)
     const noteParts: string[] = [`${today} landing-page registration (${source})`]
-    if (pageTitle || pageSlug) noteParts.push(`page: ${pageTitle || pageSlug}`)
+    if (resolvedTitle || pageSlug) noteParts.push(`page: ${resolvedTitle || pageSlug}`)
     if (priceRange) noteParts.push(`price range: ${priceRange}`)
     if (role) noteParts.push(`role: ${role}`)
     if (propertyId) noteParts.push(`propertyId: ${propertyId}`)
@@ -85,11 +94,6 @@ export async function POST(request: Request) {
 
     // === CRM write ===
     try {
-      const { db } = await import('@/lib/db')
-      const { clients, clientProperties, tasks } = await import('@/lib/db/schema')
-      const { eq } = await import('drizzle-orm')
-
-      const emailLower = String(email).trim().toLowerCase()
       const existing = await db.query.clients.findFirst({
         where: eq(clients.email, emailLower),
         columns: { id: true, fullName: true, phone: true, notes: true, tags: true },
@@ -143,38 +147,50 @@ export async function POST(request: Request) {
       console.error('landing-lead CRM write failed:', err)
     }
 
-    // === Emails (best-effort): notify admin + confirm to registrant ===
+    // === Emails (best-effort): lead alert + the page's confirmation email ===
+    const emailed = { alert: false, registrant: false, registrantEnabled: autoReply.enabled }
     if (process.env.RESEND_API_KEY) {
-      const from = process.env.EMAIL_FROM || 'sold@realtorpooya.ca'
-      const admin = process.env.EMAIL_TO || 'sold@realtorpooya.ca'
-      const pageLabel = pageTitle || pageSlug || '—'
-      const send = (payload: Record<string, unknown>) =>
-        fetch('https://api.resend.com/emails', {
+      const fromAddr = process.env.EMAIL_FROM || 'sold@realtorpooya.ca'
+      const send = async (payload: Record<string, unknown>): Promise<boolean> => {
+        const r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        }).then(async (r) => { if (!r.ok) console.error('Resend error:', r.status, await r.text()) })
+        })
+        if (!r.ok) console.error('Resend error:', r.status, await r.text())
+        return r.ok
+      }
 
-      // 1) Admin notification
+      // 1) Lead alert to the agent / page-configured address
       try {
-        await send({
-          from, to: [admin], reply_to: email,
-          subject: `New registration: ${fullName}${pageTitle ? ` — ${pageTitle}` : ''}`,
-          html: adminEmailHTML({ fullName, email, phone, priceRange, role, page: pageLabel }),
+        emailed.alert = await send({
+          from: fromAddr, to: [alertTo], reply_to: email,
+          subject: `New registration: ${fullName}${resolvedTitle ? ` — ${resolvedTitle}` : ''}`,
+          html: adminEmailHTML({ fullName, email, phone, priceRange, role, page: resolvedTitle || pageSlug || '—' }),
         })
       } catch (e) { console.error('admin email failed:', e) }
 
-      // 2) Registrant confirmation / auto-reply
-      try {
-        await send({
-          from: `Pooya Pirayeshakbari <${from}>`, to: [email], reply_to: admin,
-          subject: 'Thank you for registering — Realtor Pooya',
-          html: userEmailHTML({ firstName }),
-        })
-      } catch (e) { console.error('user email failed:', e) }
+      // 2) Registrant confirmation — wording comes from the page document
+      if (autoReply.enabled) {
+        try {
+          const vars: AutoReplyVars = {
+            firstName, lastName, fullName, email, phone, priceRange, role,
+            pageTitle: resolvedTitle, pageUrl, propertyAddress, propertyPrice,
+          }
+          const rendered = renderAutoReplyEmail(autoReply, vars)
+          const from = fromAddr.includes('<') ? fromAddr : `${(autoReply.fromName || '').trim() || DEFAULT_EMAIL_BRAND.agentName} <${fromAddr}>`
+          emailed.registrant = await send({
+            from, to: [email],
+            reply_to: isEmailAddress(autoReply.replyTo) ? autoReply.replyTo.trim() : alertTo,
+            subject: rendered.subject,
+            html: rendered.html,
+            text: rendered.text,
+          })
+        } catch (e) { console.error('user email failed:', e) }
+      }
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, emailed })
   } catch (error) {
     console.error('landing-lead error:', error)
     return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
