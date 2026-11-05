@@ -13,6 +13,15 @@ export const dynamic = 'force-dynamic'
 const SITE_BASE = 'https://realtorpooya.com'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Registrants who identify as a realtor (or another industry professional)
+// are other agents, not buyers, so they never receive the page's confirmation
+// email. The lead alert to the agent is still sent so the sign-up is tracked.
+// Matches the default "Realtor" option plus custom labels such as
+// "Real Estate Agent" or "Broker", in any casing.
+function isRealtorRole(role: unknown): boolean {
+  return typeof role === 'string' && /\b(realtor|agent|broker)\b/i.test(role)
+}
+
 function row(label: string, value: string): string {
   const b = DEFAULT_EMAIL_BRAND
   return `<tr><td style="padding:6px 0;color:${b.accentColor};font-weight:600;width:130px;vertical-align:top;">${label}</td><td style="padding:6px 0;color:${b.primaryColor};">${escapeHtml(value)}</td></tr>`
@@ -41,6 +50,7 @@ function adminEmailHTML(d: { fullName: string; email: string; phone: string; pri
 // shared CRM `clients` table (deduped by email), links the property, emails the
 // lead alert to the page's configured address AND sends the registrant the
 // page's own confirmation email (Page Settings → Email in the CRM editor).
+// Registrants who select "Realtor" get no confirmation email.
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -148,7 +158,14 @@ export async function POST(request: Request) {
     }
 
     // === Emails (best-effort): lead alert + the page's confirmation email ===
-    const emailed = { alert: false, registrant: false, registrantEnabled: autoReply.enabled }
+    const realtor = isRealtorRole(role)
+    const sendRegistrantEmail = autoReply.enabled && !realtor
+    const emailed = {
+      alert: false,
+      registrant: false,
+      registrantEnabled: autoReply.enabled,
+      registrantSkipped: realtor ? ('realtor' as const) : null,
+    }
     if (process.env.RESEND_API_KEY) {
       const fromAddr = process.env.EMAIL_FROM || 'sold@realtorpooya.ca'
       const send = async (payload: Record<string, unknown>): Promise<boolean> => {
@@ -170,8 +187,9 @@ export async function POST(request: Request) {
         })
       } catch (e) { console.error('admin email failed:', e) }
 
-      // 2) Registrant confirmation — wording comes from the page document
-      if (autoReply.enabled) {
+      // 2) Registrant confirmation — wording comes from the page document.
+      //    Skipped entirely for realtors (see isRealtorRole).
+      if (sendRegistrantEmail) {
         try {
           const vars: AutoReplyVars = {
             firstName, lastName, fullName, email, phone, priceRange, role,
